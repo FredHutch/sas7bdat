@@ -486,61 +486,6 @@ public class Sas7bdatWriter implements AutoCloseable {
     static final byte COLUMN_TYPE_NUMERIC = 1;
     static final byte COLUMN_TYPE_CHARACTER = 2;
 
-    static abstract class Subheader {
-        static final int SUBHEADER_SIGNATURE_SIZE = 8; // 8 bytes
-        static final long SUBHEADER_SIGNATURE_ROW_SIZE = 0x00000000F7F7F7F7L;
-        static final long SUBHEADER_SIGNATURE_COLUMN_SIZE = 0x00000000F6F6F6F6L;
-        static final long SUBHEADER_SIGNATURE_SUBHEADER_COUNTS = 0xFFFFFFFFFFFFFC00L;
-        static final long SUBHEADER_SIGNATURE_COLUMN_FORMAT = 0xFFFFFFFFFFFFFBFEL;
-        static final long SUBHEADER_SIGNATURE_COLUMN_MASK = 0xFFFFFFFFFFFFFFF8L;
-        static final long SUBHEADER_SIGNATURE_COLUMN_ATTRS = 0xFFFFFFFFFFFFFFFCL;
-        static final long SUBHEADER_SIGNATURE_COLUMN_TEXT = 0xFFFFFFFFFFFFFFFDL;
-        static final long SUBHEADER_SIGNATURE_COLUMN_LIST = 0xFFFFFFFFFFFFFFFEL;
-        static final long SUBHEADER_SIGNATURE_COLUMN_NAME = 0xFFFFFFFFFFFFFFFFL;
-
-        static final long SUBHEADER_SIGNATURE_UNKNOWN_A = 0xFFFFFFFFFFFFFFFBL;
-        static final long SUBHEADER_SIGNATURE_UNKNOWN_B = 0xFFFFFFFFFFFFFFFAL;
-        static final long SUBHEADER_SIGNATURE_UNKNOWN_C = 0xFFFFFFFFFFFFFFF9L;
-
-        /**
-         * @return the total number of bytes in this subheader.
-         */
-        abstract int size();
-
-        /**
-         * Writes the contents of this subheader to an array at a given offset.
-         *
-         * <p>
-         * The caller is responsible for allocating enough memory
-         * </p>
-         *
-         * @param page
-         *     The array of bytes which represents the enclosing data page.
-         * @param subheaderOffset
-         *     The offset in {@code page} to which this subheader should be written.
-         */
-        abstract void writeSubheader(byte[] page, int subheaderOffset);
-
-        /**
-         * @return A byte which represents the "type" of this subheader.
-         */
-        abstract byte typeCode();
-
-        /**
-         * @return A byte which represents how this subheader is compressed.
-         */
-        abstract byte compressionCode();
-
-        void writeSubheaderIndex(byte[] page, int pageOffset, int subheaderOffset) {
-            write8(page, pageOffset, subheaderOffset); // offset of subheader
-            write8(page, pageOffset + 8, size()); // length of subheader
-            page[pageOffset + 16] = compressionCode();
-            page[pageOffset + 17] = typeCode();
-            write2(page, pageOffset + 18, (short) 0); // unknown, likely padding
-            write4(page, pageOffset + 20, (short) 0); // unknown, likely padding
-        }
-    }
-
     /** A wrapper for a collection of {@link ColumnTextSubheader} objects that abstracts their 32K limit. */
     static class ColumnText {
 
