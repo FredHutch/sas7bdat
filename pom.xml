@@ -37,6 +37,11 @@
         <url>https://github.com/FredHutch/sas7bdat/issues</url>
     </issueManagement>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
     <dependencies>
 
         <!-- dependencies needed for testing -->
