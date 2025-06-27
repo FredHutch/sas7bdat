@@ -675,7 +675,7 @@ public class Sas7bdatWriter implements AutoCloseable {
             Integer offset = stringOffsets.get(string);
             assert offset != null : string + " was not added to this ColumnTextSubheader";
             assert offset <= Short.MAX_VALUE : "offset exceeds what is addressable";
-            return (short) (offset - SUBHEADER_SIGNATURE_SIZE);
+            return (short) (offset - SIGNATURE_SIZE);
         }
 
         /**
@@ -709,13 +709,13 @@ public class Sas7bdatWriter implements AutoCloseable {
          * @return The number of bytes of data in this subheader
          */
         int sizeOfData() {
-            return nextOffset + sizeOfPaddingBlockAtEnd - SUBHEADER_SIGNATURE_SIZE;
+            return nextOffset + sizeOfPaddingBlockAtEnd - SIGNATURE_SIZE;
         }
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
 
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_COLUMN_TEXT); // signature
+            write8(page, subheaderOffset, SIGNATURE_COLUMN_TEXT); // signature
             write8(page, subheaderOffset + 8, sizeOfData()); // amount of data
 
             write2(page, subheaderOffset + 16, (short) 0); // unknown, maybe padding
@@ -787,7 +787,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_COLUMN_FORMAT); // signature
+            write8(page, subheaderOffset, SIGNATURE_COLUMN_FORMAT); // signature
             write8(page, subheaderOffset + 8, 0); // unknown, maybe padding
             write8(page, subheaderOffset + 16, 0); // unknown, maybe padding
 
@@ -869,7 +869,7 @@ public class Sas7bdatWriter implements AutoCloseable {
          * @return The number of bytes of data in this subheader
          */
         int sizeOfData() {
-            return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY - SUBHEADER_SIGNATURE_SIZE;
+            return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY - SIGNATURE_SIZE;
         }
 
         @Override
@@ -879,7 +879,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_COLUMN_ATTRS); // signature
+            write8(page, subheaderOffset, SIGNATURE_COLUMN_ATTRS); // signature
 
             int lengthInSubheader = sizeOfData();
             assert lengthInSubheader <= Short.MAX_VALUE;
@@ -967,7 +967,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_COLUMN_NAME); // signature
+            write8(page, subheaderOffset, SIGNATURE_COLUMN_NAME); // signature
 
             write8(page, subheaderOffset + 8, (short) (size() - 20)); // remaining bytes in subheader
 
@@ -1050,7 +1050,7 @@ public class Sas7bdatWriter implements AutoCloseable {
          * @return The number of bytes of data in this subheader
          */
         int sizeOfData() {
-            return totalColumns * 2 + OFFSET_OF_FIRST_COLUMN - SUBHEADER_SIGNATURE_SIZE;
+            return totalColumns * 2 + OFFSET_OF_FIRST_COLUMN - SIGNATURE_SIZE;
         }
 
         @Override
@@ -1060,7 +1060,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_COLUMN_LIST); // signature
+            write8(page, subheaderOffset, SIGNATURE_COLUMN_LIST); // signature
 
             write2(page, subheaderOffset + 8, (short) sizeOfData());
             write2(page, subheaderOffset + 10, (short) 0x7FC8); // unknown
@@ -1189,7 +1189,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_SUBHEADER_COUNTS); // signature
+            write8(page, subheaderOffset, SIGNATURE_SUBHEADER_COUNTS); // signature
 
             // The next field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
             // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
@@ -1224,21 +1224,21 @@ public class Sas7bdatWriter implements AutoCloseable {
             write8(page, subheaderOffset + 112, 1804); // unknown
 
             writeSubheaderInformation(page, subheaderOffset + 120, ColumnAttributesSubheader.class,
-                SUBHEADER_SIGNATURE_COLUMN_ATTRS);
+                SIGNATURE_COLUMN_ATTRS);
 
             writeSubheaderInformation(page, subheaderOffset + 160, ColumnTextSubheader.class,
-                SUBHEADER_SIGNATURE_COLUMN_TEXT);
+                SIGNATURE_COLUMN_TEXT);
 
             writeSubheaderInformation(page, subheaderOffset + 200, ColumnNameSubheader.class,
-                SUBHEADER_SIGNATURE_COLUMN_NAME);
+                SIGNATURE_COLUMN_NAME);
 
             writeSubheaderInformation(page, subheaderOffset + 240, ColumnListSubheader.class,
-                SUBHEADER_SIGNATURE_COLUMN_LIST);
+                SIGNATURE_COLUMN_LIST);
 
             // There are three subheader types that we don't know anything about.
-            writeSubheaderInformation(page, subheaderOffset + 280, null, SUBHEADER_SIGNATURE_UNKNOWN_A);
-            writeSubheaderInformation(page, subheaderOffset + 320, null, SUBHEADER_SIGNATURE_UNKNOWN_B);
-            writeSubheaderInformation(page, subheaderOffset + 360, null, SUBHEADER_SIGNATURE_UNKNOWN_C);
+            writeSubheaderInformation(page, subheaderOffset + 280, null, SIGNATURE_UNKNOWN_A);
+            writeSubheaderInformation(page, subheaderOffset + 320, null, SIGNATURE_UNKNOWN_B);
+            writeSubheaderInformation(page, subheaderOffset + 360, null, SIGNATURE_UNKNOWN_C);
 
             // There are five empty slots, possibly reserved for future use.
             writeSubheaderInformation(page, subheaderOffset + 400, null, 0L);
@@ -1281,7 +1281,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_COLUMN_SIZE); // signature
+            write8(page, subheaderOffset, SIGNATURE_COLUMN_SIZE); // signature
             write8(page, subheaderOffset + 8, totalVariables); // number of columns
             write8(page, subheaderOffset + 16, 0x00); // unknown, maybe padding
         }
@@ -1386,7 +1386,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         @Override
         void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SUBHEADER_SIGNATURE_ROW_SIZE); // signature
+            write8(page, subheaderOffset, SIGNATURE_ROW_SIZE); // signature
 
             write8(page, subheaderOffset + 8, 0xF0); // unknown
             write8(page, subheaderOffset + 16, metadata.subheaders.size() + 2); // unknown
