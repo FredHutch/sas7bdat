@@ -26,7 +26,7 @@ final class WriteUtil {
         // serialized as little-endian
         assert offset % 2 == 0 : "offset is not 2-byte aligned";
         data[offset + 1] = (byte) (number >> 8);
-        data[offset + 0] = (byte) number;
+        data[offset] = (byte) number;
         return 2;
     }
 
@@ -48,7 +48,7 @@ final class WriteUtil {
         data[offset + 3] = (byte) (number >> 24);
         data[offset + 2] = (byte) (number >> 16);
         data[offset + 1] = (byte) (number >> 8);
-        data[offset + 0] = (byte) number;
+        data[offset] = (byte) number;
         return 4;
     }
 
@@ -74,7 +74,7 @@ final class WriteUtil {
         data[offset + 3] = (byte) (number >> 24);
         data[offset + 2] = (byte) (number >> 16);
         data[offset + 1] = (byte) (number >> 8);
-        data[offset + 0] = (byte) number;
+        data[offset] = (byte) number;
         return 8;
     }
 
