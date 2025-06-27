@@ -18,6 +18,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.scharp.sas7bdat.WriteUtil.write2;
+import static org.scharp.sas7bdat.WriteUtil.write4;
+import static org.scharp.sas7bdat.WriteUtil.write8;
+import static org.scharp.sas7bdat.WriteUtil.writeAscii;
+import static org.scharp.sas7bdat.WriteUtil.writeUtf8;
+
 public class Sas7bdatWriter implements AutoCloseable {
 
     // This can be anything, although it might need to be aligned.
@@ -83,55 +89,6 @@ public class Sas7bdatWriter implements AutoCloseable {
                 throw new IllegalStateException("This code does not support more than " + 0x7FFF + " pages");
             }
         }
-    }
-
-    static int write2(byte[] data, int offset, short number) {
-        // serialized as little-endian
-        assert offset % 2 == 0 : "offset is not 2-byte aligned";
-        data[offset + 1] = (byte) (number >> 8);
-        data[offset + 0] = (byte) number;
-        return 2;
-    }
-
-    static int write4(byte[] data, int offset, int number) {
-        // serialized as little-endian
-        assert offset % 2 == 0 : "offset is not 2-byte aligned";
-        data[offset + 3] = (byte) (number >> 24);
-        data[offset + 2] = (byte) (number >> 16);
-        data[offset + 1] = (byte) (number >> 8);
-        data[offset + 0] = (byte) number;
-        return 4;
-    }
-
-    static int write8(byte[] data, int offset, long number) {
-        // serialized as little-endian
-        assert offset % 2 == 0 : "offset is not 2-byte aligned";
-        data[offset + 7] = (byte) (number >> 56);
-        data[offset + 6] = (byte) (number >> 48);
-        data[offset + 5] = (byte) (number >> 40);
-        data[offset + 4] = (byte) (number >> 32);
-        data[offset + 3] = (byte) (number >> 24);
-        data[offset + 2] = (byte) (number >> 16);
-        data[offset + 1] = (byte) (number >> 8);
-        data[offset + 0] = (byte) number;
-        return 8;
-    }
-
-    static void writeUtf8(byte[] data, int offset, String string, int length, byte paddingByte) {
-        byte[] utf8 = string.getBytes(StandardCharsets.UTF_8);
-        assert utf8.length <= length;
-
-        // copy the string
-        System.arraycopy(utf8, 0, data, offset, utf8.length);
-
-        // pad the rest
-        Arrays.fill(data, offset + utf8.length, offset + length, paddingByte);
-    }
-
-    static void writeAscii(byte[] data, int offset, String string, int length) {
-        assert string.matches("^\\p{ASCII}*$");
-        assert string.length() <= length;
-        writeUtf8(data, offset, string, length, (byte) ' '); // pad with spaces
     }
 
     /** A collection of variables in a sas7bdat file that knows how variables are laid out */

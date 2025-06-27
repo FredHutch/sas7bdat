@@ -1,8 +1,8 @@
 package org.scharp.sas7bdat;
 
-import static org.scharp.sas7bdat.Sas7bdatWriter.write2;
-import static org.scharp.sas7bdat.Sas7bdatWriter.write4;
-import static org.scharp.sas7bdat.Sas7bdatWriter.write8;
+import static org.scharp.sas7bdat.WriteUtil.write2;
+import static org.scharp.sas7bdat.WriteUtil.write4;
+import static org.scharp.sas7bdat.WriteUtil.write8;
 
 abstract class Subheader {
     static final int SUBHEADER_SIGNATURE_SIZE = 8; // 8 bytes
