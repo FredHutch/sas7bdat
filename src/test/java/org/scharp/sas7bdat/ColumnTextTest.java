@@ -80,6 +80,15 @@ public class ColumnTextTest {
         columnText.writeTextLocation(data, 0, "a");
         assertArrayEquals(expectedALocation, data);
 
+        // It's always possible to find the empty string, even if it was not explicitly added.
+        final byte[] expectedEmptyStringLocation = {
+            0, 0, // page index
+            0, 0, // offset in ColumnTextSubheader
+            0, 0, // string length
+        };
+        columnText.writeTextLocation(data, 0, "");
+        assertArrayEquals(expectedEmptyStringLocation, data);
+
         // The first ColumnTextSubheader should be in the metadata.
         assertEquals(List.of(), metadata.completeMetadataPages);
         assertEquals(1, metadata.subheaders.size());
