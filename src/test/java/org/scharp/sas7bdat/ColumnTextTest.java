@@ -120,10 +120,19 @@ public class ColumnTextTest {
         String string2 = "b".repeat(pageSize / 2 - 40);
         columnText.add(string2);
 
-        ColumnTextSubheader subheader1 = columnText.getSubheaderForText(string1);
-        assertEquals(0, subheader1.indexInPage()); // was added to page 0
+        final byte[] expectedString2Location = {
+            0, 0, // page index
+            8, 0, // offset in ColumnTextSubheader
+            0, 64, // string length
+        };
 
-        ColumnTextSubheader subheader2 = columnText.getSubheaderForText(string2);
-        assertEquals(0, subheader2.indexInPage()); // was added to page 1
+        // Write the location of the first string to an array.
+        byte[] data = new byte[6];
+        columnText.writeTextLocation(data, 0, string1);
+        assertArrayEquals(expectedString1Location, data);
+
+        // Write the location of the first string to an array.
+        columnText.writeTextLocation(data, 0, string2);
+        assertArrayEquals(expectedString2Location, data);
     }
 }

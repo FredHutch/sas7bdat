@@ -77,7 +77,7 @@ class ColumnText {
         currentSubheader = null;
     }
 
-    ColumnTextSubheader getSubheaderForText(String text) {
+    private ColumnTextSubheader getSubheaderForText(String text) {
         // Determine the subheader to which this text was added.
         ColumnTextSubheader subheader = textToSubheader.get(text);
         assert subheader != null : "looked for text that wasn't added  " + text;
