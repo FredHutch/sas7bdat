@@ -123,4 +123,23 @@ final class WriteUtil {
         assert string.length() <= length;
         writeUtf8(data, offset, string, length, (byte) ' '); // pad with spaces
     }
+
+    /**
+     * Computes an offset that is aligned to a given alignment size.
+     * <p>
+     * The returned value is the smallest number greater than or equal to {@code number} that is a multiple of
+     * {@code alignmentSize}.
+     * </p>
+     *
+     * @param number
+     *     The number to align.
+     * @param alignmentSize
+     *     The desired alignment.
+     *
+     * @return An aligned number.
+     */
+    static int align(int number, int alignmentSize) {
+        int excess = number % alignmentSize;
+        return excess == 0 ? number : number + alignmentSize - excess;
+    }
 }

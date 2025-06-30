@@ -1,7 +1,5 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitPage;
-
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -90,7 +88,7 @@ class ColumnTextSubheader extends Subheader {
 
         // Determine the offset for the next string if this one is added.
         // Offsets must be a multiple of four.
-        int newNextOffset = Sas7bdatUnix64bitPage.align(nextOffset + sizeof(string), 4);
+        int newNextOffset = WriteUtil.align(nextOffset + sizeof(string), 4);
 
         // Check to see if there's space for the new string.
         if (maxSize < newNextOffset + sizeOfPaddingBlockAtEnd + FOOTER_PADDING) {
@@ -192,7 +190,7 @@ class ColumnTextSubheader extends Subheader {
             final int stringSize = sizeof(string);
 
             // Pad the string with 0 bytes until the next multiple of 4, like SAS does.
-            final int length = Sas7bdatUnix64bitPage.align(stringSize, 4);
+            final int length = WriteUtil.align(stringSize, 4);
             writeUtf8(page, offsetOfStringInPage, string, length, (byte) 0);
         }
 

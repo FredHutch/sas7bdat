@@ -77,7 +77,7 @@ public class Sas7bdatWriter implements AutoCloseable {
             // If there's any numeric variable, then a numeric variable is given first, and it should be aligned
             // to an 8-byte boundary.
             if (hasNumericType) {
-                rowOffset = Sas7bdatUnix64bitPage.align(rowOffset, 8);
+                rowOffset = WriteUtil.align(rowOffset, 8);
             }
 
             rowLength = rowOffset;
@@ -1274,11 +1274,6 @@ public class Sas7bdatWriter implements AutoCloseable {
         static final short PAGE_TYPE_MASK = 0x0F00;
         static final short PAGE_TYPE_META2 = 0x4000;
 
-        static int align(int number, int alignment) {
-            int excess = number % alignment;
-            return excess == 0 ? number : number + alignment - excess;
-        }
-
         abstract boolean addObservation(List<Object> observation);
 
         abstract void write(byte[] data);
@@ -1636,7 +1631,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         // When SAS generates a dataset, it seems to pick page sizes that are multiples of 1KiB (0x400).
         int dataPageSizeForSingleObservation = DATA_PAGE_HEADER_SIZE + datasetVariables.rowLength() + 1; // +1 is for the "is deleted" flag
-        pageSize = Sas7bdatUnix64bitPage.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
+        pageSize = WriteUtil.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
         pageBuffer = new byte[pageSize];
 
         Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, pageSize,

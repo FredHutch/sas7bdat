@@ -253,4 +253,35 @@ public class WriteUtilTest {
         assertThrows(NullPointerException.class, () -> WriteUtil.writeAscii(data, 0, null, 0));
         assertArrayEquals(lastData, data, "data was modified on error");
     }
+
+    /** Tests for {@link WriteUtil#align} */
+    @Test
+    void testAlign() {
+        // 2-byte alignment.
+        assertEquals(1000, WriteUtil.align(1000, 2));
+        assertEquals(1002, WriteUtil.align(1001, 2));
+        assertEquals(1002, WriteUtil.align(1002, 2));
+
+        // 4-byte alignment.
+        assertEquals(100, WriteUtil.align(100, 4));
+        assertEquals(104, WriteUtil.align(101, 4));
+        assertEquals(104, WriteUtil.align(102, 4));
+        assertEquals(104, WriteUtil.align(103, 4));
+        assertEquals(104, WriteUtil.align(104, 4));
+
+        // 8-byte alignment.
+        assertEquals(56, WriteUtil.align(56, 8));
+        assertEquals(64, WriteUtil.align(57, 8));
+        assertEquals(64, WriteUtil.align(58, 8));
+        assertEquals(64, WriteUtil.align(59, 8));
+        assertEquals(64, WriteUtil.align(60, 8));
+        assertEquals(64, WriteUtil.align(61, 8));
+        assertEquals(64, WriteUtil.align(62, 8));
+        assertEquals(64, WriteUtil.align(63, 8));
+        assertEquals(64, WriteUtil.align(64, 8));
+
+        // 0 is always aligned.
+        assertEquals(0, WriteUtil.align(0, 1));
+        assertEquals(0, WriteUtil.align(0, 100));
+    }
 }
