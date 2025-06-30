@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadata;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitVariables;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Unit tests for {@link ColumnText}. */
 public class ColumnTextTest {
@@ -79,6 +81,25 @@ public class ColumnTextTest {
         // Write the location of the third string to an array.
         columnText.writeTextLocation(data, 0, "a");
         assertArrayEquals(expectedALocation, data);
+
+        // Writing beyond the end of the array should throw an exception.
+        Exception exception = assertThrows(
+            ArrayIndexOutOfBoundsException.class,
+            () -> columnText.writeTextLocation(data, 2, "a"));
+        assertEquals("Index 7 out of bounds for length 6", exception.getMessage());
+
+        // Write to a non-zero offset.
+        byte[] data2 = new byte[14];
+        Arrays.fill(data2, (byte) -1);
+        columnText.writeTextLocation(data2, 6, "a");
+        byte[] expectedData2 = {
+            -1, -1, -1, -1, -1, -1, // before offset
+            expectedALocation[0], expectedALocation[1],
+            expectedALocation[2], expectedALocation[3],
+            expectedALocation[4], expectedALocation[5],
+            -1, -1, // after
+        };
+        assertArrayEquals(expectedData2, data2);
 
         // It's always possible to find the empty string, even if it was not explicitly added.
         final byte[] expectedEmptyStringLocation = {
