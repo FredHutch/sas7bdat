@@ -5,6 +5,18 @@ import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 
 abstract class Subheader {
+
+    /**
+     * Row Size, Column Size, Subheader Counts, Column Format and Label, in Uncompressed file
+     */
+    static final byte SUBHEADER_TYPE_A = 0x00;
+
+    /**
+     * Column Text, Column Names, Column Attributes, Column List, all subheaders (including row data), in Compressed
+     * file
+     */
+    static final byte SUBHEADER_TYPE_B = 0x01;
+
     static final int SIGNATURE_SIZE = 8; // 8 bytes
     static final long SIGNATURE_ROW_SIZE = 0x00000000F7F7F7F7L;
     static final long SIGNATURE_COLUMN_SIZE = 0x00000000F6F6F6F6L;

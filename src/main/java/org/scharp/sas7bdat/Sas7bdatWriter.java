@@ -368,17 +368,6 @@ public class Sas7bdatWriter implements AutoCloseable {
     static final byte COMPRESSION_TRUNCATED = 0x01;
     static final byte COMPRESSION_RLE_WITH_CONTROL_BYTE = 0x04;
 
-    /**
-     * Row Size, Column Size, Subheader Counts, Column Format and Label, in Uncompressed file
-     */
-    static final byte SUBHEADER_TYPE_A = 0x00;
-
-    /**
-     * Column Text, Column Names, Column Attributes, Column List, all subheaders (including row data), in Compressed
-     * file
-     */
-    static final byte SUBHEADER_TYPE_B = 0x01;
-
     static final byte COLUMN_TYPE_NUMERIC = 1;
     static final byte COLUMN_TYPE_CHARACTER = 2;
 
