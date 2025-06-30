@@ -31,7 +31,7 @@ public class Sas7bdatWriter implements AutoCloseable {
     private static final int DATA_PAGE_HEADER_SIZE = 40;
 
     /** A collection of variables in a sas7bdat file that knows how variables are laid out */
-    private static class Sas7bdatUnix64bitVariables {
+    static class Sas7bdatUnix64bitVariables {
 
         private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
 
@@ -483,62 +483,6 @@ public class Sas7bdatWriter implements AutoCloseable {
             write2(page, offset + 0, stringSubheaderIndex);
             write2(page, offset + 2, stringOffset); // the string's offset within the text subheader
             write2(page, offset + 4, stringLength); // the string's length
-        }
-    }
-
-    /**
-     * A column format subheader contains references to the column's format and label. There is one of these per column
-     * in the dataset.
-     */
-    static class ColumnFormatSubheader extends Subheader {
-        final Variable variable;
-        final ColumnText columnText;
-
-        ColumnFormatSubheader(Variable variable, ColumnText columnText) {
-            this.variable = variable;
-            this.columnText = columnText;
-        }
-
-        @Override
-        int size() {
-            return 64;
-        }
-
-        @Override
-        void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SIGNATURE_COLUMN_FORMAT); // signature
-            write8(page, subheaderOffset + 8, 0); // unknown, maybe padding
-            write8(page, subheaderOffset + 16, 0); // unknown, maybe padding
-
-            write2(page, subheaderOffset + 24, (short) variable.outputFormat().width());
-            write2(page, subheaderOffset + 26, (short) variable.outputFormat().numberOfDigits());
-            write2(page, subheaderOffset + 28, (short) variable.inputFormat().width());
-            write2(page, subheaderOffset + 30, (short) variable.inputFormat().numberOfDigits());
-
-            write8(page, subheaderOffset + 32, 0); // unknown, maybe padding
-
-            // Write the variable's input format offset/length.
-            columnText.writeTextLocation(page, subheaderOffset + 40, variable.inputFormat().name());
-
-            // Write the variable's output format offset/length.
-            columnText.writeTextLocation(page, subheaderOffset + 46, variable.outputFormat().name());
-
-            // Write the variable's label offset/length.
-            columnText.writeTextLocation(page, subheaderOffset + 52, variable.label());
-
-            write2(page, subheaderOffset + 58, (short) 0); // unknown
-            write2(page, subheaderOffset + 60, (short) 0); // unknown
-            write2(page, subheaderOffset + 62, (short) 0); // unknown
-        }
-
-        @Override
-        byte typeCode() {
-            return SUBHEADER_TYPE_A;
-        }
-
-        @Override
-        byte compressionCode() {
-            return COMPRESSION_UNCOMPRESSED;
         }
     }
 
