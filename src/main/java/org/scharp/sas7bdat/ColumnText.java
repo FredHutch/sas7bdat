@@ -106,7 +106,7 @@ class ColumnText {
             stringLength = 0;
         } else {
             ColumnTextSubheader columnTextSubheader = getSubheaderForText(text);
-            stringSubheaderIndex = columnTextSubheader.indexInPage();
+            stringSubheaderIndex = columnTextSubheader.columnTextSubheaderIndex();
             stringOffset = columnTextSubheader.offsetFromSignature(text);
             stringLength = ColumnTextSubheader.sizeof(text);
         }

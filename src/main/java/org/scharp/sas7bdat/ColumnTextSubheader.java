@@ -40,7 +40,7 @@ class ColumnTextSubheader extends Subheader {
     static final short MAX_SIZE = 32740;
 
     private final Map<String, Integer> stringOffsets;
-    private final short indexInPage;
+    private final short columnTextSubheaderIndex;
     private final short maxSize;
     private int nextOffset;
     private int sizeOfPaddingBlockAtEnd;
@@ -48,20 +48,21 @@ class ColumnTextSubheader extends Subheader {
     /**
      * Creates a new column text subheader.
      *
-     * @param indexInPage
-     *     Where in the page this column text header will be placed.
+     * @param columnTextSubheaderIndex
+     *     The index of this column text subheader within the array of all column text subheaders in the dataset. The
+     *     first column text subheader index is 0.
      * @param maxSize
      *     The amount of space that this column text header should take up (in bytes). This is useful for
      *     troubleshooting when attempting to mimic a dataset that SAS created. It is also useful if the amount of space
      *     remaining on the page is known, and you want this subheader to fill the space.
      */
-    ColumnTextSubheader(short indexInPage, short maxSize) {
-        assert 0 <= indexInPage;
+    ColumnTextSubheader(short columnTextSubheaderIndex, short maxSize) {
+        assert 0 <= columnTextSubheaderIndex;
         assert MIN_SIZE < maxSize : "maxSize too small: " + maxSize;
         assert maxSize <= Short.MAX_VALUE : "maxSize too large: " + maxSize;
         assert maxSize % 4 == 0 : "maxSize " + maxSize + " is not a multiple of 4";
 
-        this.indexInPage = indexInPage;
+        this.columnTextSubheaderIndex = columnTextSubheaderIndex;
         this.maxSize = maxSize;
         stringOffsets = new LinkedHashMap<>(); // LinkedHashMap preserves order, making it easier to compare against what sas generates
         nextOffset = OFFSET_OF_FIRST_STRING;
@@ -149,8 +150,14 @@ class ColumnTextSubheader extends Subheader {
         return (short) stringSizeInBytes;
     }
 
-    short indexInPage() {
-        return indexInPage;
+    /**
+     * Gets the index of this column text subheader within the dataset's array of column text subheaders. {@code 0} is
+     * the first subheader index.
+     *
+     * @return This column text subheader's index.
+     */
+    short columnTextSubheaderIndex() {
+        return columnTextSubheaderIndex;
     }
 
     @Override

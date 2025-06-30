@@ -54,7 +54,7 @@ public class ColumnTextSubheaderTest {
         assertFalse(columnTextSubheader.add("x".repeat(500)));
 
         // The subheader should return the indexInPage that it was given.
-        assertEquals(indexInPage, columnTextSubheader.indexInPage());
+        assertEquals(indexInPage, columnTextSubheader.columnTextSubheaderIndex());
 
         // The strings should be somewhere within the header.
         assertEquals(16, columnTextSubheader.offsetFromSignature("string1"));
