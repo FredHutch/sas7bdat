@@ -73,12 +73,12 @@ class ColumnTextSubheader extends Subheader {
      * Adds a string to this subheader.
      *
      * @param string
-     *     The string to add.
+     *     The string to add. This must be fewer than {@code Short.MAX_VALUE} bytes when represented as UTF-8.
      *
-     * @return {@code true}, if the string was added. {@code false} if there wasn't enough space to hold the new string.
+     * @return {@code true}, if the string was added. {@code false} if there isn't enough space to hold the new string.
      */
     boolean add(String string) {
-        assert string.length() <= Short.MAX_VALUE : string + " is too long to be addressable";
+        assert sizeof(string) <= Short.MAX_VALUE : "string is too long to be addressable in a text reference";
 
         if (!ADD_REDUNDANT_ENTRIES && stringOffsets.containsKey(string)) {
             // We already have a place reserved for this string,
@@ -146,7 +146,7 @@ class ColumnTextSubheader extends Subheader {
      */
     static short sizeof(String string) {
         int stringSizeInBytes = string.getBytes(StandardCharsets.UTF_8).length;
-        assert stringSizeInBytes <= Short.MAX_VALUE : string + " is too long to exist";
+        assert stringSizeInBytes <= Short.MAX_VALUE : "string is too long to be addressable in a text reference";
         return (short) stringSizeInBytes;
     }
 
