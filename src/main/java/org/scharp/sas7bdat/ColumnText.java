@@ -84,15 +84,6 @@ class ColumnText {
         return subheader;
     }
 
-    short offsetFromSignature(String text) {
-        // Determine the subheader to which this text was added.
-        ColumnTextSubheader subheader = textToSubheader.get(text);
-        assert subheader != null : "looked for text that wasn't added  " + text;
-
-        // Get the text from the subheader
-        return subheader.offsetFromSignature(text);
-    }
-
     /**
      * Write the location of the given text as a triple of two-byte values: index of ColumnTextSubheader, offset of text
      * from the signature, length of the text.
