@@ -18,14 +18,14 @@ import static org.scharp.sas7bdat.WriteUtil.writeUtf8;
  */
 class ColumnTextSubheader extends Subheader {
 
+    static private final int OFFSET_OF_FIRST_STRING = 16; // 8 byte signature + 2 byte size + 6 bytes of padding
+    static private final int FOOTER_PADDING = 12;
+
     /**
      * A flag to indicate that the code should emulate the way SAS generates datasets, which is to allow the same text
      * to be added multiple times.
      */
     static final boolean ADD_REDUNDANT_ENTRIES = true;
-
-    static final int OFFSET_OF_FIRST_STRING = 16; // 8 byte signature + 2 byte size + 6 bytes of padding
-    static final int FOOTER_PADDING = 12;
 
     /**
      * The minimum size of a ColumnTextSubheader.  This includes the header and footer but no text.
@@ -41,10 +41,10 @@ class ColumnTextSubheader extends Subheader {
      */
     static final short MAX_SIZE = 32740;
 
-    final Map<String, Integer> stringOffsets;
-    final short indexInPage;
+    private final Map<String, Integer> stringOffsets;
+    private final short indexInPage;
     final short maxSize;
-    int nextOffset;
+    private int nextOffset;
     int sizeOfPaddingBlockAtEnd;
 
     /**
