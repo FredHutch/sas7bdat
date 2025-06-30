@@ -50,6 +50,7 @@ public class ColumnTextSubheaderTest {
         assertTrue(columnTextSubheader.add("1234"));
 
         // A string that can't fit.
+        // There should be no trace of this string in the subheader data.
         assertFalse(columnTextSubheader.add("x".repeat(500)));
 
         // The subheader should return the indexInPage that it was given.
