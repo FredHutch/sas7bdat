@@ -111,7 +111,7 @@ class ColumnText {
             stringLength = columnTextSubheader.sizeof(text);
         }
 
-        write2(page, offset + 0, stringSubheaderIndex);
+        write2(page, offset, stringSubheaderIndex);
         write2(page, offset + 2, stringOffset); // the string's offset within the text subheader
         write2(page, offset + 4, stringLength); // the string's length
     }
