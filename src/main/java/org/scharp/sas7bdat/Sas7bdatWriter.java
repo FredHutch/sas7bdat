@@ -415,9 +415,7 @@ public class Sas7bdatWriter implements AutoCloseable {
                 // SAS appends a stylized padding block to every non-final text block subheader.
                 // This padding block has a header that's 8 bytes long.
                 // I don't think this is functionally significant.
-                if (currentSubheader.size() < currentSubheader.maxSize) {
-                    currentSubheader.sizeOfPaddingBlockAtEnd = currentSubheader.maxSize - currentSubheader.size();
-                }
+                currentSubheader.padToMaxSize();
 
                 // Now that the size of the current subheader is fixed, it can be added to the metadata.
                 metadata.addSubheader(currentSubheader);

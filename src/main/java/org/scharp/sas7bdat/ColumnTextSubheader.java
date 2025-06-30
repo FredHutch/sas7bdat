@@ -43,9 +43,9 @@ class ColumnTextSubheader extends Subheader {
 
     private final Map<String, Integer> stringOffsets;
     private final short indexInPage;
-    final short maxSize;
+    private final short maxSize;
     private int nextOffset;
-    int sizeOfPaddingBlockAtEnd;
+    private int sizeOfPaddingBlockAtEnd;
 
     /**
      * Creates a new column text subheader.
@@ -103,6 +103,17 @@ class ColumnTextSubheader extends Subheader {
         stringOffsets.put(string, nextOffset);
         nextOffset = newNextOffset;
         return true;
+    }
+
+    /**
+     * Adds padding to the end of this subheader's binary format so that its size exactly matches the {@code maxSize}
+     * parameter that was passed into the constructor.
+     */
+    void padToMaxSize() {
+        // SAS appends a stylized padding block to every non-final text block subheader.
+        // This padding block has a header that's 8 bytes long.
+        // I don't think this is functionally significant.
+        sizeOfPaddingBlockAtEnd = maxSize - size();
     }
 
     /**

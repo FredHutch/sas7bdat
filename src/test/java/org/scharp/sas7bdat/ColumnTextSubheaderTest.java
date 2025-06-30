@@ -119,6 +119,56 @@ public class ColumnTextSubheaderTest {
         assertArrayEquals(expectedArray, actualSubheaderData);
     }
 
+    @Test
+    void testPadToMaxSize() {
+        final short indexInPage = 0;
+        ColumnTextSubheader columnTextSubheader = new ColumnTextSubheader(indexInPage, (short) 40);
+
+        // See what data is returned before padding.
+        final byte[] emptySubheaderData = new byte[] {
+            -3, -1, -1, -1, -1, -1, -1, -1,  // signature
+            8, 0, 0, 0, 0, 0, 0, 0, // size of data
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 // 12 bytes of padding at end
+        };
+
+        assertEquals(emptySubheaderData.length, columnTextSubheader.size());
+        assertEquals(emptySubheaderData.length - 8 - 12, columnTextSubheader.sizeOfData());
+
+        // Get the subheader with a non-zero offset.
+        byte[] actualSubheaderData = new byte[emptySubheaderData.length];
+        columnTextSubheader.writeSubheader(actualSubheaderData, 0);
+
+        // Confirm that writeSubheader() wrote the data to the expected location.
+        assertArrayEquals(emptySubheaderData, actualSubheaderData);
+
+        // Pad the subheader to the maxSize (40)
+        columnTextSubheader.padToMaxSize();
+
+        // After padding to the maxSize, we shouldn't be able to add any strings, however small.
+        assertFalse(columnTextSubheader.add("a"));
+
+        // See what data is returned before padding.
+        final byte[] paddedSubheaderData = new byte[] {
+            -3, -1, -1, -1, -1, -1, -1, -1,  // signature
+            20, 0, 0, 0, 0, 0, 0, 0, // size of data
+
+            1, 0, 0, 0, // newly added padding
+            12, 0, 0, 0, 0, 0, 0, 0, // newly added padding
+
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 // 12 bytes of padding at end
+        };
+
+        assertEquals(paddedSubheaderData.length, columnTextSubheader.size());
+        assertEquals(paddedSubheaderData.length - 8 - 12, columnTextSubheader.sizeOfData());
+
+        // Get the subheader with a non-zero offset.
+        byte[] actualPaddedSubheaderData = new byte[paddedSubheaderData.length];
+        columnTextSubheader.writeSubheader(actualPaddedSubheaderData, 0);
+
+        // Confirm that writeSubheader() wrote the data to the expected location.
+        assertArrayEquals(paddedSubheaderData, actualPaddedSubheaderData);
+    }
+
     /** Tests for {@link ColumnTextSubheader#sizeof}. */
     @Test
     void testSizeOf() {
