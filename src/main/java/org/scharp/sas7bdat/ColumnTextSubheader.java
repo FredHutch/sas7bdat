@@ -63,7 +63,7 @@ class ColumnTextSubheader extends Subheader {
 
         this.indexInPage = indexInPage;
         this.maxSize = maxSize;
-        stringOffsets = new LinkedHashMap<>(); // HACK: LinkedHashMap preserves order, making it easier to compare against what sas generates
+        stringOffsets = new LinkedHashMap<>(); // LinkedHashMap preserves order, making it easier to compare against what sas generates
         nextOffset = OFFSET_OF_FIRST_STRING;
         sizeOfPaddingBlockAtEnd = 0;
     }
