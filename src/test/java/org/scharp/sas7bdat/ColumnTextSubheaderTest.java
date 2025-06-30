@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.scharp.sas7bdat.Sas7bdatWriter.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_B;
 
 /** Unit tests for {@link ColumnTextSubheader}. */

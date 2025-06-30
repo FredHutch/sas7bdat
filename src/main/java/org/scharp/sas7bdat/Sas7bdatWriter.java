@@ -364,10 +364,6 @@ public class Sas7bdatWriter implements AutoCloseable {
         }
     }
 
-    static final byte COMPRESSION_UNCOMPRESSED = 0x00;
-    static final byte COMPRESSION_TRUNCATED = 0x01;
-    static final byte COMPRESSION_RLE_WITH_CONTROL_BYTE = 0x04;
-
     static final byte COLUMN_TYPE_NUMERIC = 1;
     static final byte COLUMN_TYPE_CHARACTER = 2;
 

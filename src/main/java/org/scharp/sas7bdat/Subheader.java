@@ -17,6 +17,10 @@ abstract class Subheader {
      */
     static final byte SUBHEADER_TYPE_B = 0x01;
 
+    static final byte COMPRESSION_UNCOMPRESSED = 0x00;
+    static final byte COMPRESSION_TRUNCATED = 0x01;
+    static final byte COMPRESSION_RLE_WITH_CONTROL_BYTE = 0x04;
+
     static final int SIGNATURE_SIZE = 8; // 8 bytes
     static final long SIGNATURE_ROW_SIZE = 0x00000000F7F7F7F7L;
     static final long SIGNATURE_COLUMN_SIZE = 0x00000000F6F6F6F6L;
