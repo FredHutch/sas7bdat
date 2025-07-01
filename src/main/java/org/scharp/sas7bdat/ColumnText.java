@@ -47,13 +47,17 @@ class ColumnText {
 
             // If we're near the end of the page, we create a subheader that will fill the remaining space.
             final int bytesOnPageForSubheader = metadata.currentMetadataPage.totalBytesRemainingForNewSubheader();
+            final int minSizeOfColumnTextSubheaderWithText = ColumnTextSubheader.sizeOfSubheaderWithString(text);
             final short maxSize;
-            if (bytesOnPageForSubheader <= ColumnTextSubheader.MIN_SIZE) {
-                // There's not enough space for a new ColumnTextSubheader on this page, so assume that it
+            if (bytesOnPageForSubheader <= minSizeOfColumnTextSubheaderWithText) {
+                // There's not enough space for the new ColumnTextSubheader on this page, so assume that it
                 // will be moved to the next page.
-                // SAS selects a smaller maxSize for these, even though ColumnTextSubheader.MAX_SIZE would be
-                // more efficient.
-                maxSize = 32676;
+                //
+                // Ideally, this would use a maxSize of ColumnTextSubheader.MAX_SIZE.  However, SAS selects a
+                // smaller maxSize of 32676 for a ColumnTextSubheader that is the first subheader on a
+                // page.  We follow what SAS does except in the rare case where "text" is so long that
+                // such a ColumnTextSubheader couldn't hold it.
+                maxSize = (short) Math.max(32676, minSizeOfColumnTextSubheaderWithText);
             } else {
                 maxSize = (short) Math.min(ColumnTextSubheader.MAX_SIZE, bytesOnPageForSubheader);
             }
@@ -65,6 +69,7 @@ class ColumnText {
             // Add the string to the new subheader, which should be empty.
             boolean success = currentSubheader.add(text);
             assert success : "couldn't add text to an empty subheader";
+            assert currentSubheader.size() == minSizeOfColumnTextSubheaderWithText : "calculated size incorrectly";
         }
 
         // Track the subheader into which this string was inserted.

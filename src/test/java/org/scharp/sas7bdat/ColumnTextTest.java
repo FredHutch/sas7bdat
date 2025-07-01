@@ -1,12 +1,13 @@
 package org.scharp.sas7bdat;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadata;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatWriter.TruncatedSubheader;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -125,44 +126,114 @@ public class ColumnTextTest {
         assertInstanceOf(ColumnTextSubheader.class, metadata.subheaders.get(1));
     }
 
+    /**
+     * Programmatically determines how many UUIDs it takes to fill the first ColumnTextSubheader in a ColumnText.
+     *
+     * @return The number of UUIDs it takes to fill the first ColumnTextSubheader in a ColumnText
+     */
+    static int totalNumberUuidsToFillFirstColumnTextSubheader() {
+        // Create a ColumnText
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of());
+        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
+        ColumnText columnText = new ColumnText(metadata);
+
+        // We want to determine how many strings need to be added before the last ColumnTextSubheader on
+        // the first page is created.
+        // Keep adding UUIDs (small strings) until the first page is full.
+        int totalNumberUuidsAdded = 0;
+        while (metadata.subheaders.isEmpty()) {
+            columnText.add(UUID.randomUUID().toString());
+            totalNumberUuidsAdded++;
+        }
+
+        // The last UUID added was added to a new ColumnTextSubheader, so subtract 1.
+        return totalNumberUuidsAdded - 1;
+    }
+
+    /**
+     * A mock subheader of a fixed size.  This can be used to reserve space on a metadata page.
+     */
+    private static class FillerSubheader extends Subheader {
+
+        private final int size;
+
+        FillerSubheader(int size) {
+            this.size = size;
+        }
+
+        @Override
+        int size() {
+            return size;
+        }
+
+        @Override
+        void writeSubheader(byte[] page, int subheaderOffset) {
+        }
+
+        @Override
+        byte typeCode() {
+            return SUBHEADER_TYPE_A;
+        }
+
+        @Override
+        byte compressionCode() {
+            return COMPRESSION_UNCOMPRESSED;
+        }
+    }
+
     @Test
-    @Disabled("TODO: fix the bug that prevents this from running")
     void testEmptyColumnTextSubheader() {
+        // The intent of this test case is to cause ColumnText to allocate a new ColumnTextSubheader when
+        // there is enough space on the page for a ColumnTextSubheader but not for a ColumnTextSubheader
+        // that contains the string that is being added.
+        //
+        // Therefore, we want a ColumnTextSubheader to be filled.
+
         // Create a ColumnText
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of());
         Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, pageSize, variables);
+
+        // Add a subheader to the page such that, when ColumnText adds the first subheader
+        // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next
+        // subheader.
+        int totalBytesRemaining = metadata.currentMetadataPage.totalBytesRemainingForNewSubheader();
+        metadata.addSubheader(new FillerSubheader(totalBytesRemaining - ColumnTextSubheader.MAX_SIZE - 100));
+
         ColumnText columnText = new ColumnText(metadata);
 
-        // Add a long string to the ColumnTextSubheader
-        String string1 = "a".repeat(pageSize / 2 - 4);
-        columnText.add(string1);
+        int uuidsToAdd = totalNumberUuidsToFillFirstColumnTextSubheader();
+        for (int i = 0; i < uuidsToAdd; i++) {
+            columnText.add(UUID.randomUUID().toString());
+        }
 
-        final byte[] expectedString1Location = {
-            0, 0, // page index
+        assertEquals(1, metadata.subheaders.size(), "TEST BUG: overflowed first ColumnTextSubheader");
+
+        // Add a long string.  Even though an empty ColumnTextSubheader can still
+        // fit on the page, a ColumnTextSubheader with this string can't.
+        String lastStringAdded = "a".repeat(255);
+        columnText.add(lastStringAdded);
+
+        assertEquals(2, metadata.subheaders.size(), "TEST BUG: lastAddedString didn't overflow ColumnTextSubheader");
+
+        // Flush the subheader.
+        columnText.noMoreText();
+        assertEquals(4, metadata.subheaders.size());
+        assertInstanceOf(FillerSubheader.class, metadata.subheaders.get(0));
+        assertInstanceOf(ColumnTextSubheader.class, metadata.subheaders.get(1)); // filled with UUIDs
+        assertInstanceOf(TruncatedSubheader.class, metadata.subheaders.get(2));
+        assertInstanceOf(ColumnTextSubheader.class, metadata.subheaders.get(3)); // with only lastStringAdded
+
+        // If everything is as expected, the new string should be the first string in the second ColumnTextSubheader.
+        final byte[] expectedStringLocation = {
+            1, 0, // page index
             8, 0, // offset in ColumnTextSubheader
-            0, 64, // string length
+            (byte) lastStringAdded.length(), 0, // string length
         };
-
-        // Add another string about the same size.
-        // This is too big to fit on the same remaining on the first page.
-        String string2 = "b".repeat(pageSize / 2 - 40);
-        columnText.add(string2);
-
-        final byte[] expectedString2Location = {
-            0, 0, // page index
-            8, 0, // offset in ColumnTextSubheader
-            0, 64, // string length
-        };
-
-        // Write the location of the first string to an array.
         byte[] data = new byte[6];
-        columnText.writeTextLocation(data, 0, string1);
-        assertArrayEquals(expectedString1Location, data);
-
-        // Write the location of the first string to an array.
-        columnText.writeTextLocation(data, 0, string2);
-        assertArrayEquals(expectedString2Location, data);
+        columnText.writeTextLocation(data, 0, lastStringAdded);
+        assertArrayEquals(expectedStringLocation, data);
     }
 }

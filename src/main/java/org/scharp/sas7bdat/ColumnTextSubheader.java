@@ -218,6 +218,18 @@ class ColumnTextSubheader extends Subheader {
         write8(page, subheaderOffset + nextOffset + sizeOfPaddingBlockAtEnd + 4, 0);
     }
 
+    /**
+     * Calculates the size of a {@code ColumnTextSubheader} that holds a string.
+     *
+     * @param string
+     *     A string to consider added to the {@code ColumnTextSubheader}.
+     *
+     * @return The size of a {@code ColumnTextSubheader} that holds a string.
+     */
+    static int sizeOfSubheaderWithString(String string) {
+        return WriteUtil.align(MIN_SIZE + sizeof(string), 4);
+    }
+
     @Override
     byte typeCode() {
         return SUBHEADER_TYPE_B;
