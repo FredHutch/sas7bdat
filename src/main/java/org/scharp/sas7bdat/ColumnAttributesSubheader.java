@@ -34,6 +34,17 @@ class ColumnAttributesSubheader extends Subheader {
     private final List<Variable> variables;
     private final int[] physicalOffsets;
 
+    /**
+     * Constructs a new column attributes subheader using a sublist of a given set of variables.
+     *
+     * @param variables
+     *     All variables in the dataset.
+     * @param offset
+     *     The offset within {@code variables} of the first variable to include in the new subheader.
+     * @param maxLength
+     *     The maximum size, in bytes, of the new subheader.  This may limit the number of variables in the new
+     *     subheader.
+     */
     ColumnAttributesSubheader(Sas7bdatUnix64bitVariables variables, int offset, int maxLength) {
         // Determine how many variables, starting at offset, this subheader will hold.
         assert offset < variables.totalVariables() : "offset is larger than the number of variables";
