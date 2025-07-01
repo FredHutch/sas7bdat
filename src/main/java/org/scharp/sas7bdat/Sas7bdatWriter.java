@@ -34,8 +34,8 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
 
-        private final List<Variable> variables;
-        private final int[] physicalOffsets;
+        final List<Variable> variables;
+        final int[] physicalOffsets;
         private final int rowLength;
 
         Sas7bdatUnix64bitVariables(List<Variable> variablesList) {
@@ -360,117 +360,6 @@ public class Sas7bdatWriter implements AutoCloseable {
 
             // A third timestamp.
             write8(data, 328 + doubleAlignmentOffset + intAlignmentOffset, ieee754SasDate);
-        }
-    }
-
-    static final byte COLUMN_TYPE_NUMERIC = 1;
-    static final byte COLUMN_TYPE_CHARACTER = 2;
-
-    /**
-     * A subheader that contains some attributes for all columns
-     */
-    static class ColumnAttributesSubheader extends Subheader {
-
-        /** The number of bytes of blank data at the end of a subheader */
-        private static final int FOOTER_PADDING = 12;
-
-        /** The number of bytes of each column entry in a subheader */
-        private static final int SIZE_OF_ENTRY = 16;
-
-        /** The byte offset of the data for the first column */
-        private static final int OFFSET_OF_FIRST_ENTRY = 16;
-
-        /**
-         * The number of bytes required to have a subheader with a single variable.
-         */
-        final static int MIN_SIZE = OFFSET_OF_FIRST_ENTRY + SIZE_OF_ENTRY + FOOTER_PADDING;
-
-        final int totalVariablesInSubheader;
-        final List<Variable> variables;
-        final int[] physicalOffsets;
-
-        ColumnAttributesSubheader(Sas7bdatUnix64bitVariables variables, int offset, int maxLength) {
-            // Determine how many variables, starting at offset, this subheader will hold.
-            assert offset < variables.totalVariables() : "maxLength is larger than the number of variables";
-            assert 0 < maxLength : "maxLength isn't positive: " + maxLength;
-            assert MIN_SIZE <= maxLength : "maxLength is too small: " + maxLength;
-            assert maxLength <= Short.MAX_VALUE : "maxLength is too large: " + maxLength;
-
-            final int variablesRemaining = variables.totalVariables() - offset;
-            final int variablesInMaxLength = (maxLength - (OFFSET_OF_FIRST_ENTRY + FOOTER_PADDING)) / SIZE_OF_ENTRY;
-            totalVariablesInSubheader = Math.min(variablesRemaining, variablesInMaxLength);
-
-            // Copy the variables and their physical offsets.
-            int limit = offset + totalVariablesInSubheader;
-            this.variables = variables.variables.subList(offset, limit);
-            physicalOffsets = Arrays.copyOfRange(variables.physicalOffsets, offset, limit);
-        }
-
-        /**
-         * The number of bytes of data in this subheader without signature or FOOTER_PADDING.
-         *
-         * @return The number of bytes of data in this subheader
-         */
-        int sizeOfData() {
-            return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY - SIGNATURE_SIZE;
-        }
-
-        @Override
-        int size() {
-            return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY + FOOTER_PADDING;
-        }
-
-        @Override
-        void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SIGNATURE_COLUMN_ATTRS); // signature
-
-            int lengthInSubheader = sizeOfData();
-            assert lengthInSubheader <= Short.MAX_VALUE;
-            write8(page, subheaderOffset + 8, lengthInSubheader);
-
-            int offsetWithinSubheader = OFFSET_OF_FIRST_ENTRY;
-            int i = 0;
-            for (Variable variable : variables) {
-                // offset of variable in bytes when in data row
-                write8(page, subheaderOffset + offsetWithinSubheader, physicalOffsets[i]);
-
-                // column width
-                write4(page, subheaderOffset + offsetWithinSubheader + 8, variable.length());
-
-                // name flag
-                short nameFlag;
-                if (!variable.name().matches("[A-Za-z]\\w*")) {
-                    nameFlag = 0x0C00; // not a simple name; must be quoted as a name literal
-                } else if (variable.name().length() <= 8) {
-                    nameFlag = 0x0400;
-                } else {
-                    nameFlag = 0x0800;
-                }
-                write2(page, subheaderOffset + offsetWithinSubheader + 12, nameFlag);
-
-                // column type
-                write2(page, subheaderOffset + offsetWithinSubheader + 14,
-                    variable.type() == VariableType.NUMERIC ? COLUMN_TYPE_NUMERIC : COLUMN_TYPE_CHARACTER);
-
-                offsetWithinSubheader += SIZE_OF_ENTRY;
-                i++;
-            }
-
-            // There is some padding at the end.
-            write4(page, subheaderOffset + offsetWithinSubheader, 0);
-            write8(page, subheaderOffset + offsetWithinSubheader + 4, 0);
-
-            assert size() == offsetWithinSubheader + FOOTER_PADDING;
-        }
-
-        @Override
-        byte typeCode() {
-            return SUBHEADER_TYPE_B;
-        }
-
-        @Override
-        byte compressionCode() {
-            return COMPRESSION_UNCOMPRESSED;
         }
     }
 
