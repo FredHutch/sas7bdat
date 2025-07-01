@@ -12,7 +12,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,9 +21,6 @@ public class Sas7bdatTest {
 
     @Test
     public void runSampleCode() throws IOException {
-
-        // TODO: use a temp file and cleanup.
-        Path targetLocation = Paths.get("sample.sas7bdat");
 
         String greek = "\u0395\u03BB\u03BB\u03B7\u03BD\u03B9\u03BA\u03AC"; // Greek word for greek
 
@@ -91,6 +87,7 @@ public class Sas7bdatTest {
             observations.add(Arrays.asList("Value #3 for Var #1@", "Value #3 for Var #2$", "Text3", "C", i));
         }
 
+        Path targetLocation = Path.of("sample.sas7bdat");
         try {
             // Write a data set.
             Sas7bdatWriter.writeDataset(targetLocation, createDate, "my type", datasetLabel, variables, observations);
