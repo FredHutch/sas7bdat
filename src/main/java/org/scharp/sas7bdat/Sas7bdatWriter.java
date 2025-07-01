@@ -1554,6 +1554,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         Sas7bdatUnix64bitMetadata(PageSequenceGenerator pageSequenceGenerator, int pageSize,
             Sas7bdatUnix64bitVariables variables) {
+            assert pageSize >= MINIMUM_PAGE_SIZE;
             this.pageSequenceGenerator = pageSequenceGenerator;
             this.pageSize = pageSize;
             this.variables = variables;

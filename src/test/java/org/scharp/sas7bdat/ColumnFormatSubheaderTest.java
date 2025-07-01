@@ -17,7 +17,7 @@ public class ColumnFormatSubheaderTest {
     private static ColumnText newColumnText(Variable variable) {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of(variable));
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x8000, variables);
+        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
         ColumnText columnText = new ColumnText(metadata);
 
         // Populate the column text with the strings from the variable.
