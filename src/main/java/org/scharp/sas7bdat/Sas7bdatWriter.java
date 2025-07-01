@@ -1612,7 +1612,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
             ColumnAttributesSubheader nextSubheader = new ColumnAttributesSubheader(datasetVariables, offset, maxSize);
             metadata.addSubheader(nextSubheader);
-            offset += nextSubheader.totalVariablesInSubheader;
+            offset += nextSubheader.totalVariablesInSubheader();
         }
 
         if (1 < datasetVariables.totalVariables()) {

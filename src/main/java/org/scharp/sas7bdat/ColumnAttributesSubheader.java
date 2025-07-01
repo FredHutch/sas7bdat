@@ -30,7 +30,7 @@ class ColumnAttributesSubheader extends Subheader {
      */
     final static int MIN_SIZE = OFFSET_OF_FIRST_ENTRY + SIZE_OF_ENTRY + FOOTER_PADDING;
 
-    final int totalVariablesInSubheader;
+    private final int totalVariablesInSubheader;
     private final List<Variable> variables;
     private final int[] physicalOffsets;
 
@@ -58,6 +58,15 @@ class ColumnAttributesSubheader extends Subheader {
      */
     int sizeOfData() {
         return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY - SIGNATURE_SIZE;
+    }
+
+    /**
+     * Gets the number of variables that fit into this subheader.
+     *
+     * @return The number of variables
+     */
+    int totalVariablesInSubheader() {
+        return totalVariablesInSubheader;
     }
 
     @Override

@@ -62,6 +62,7 @@ public class ColumnAttributesSubheaderTest {
         Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
+        assertEquals(1, subheader.totalVariablesInSubheader());
 
         // Write the contents of the subheader to a byte array.
         final byte[] expectedSubheaderData = new byte[] {
@@ -146,6 +147,7 @@ public class ColumnAttributesSubheaderTest {
         // MIN_SIZE is for a subheader with variables.  We add enough for 3 more (16*3) and subtract 1.
         short maxSizeForThreeVariables = ColumnAttributesSubheader.MIN_SIZE + 16 * 3 - 1;
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 1, maxSizeForThreeVariables);
+        assertEquals(3, subheader.totalVariablesInSubheader());
 
         // Write the contents of the subheader to a byte array.
         final byte[] expectedSubheaderData = new byte[] {
