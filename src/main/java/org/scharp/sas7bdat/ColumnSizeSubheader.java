@@ -5,7 +5,7 @@ import java.util.List;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 
 /**
- * A subheader that contains information about columns sizes.
+ * A subheader that contains information about the number of columns in a dataset.
  */
 class ColumnSizeSubheader extends Subheader {
 
