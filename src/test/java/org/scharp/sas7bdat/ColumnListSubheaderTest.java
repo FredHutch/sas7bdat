@@ -63,6 +63,7 @@ public class ColumnListSubheaderTest {
         Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
+        assertEquals(1, columnListSubheader.totalVariablesInSubheader());
 
         final byte[] expectedSubheaderData = new byte[] {
             -2, -1, -1, -1, -1, -1, -1, -1,  // signature
@@ -146,6 +147,7 @@ public class ColumnListSubheaderTest {
         Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 1);
+        assertEquals(3, columnListSubheader.totalVariablesInSubheader());
 
         // Write the contents of the subheader to a byte array.
         final byte[] expectedSubheaderData = new byte[] {
@@ -201,6 +203,7 @@ public class ColumnListSubheaderTest {
 
         Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
+        assertEquals(16345, columnListSubheader.totalVariablesInSubheader());
 
         int size = columnListSubheader.size();
         assertEquals(32740, columnListSubheader.size());

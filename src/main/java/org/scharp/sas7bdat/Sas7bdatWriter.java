@@ -1433,7 +1433,7 @@ public class Sas7bdatWriter implements AutoCloseable {
             while (offset < datasetVariables.totalVariables()) {
                 ColumnListSubheader nextSubheader = new ColumnListSubheader(datasetVariables, offset);
                 metadata.addSubheader(nextSubheader);
-                offset += nextSubheader.totalVariables;
+                offset += nextSubheader.totalVariablesInSubheader();
             }
         }
         for (Variable variable : variables) {

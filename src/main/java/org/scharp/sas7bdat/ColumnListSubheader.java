@@ -23,7 +23,7 @@ class ColumnListSubheader extends Subheader {
 
     private final static int OFFSET_OF_FIRST_COLUMN = 38;
 
-    final int totalVariables;
+    private final int totalVariables;
     private final int totalColumns;
 
     ColumnListSubheader(Sas7bdatUnix64bitVariables variables, int variablesOffset) {
@@ -46,6 +46,15 @@ class ColumnListSubheader extends Subheader {
         // Setting totalColumns to a number that is much larger than totalVariables
         // causes sas to crash when reading the sas7bdat.
         totalColumns = totalVariables + 0;
+    }
+
+    /**
+     * Gets the number of variables that fit into this subheader.
+     *
+     * @return The number of variables
+     */
+    int totalVariablesInSubheader() {
+        return totalVariables;
     }
 
     /**
