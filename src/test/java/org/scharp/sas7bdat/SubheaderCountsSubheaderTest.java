@@ -90,9 +90,11 @@ public class SubheaderCountsSubheaderTest {
 
         // Add two column text subheaders.
         metadata.addSubheader(new ColumnTextSubheader((short) 0, (short) 500));
+        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
         metadata.addSubheader(new ColumnTextSubheader((short) 1, (short) 500));
 
         // Add one column attributes subheader
+        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
         metadata.addSubheader(new ColumnAttributesSubheader(variables, 0, (short) 500));
 
         // Add three column name subheaders
@@ -103,8 +105,10 @@ public class SubheaderCountsSubheaderTest {
 
         // Add four column list subheaders
         metadata.addSubheader(new ColumnListSubheader(variables, 0));
+        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
         metadata.addSubheader(new ColumnListSubheader(variables, 0));
         metadata.addSubheader(new ColumnListSubheader(variables, 0));
+        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
         metadata.addSubheader(new ColumnListSubheader(variables, 0));
 
         final byte[] expectedSubheaderData = new byte[] {
@@ -129,31 +133,31 @@ public class SubheaderCountsSubheaderTest {
 
             // ColumnAttributeSubheader information (offset 120)
             -4, -1, -1, -1, -1, -1, -1, -1, // signature
-            1, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
-            3, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
-            1, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
-            3, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
+            3, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
+            1, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
+            3, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
+            1, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
 
             // ColumnTextSubheader information (offset 160)
             -3, -1, -1, -1, -1, -1, -1, -1, // signature
             1, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
             1, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
-            1, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
-            2, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
+            2, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
+            1, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
 
             // ColumnNameSubheader information (offset 200)
             -1, -1, -1, -1, -1, -1, -1, -1, // signature
-            1, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
-            4, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
-            1, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
-            6, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
+            3, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
+            2, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
+            3, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
+            4, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
 
             // ColumnListSubheader information (offset 240)
             -2, -1, -1, -1, -1, -1, -1, -1, // signature
-            1, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
-            7, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
-            1, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
-            10, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
+            3, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
+            5, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
+            5, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
+            1, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
 
             // unknown A information (offset 280)
             -5, -1, -1, -1, -1, -1, -1, -1, // signature

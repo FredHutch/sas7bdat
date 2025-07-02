@@ -151,37 +151,6 @@ public class ColumnTextTest {
         return totalNumberUuidsAdded - 1;
     }
 
-    /**
-     * A mock subheader of a fixed size.  This can be used to reserve space on a metadata page.
-     */
-    private static class FillerSubheader extends Subheader {
-
-        private final int size;
-
-        FillerSubheader(int size) {
-            this.size = size;
-        }
-
-        @Override
-        int size() {
-            return size;
-        }
-
-        @Override
-        void writeSubheader(byte[] page, int subheaderOffset) {
-        }
-
-        @Override
-        byte typeCode() {
-            return SUBHEADER_TYPE_A;
-        }
-
-        @Override
-        byte compressionCode() {
-            return COMPRESSION_UNCOMPRESSED;
-        }
-    }
-
     @Test
     void testEmptyColumnTextSubheader() {
         // The intent of this test case is to cause ColumnText to allocate a new ColumnTextSubheader when
