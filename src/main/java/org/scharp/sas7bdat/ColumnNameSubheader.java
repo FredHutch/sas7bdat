@@ -17,6 +17,11 @@ class ColumnNameSubheader extends Subheader {
      */
     private static final int MAX_VARIABLES_PER_SUBHEADER = 4089;
 
+    /**
+     * Number of bytes in each variable name entry.
+     */
+    private static final int SIZE_OF_ENTRY = 8;
+
     final List<Variable> variables;
     private final ColumnText columnText;
 
@@ -51,7 +56,7 @@ class ColumnNameSubheader extends Subheader {
 
     @Override
     int size() {
-        return variables.size() * 8 + 28;
+        return variables.size() * SIZE_OF_ENTRY + 28;
     }
 
     @Override
@@ -71,7 +76,7 @@ class ColumnNameSubheader extends Subheader {
             // padding
             write2(page, subheaderOffset + offsetWithinSubheader + 6, (short) 0);
 
-            offsetWithinSubheader += 8;
+            offsetWithinSubheader += SIZE_OF_ENTRY;
         }
 
         // There is some padding at the end.
