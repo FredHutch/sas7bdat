@@ -885,7 +885,7 @@ class TestRandomSas7Bdat {
         def trimTrailingBlanks = { String string -> string.replaceAll(~/ +$/, '') } // strip trailing blanks
 
         // Save the sas7bdat file for future reference.
-        def savedFilePrefix   = isFromRandomSas ? 'sas' : 'prototype'
+        def savedFilePrefix   = isFromRandomSas ? 'sas' : 'java'
         def savedFileBaseName = testCaseFile.fileName.toString().replaceAll(~/\.[^.]+/, '') // ../my-test.json -> my-test
         def savedFile = testCaseFile.resolveSibling("${savedFilePrefix}-${savedFileBaseName}.sas7bdat")
         Files.copy(sas7BdatPath, savedFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
