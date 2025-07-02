@@ -84,15 +84,20 @@ class SubheaderCountsSubheader extends Subheader {
         // This may be a performance hint for how large a buffer to allocate when reading
         // the data.  However, setting this to small or negative value doesn't prevent SAS
         // from reading the dataset, so its value may be ignored.
-        int maxTextBlockSize = 0;
+        int maxSubheaderPayloadSize = 0;
         for (Subheader subheader : metadata.subheaders) {
             if (subheader instanceof ColumnTextSubheader) {
-                maxTextBlockSize = Math.max(maxTextBlockSize, ((ColumnTextSubheader) subheader).sizeOfData());
+                maxSubheaderPayloadSize = Math.max(
+                    maxSubheaderPayloadSize,
+                    ((ColumnTextSubheader) subheader).sizeOfData());
+
             } else if (subheader instanceof ColumnAttributesSubheader) {
-                maxTextBlockSize = Math.max(maxTextBlockSize, ((ColumnAttributesSubheader) subheader).sizeOfData());
+                maxSubheaderPayloadSize = Math.max(
+                    maxSubheaderPayloadSize,
+                    ((ColumnAttributesSubheader) subheader).sizeOfData());
             }
         }
-        write8(page, subheaderOffset + 8, maxTextBlockSize);
+        write8(page, subheaderOffset + 8, maxSubheaderPayloadSize);
 
         final int magicNumber = variables.size() == 1 ? 3 : 4;
         //final int magicNumber = variables.size() - 1;
