@@ -362,34 +362,6 @@ public class Sas7bdatWriter implements AutoCloseable {
         }
     }
 
-    /**
-     * A zero-sized (truncated) subheader that is used to indicate there are no more subheaders on a page.
-     */
-    static class TerminalSubheader extends Subheader {
-
-        TerminalSubheader() {
-        }
-
-        @Override
-        int size() {
-            return 0;
-        }
-
-        @Override
-        void writeSubheader(byte[] page, int subheaderOffset) {
-        }
-
-        @Override
-        byte typeCode() {
-            return SUBHEADER_TYPE_A;
-        }
-
-        @Override
-        byte compressionCode() {
-            return COMPRESSION_TRUNCATED;
-        }
-    }
-
     /** A page in a sas7bdat dataset that would be generated with a 64-bit UNIX machine */
     static abstract class Sas7bdatUnix64bitPage {
         static final short PAGE_TYPE_META = 0x0000;

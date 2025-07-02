@@ -3,7 +3,6 @@ package org.scharp.sas7bdat;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadata;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadataPage;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitVariables;
-import org.scharp.sas7bdat.Sas7bdatWriter.TerminalSubheader;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
