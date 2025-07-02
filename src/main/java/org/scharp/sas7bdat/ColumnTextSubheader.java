@@ -10,7 +10,8 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
 import static org.scharp.sas7bdat.WriteUtil.writeUtf8;
 
 /**
- * A column text subheader is a sort of interned string pool for column data.
+ * A column text subheader holds all textual metadata that is associated with a dataset. This includes the dataset
+ * label, creator proc, column names, column labels, and column format names.
  */
 class ColumnTextSubheader extends Subheader {
 
