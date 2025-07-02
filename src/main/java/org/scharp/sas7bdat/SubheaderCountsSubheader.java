@@ -86,15 +86,11 @@ class SubheaderCountsSubheader extends Subheader {
         // from reading the dataset, so its value may be ignored.
         int maxSubheaderPayloadSize = 0;
         for (Subheader subheader : metadata.subheaders) {
-            if (subheader instanceof ColumnTextSubheader) {
-                maxSubheaderPayloadSize = Math.max(
-                    maxSubheaderPayloadSize,
-                    ((ColumnTextSubheader) subheader).sizeOfData());
+            if (subheader instanceof ColumnTextSubheader columnTextSubheader) {
+                maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnTextSubheader.sizeOfData());
 
-            } else if (subheader instanceof ColumnAttributesSubheader) {
-                maxSubheaderPayloadSize = Math.max(
-                    maxSubheaderPayloadSize,
-                    ((ColumnAttributesSubheader) subheader).sizeOfData());
+            } else if (subheader instanceof ColumnAttributesSubheader columnAttributesSubheader) {
+                maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnAttributesSubheader.sizeOfData());
             }
         }
         write8(page, subheaderOffset + 8, maxSubheaderPayloadSize);
