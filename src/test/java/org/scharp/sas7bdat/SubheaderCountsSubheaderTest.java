@@ -1,8 +1,8 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadata;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.List;
 
@@ -19,8 +19,8 @@ public class SubheaderCountsSubheaderTest {
         // Create a SubheaderCountsSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variableList);
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
 
         assertEquals(SUBHEADER_TYPE_A, subheaderCountsSubheader.typeCode());
@@ -31,8 +31,8 @@ public class SubheaderCountsSubheaderTest {
         // Create a SubheaderCountsSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variableList);
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, subheaderCountsSubheader.compressionCode());
@@ -79,8 +79,8 @@ public class SubheaderCountsSubheaderTest {
                 Format.UNSPECIFIED,
                 StrictnessMode.SAS_ANY));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variableList);
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
 
         // Add the subheaders that get counted to the metadata.
@@ -246,8 +246,8 @@ public class SubheaderCountsSubheaderTest {
                 new Format("$INPUT", 9, 6),
                 StrictnessMode.SAS_ANY));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variableList);
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
 
         final byte[] expectedSubheaderData = new byte[] {

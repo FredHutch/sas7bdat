@@ -1,8 +1,8 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadata;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,8 +21,8 @@ public class ColumnTextTest {
         // Create a ColumnText
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of());
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, pageSize, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of());
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, pageSize, variables);
         ColumnText columnText = new ColumnText(metadata);
 
         // Add a long string to the ColumnTextSubheader
@@ -133,8 +133,8 @@ public class ColumnTextTest {
     static int totalNumberUuidsToFillFirstColumnTextSubheader() {
         // Create a ColumnText
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of());
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of());
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
         ColumnText columnText = new ColumnText(metadata);
 
         // We want to determine how many strings need to be added before the last ColumnTextSubheader on
@@ -161,8 +161,8 @@ public class ColumnTextTest {
         // Create a ColumnText
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of());
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, pageSize, variables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of());
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, pageSize, variables);
 
         // Add a subheader to the page such that, when ColumnText adds the first subheader
         // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next

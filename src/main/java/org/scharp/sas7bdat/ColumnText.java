@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,12 +11,12 @@ import static org.scharp.sas7bdat.WriteUtil.write2;
 class ColumnText {
 
     private final Map<String, ColumnTextSubheader> textToSubheader;
-    private final Sas7bdatUnix64bitMetadata metadata;
+    private final Sas7bdatMetadata metadata;
 
     private short subheaderIndex;
     private ColumnTextSubheader currentSubheader;
 
-    ColumnText(Sas7bdatUnix64bitMetadata metadata) {
+    ColumnText(Sas7bdatMetadata metadata) {
         textToSubheader = new HashMap<>();
         this.metadata = metadata;
         subheaderIndex = 0;

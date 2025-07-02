@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
 
 import java.util.Collection;
 
@@ -16,9 +16,9 @@ class SubheaderCountsSubheader extends Subheader {
     private static final int PAGE_SIZE = 600;
 
     private final Collection<Variable> variables;
-    private final Sas7bdatUnix64bitMetadata metadata;
+    private final Sas7bdatMetadata metadata;
 
-    SubheaderCountsSubheader(Collection<Variable> variables, Sas7bdatUnix64bitMetadata metadata) {
+    SubheaderCountsSubheader(Collection<Variable> variables, Sas7bdatMetadata metadata) {
         this.variables = variables;
         this.metadata = metadata; // this is filled in later by the caller
     }

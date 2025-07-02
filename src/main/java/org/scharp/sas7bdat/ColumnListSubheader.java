@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write4;
@@ -31,7 +31,7 @@ class ColumnListSubheader extends Subheader {
     private final int totalVariables;
     private final int totalColumns;
 
-    ColumnListSubheader(Sas7bdatUnix64bitVariables variables, int variablesOffset) {
+    ColumnListSubheader(Sas7bdatVariables variables, int variablesOffset) {
         // Determine how many variables, starting at offset, this subheader will hold.
         assert variablesOffset < variables.totalVariables();
         int variablesRemaining = variables.totalVariables() - variablesOffset;

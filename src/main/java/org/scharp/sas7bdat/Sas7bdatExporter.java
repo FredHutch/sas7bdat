@@ -29,7 +29,7 @@ public class Sas7bdatExporter implements AutoCloseable {
     private static final int DATA_PAGE_HEADER_SIZE = 40;
 
     /** A collection of variables in a sas7bdat file that knows how variables are laid out */
-    static class Sas7bdatUnix64bitVariables {
+    static class Sas7bdatVariables {
 
         private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
 
@@ -37,7 +37,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         final int[] physicalOffsets;
         private final int rowLength;
 
-        Sas7bdatUnix64bitVariables(List<Variable> variablesList) {
+        Sas7bdatVariables(List<Variable> variablesList) {
             variables = new ArrayList<>(variablesList);
             physicalOffsets = new int[variables.size()];
 
@@ -138,7 +138,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         }
     }
 
-    private static class Sas7bdatUnix64bitHeader {
+    private static class Sas7bdatHeader {
 
         private static final byte ALIGNMENT_OFFSET_0 = 0x22;
         private static final byte ALIGNMENT_OFFSET_4 = 0x33;
@@ -199,7 +199,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         final LocalDateTime creationDate;
         final int totalPages;
 
-        Sas7bdatUnix64bitHeader(PageSequenceGenerator pageSequenceGenerator, int headerSize, int pageSize,
+        Sas7bdatHeader(PageSequenceGenerator pageSequenceGenerator, int headerSize, int pageSize,
             String datasetName, LocalDateTime creationDate, int totalPages) {
             this.headerSize = headerSize;
             this.pageSize = pageSize;
@@ -363,7 +363,7 @@ public class Sas7bdatExporter implements AutoCloseable {
     }
 
     /** A page in a sas7bdat dataset that would be generated with a 64-bit UNIX machine */
-    static abstract class Sas7bdatUnix64bitPage {
+    static abstract class Sas7bdatPage {
         static final short PAGE_TYPE_META = 0x0000;
         static final short PAGE_TYPE_DATA = 0x0100;
         static final short PAGE_TYPE_MIX = 0x0200;
@@ -377,7 +377,7 @@ public class Sas7bdatExporter implements AutoCloseable {
     }
 
     /** A "metadata" page contains a header and subheaders, and possibly data */
-    static class Sas7bdatUnix64bitMetadataPage extends Sas7bdatUnix64bitPage {
+    static class Sas7BdatMetadataPage extends Sas7bdatPage {
 
         // For 64-bit, these are each 24 bytes long.
         static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
@@ -386,7 +386,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         final long pageSequenceNumber;
         final List<Subheader> subheaders;
         final List<List<Object>> observations;
-        final Sas7bdatUnix64bitVariables variables;
+        final Sas7bdatVariables variables;
 
         short pageType;
         int offsetOfNextSubheaderIndexEntry; // also the index of the last observation written.
@@ -394,8 +394,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         boolean subheaderFinalized;
         int maxObservations;
 
-        Sas7bdatUnix64bitMetadataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
-            Sas7bdatUnix64bitVariables variables) {
+        Sas7BdatMetadataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize, Sas7bdatVariables variables) {
             this.pageSize = pageSize;
 
             pageSequenceGenerator.incrementPageSequence();
@@ -554,15 +553,15 @@ public class Sas7bdatExporter implements AutoCloseable {
 
     /** A "data" page is a page that contains both metadata and data */
     // TODO: combine with metadata page
-    static class Sas7bdatUnix64bitDataPage extends Sas7bdatUnix64bitPage {
+    static class Sas7BdatDataPage extends Sas7bdatPage {
 
         final int pageSize;
-        final Sas7bdatUnix64bitVariables variables;
+        final Sas7bdatVariables variables;
         final int maxPossibleObservations;
         final long pageSequenceNumber;
         final List<List<Object>> observations;
 
-        static int maxObservationsPerPage(int pageSize, Sas7bdatUnix64bitVariables variables) {
+        static int maxObservationsPerPage(int pageSize, Sas7bdatVariables variables) {
             // An observation takes up space equal to its size in bytes, plus one bit.
             // The extra bit is for an "is deleted" flag that is added at the end of the observations.
             final int totalBitsRemaining = 8 * (pageSize - DATA_PAGE_HEADER_SIZE);
@@ -570,8 +569,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             return totalBitsRemaining / totalBitsPerObservation;
         }
 
-        Sas7bdatUnix64bitDataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
-            Sas7bdatUnix64bitVariables variables) {
+        Sas7BdatDataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize, Sas7bdatVariables variables) {
             this.pageSize = pageSize;
             this.variables = variables;
 
@@ -638,19 +636,19 @@ public class Sas7bdatExporter implements AutoCloseable {
      * <li>the location of each subheader</li>
      * </ol>
      */
-    static class Sas7bdatUnix64bitMetadata {
+    static class Sas7bdatMetadata {
         final PageSequenceGenerator pageSequenceGenerator;
         final int pageSize;
-        final Sas7bdatUnix64bitVariables variables;
+        final Sas7bdatVariables variables;
         final ColumnText columnText;
         final List<Subheader> subheaders;
-        final List<Sas7bdatUnix64bitMetadataPage> completeMetadataPages;
+        final List<Sas7BdatMetadataPage> completeMetadataPages;
         final Map<Subheader, Integer> subheaderLocations;
 
-        Sas7bdatUnix64bitMetadataPage currentMetadataPage;
+        Sas7BdatMetadataPage currentMetadataPage;
 
-        Sas7bdatUnix64bitMetadata(PageSequenceGenerator pageSequenceGenerator, int pageSize,
-            Sas7bdatUnix64bitVariables variables) {
+        Sas7bdatMetadata(PageSequenceGenerator pageSequenceGenerator, int pageSize,
+            Sas7bdatVariables variables) {
             assert pageSize >= MINIMUM_PAGE_SIZE;
             this.pageSequenceGenerator = pageSequenceGenerator;
             this.pageSize = pageSize;
@@ -660,7 +658,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             subheaders = new ArrayList<>();
             completeMetadataPages = new ArrayList<>();
             subheaderLocations = new IdentityHashMap<>();
-            currentMetadataPage = new Sas7bdatUnix64bitMetadataPage(pageSequenceGenerator, pageSize, variables);
+            currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variables);
         }
 
         void finalizeSubheaders() {
@@ -683,7 +681,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
                 // Create a new page.
                 completeMetadataPages.add(currentMetadataPage);
-                currentMetadataPage = new Sas7bdatUnix64bitMetadataPage(pageSequenceGenerator, pageSize, variables);
+                currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variables);
 
                 // Add the subheader to the new page.
                 boolean success = currentMetadataPage.addSubheader(subheader);
@@ -697,14 +695,14 @@ public class Sas7bdatExporter implements AutoCloseable {
     }
 
     private final OutputStream outputStream;
-    private final Sas7bdatUnix64bitVariables datasetVariables;
+    private final Sas7bdatVariables datasetVariables;
     private final int totalObservationsInDataset;
     private final PageSequenceGenerator pageSequenceGenerator;
     private final int pageSize;
     private final byte[] pageBuffer;
 
     int totalObservationsWritten;
-    private Sas7bdatUnix64bitPage currentPage;
+    private Sas7bdatPage currentPage;
 
     int totalPagesAllocated; // TODO: only to assert at the end
     int totalPagesInDataset;
@@ -719,7 +717,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         assert datasetType.getBytes(StandardCharsets.UTF_8).length <= 8;
 
         outputStream = Files.newOutputStream(targetLocation);
-        datasetVariables = new Sas7bdatUnix64bitVariables(variables);
+        datasetVariables = new Sas7bdatVariables(variables);
         this.totalObservationsInDataset = totalObservationsInDataset;
         pageSequenceGenerator = new PageSequenceGenerator();
 
@@ -732,7 +730,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         pageSize = WriteUtil.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
         pageBuffer = new byte[pageSize];
 
-        Sas7bdatUnix64bitMetadata metadata = new Sas7bdatUnix64bitMetadata(pageSequenceGenerator, pageSize,
+        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, pageSize,
             datasetVariables);
 
         // Add the subheaders in the order in which they should be listed in the subheaders index.
@@ -850,7 +848,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
         // Calculate how many observations fit on a data page.
-        final int observationsPerDataPage = Sas7bdatUnix64bitDataPage.maxObservationsPerPage(pageSize,
+        final int observationsPerDataPage = Sas7BdatDataPage.maxObservationsPerPage(pageSize,
             datasetVariables);
         rowSizeSubheader.setMaxObservationsPerDataPage(observationsPerDataPage);
 
@@ -872,14 +870,14 @@ public class Sas7bdatExporter implements AutoCloseable {
         // Write the file header.
         {
             String datasetName = targetLocation.getFileName().toString().replace(".sas7bdat", "");
-            Sas7bdatUnix64bitHeader header = new Sas7bdatUnix64bitHeader(pageSequenceGenerator, pageSize, pageSize,
+            Sas7bdatHeader header = new Sas7bdatHeader(pageSequenceGenerator, pageSize, pageSize,
                 datasetName, createDate, totalPagesInDataset);
             header.write(pageBuffer);
             outputStream.write(pageBuffer);
         }
 
         // Write out all complete metadata pages (but not the last one, which can hold observations)
-        for (Sas7bdatUnix64bitMetadataPage currentMetadataPage : metadata.completeMetadataPages) {
+        for (Sas7BdatMetadataPage currentMetadataPage : metadata.completeMetadataPages) {
             writePage(currentMetadataPage);
         }
 
@@ -901,7 +899,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
             // Start a new page.
             totalPagesAllocated++;
-            currentPage = new Sas7bdatUnix64bitDataPage(pageSequenceGenerator, pageSize, datasetVariables);
+            currentPage = new Sas7BdatDataPage(pageSequenceGenerator, pageSize, datasetVariables);
 
             // Write the observation to the new page.
             boolean success = currentPage.addObservation(observation);
@@ -915,7 +913,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         return totalObservationsInDataset == totalObservationsWritten;
     }
 
-    void writePage(Sas7bdatUnix64bitPage page) throws IOException {
+    void writePage(Sas7bdatPage page) throws IOException {
         // Clear the data on the buffer so that parts of the previous page
         // don't get repeated in this page for the parts that aren't filled in.
         //

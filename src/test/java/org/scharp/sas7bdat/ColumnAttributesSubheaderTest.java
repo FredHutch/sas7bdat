@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ColumnAttributesSubheaderTest {
             Format.UNSPECIFIED,
             new Format("$", 10),
             StrictnessMode.SAS_ANY);
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of(variable));
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
         assertEquals(SUBHEADER_TYPE_B, subheader.typeCode());
@@ -41,7 +41,7 @@ public class ColumnAttributesSubheaderTest {
             Format.UNSPECIFIED,
             new Format("$", 10),
             StrictnessMode.SAS_ANY);
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of(variable));
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
         assertEquals(COMPRESSION_UNCOMPRESSED, subheader.compressionCode());
@@ -59,7 +59,7 @@ public class ColumnAttributesSubheaderTest {
             new Format("$OUTPUT", 8, 2),
             new Format("$INPUT", 9, 6),
             StrictnessMode.SAS_ANY);
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of(variable));
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
         assertEquals(1, subheader.totalVariablesInSubheader());
@@ -97,7 +97,7 @@ public class ColumnAttributesSubheaderTest {
 
     @Test
     void testSublistOfVariables() {
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(List.of(
+        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(
             new Variable(
                 "BEFORE",
                 1, // variable 1

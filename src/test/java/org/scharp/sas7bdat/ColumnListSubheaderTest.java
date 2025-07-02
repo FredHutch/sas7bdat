@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public class ColumnListSubheaderTest {
             Format.UNSPECIFIED,
             new Format("$", 10),
             StrictnessMode.SAS_ANY));
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
         assertEquals(SUBHEADER_TYPE_B, columnListSubheader.typeCode());
@@ -42,7 +42,7 @@ public class ColumnListSubheaderTest {
             Format.UNSPECIFIED,
             new Format("$", 10),
             StrictnessMode.SAS_ANY));
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
         assertEquals(COMPRESSION_UNCOMPRESSED, columnListSubheader.compressionCode());
@@ -60,7 +60,7 @@ public class ColumnListSubheaderTest {
                 new Format("$OUTPUT", 8, 2),
                 new Format("$INPUT", 9, 6),
                 StrictnessMode.SAS_ANY));
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
         assertEquals(1, columnListSubheader.totalVariablesInSubheader());
@@ -144,7 +144,7 @@ public class ColumnListSubheaderTest {
                 Format.UNSPECIFIED,
                 StrictnessMode.SAS_ANY));
 
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 1);
         assertEquals(3, columnListSubheader.totalVariablesInSubheader());
@@ -201,7 +201,7 @@ public class ColumnListSubheaderTest {
             variablesList.add(variable);
         }
 
-        Sas7bdatUnix64bitVariables variables = new Sas7bdatUnix64bitVariables(variablesList);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
         assertEquals(16345, columnListSubheader.totalVariablesInSubheader());
 

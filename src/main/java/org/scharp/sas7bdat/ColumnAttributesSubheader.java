@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +45,7 @@ class ColumnAttributesSubheader extends Subheader {
      *     The maximum size, in bytes, of the new subheader.  This may limit the number of variables in the new
      *     subheader.
      */
-    ColumnAttributesSubheader(Sas7bdatUnix64bitVariables variables, int offset, int maxLength) {
+    ColumnAttributesSubheader(Sas7bdatVariables variables, int offset, int maxLength) {
         // Determine how many variables, starting at offset, this subheader will hold.
         assert offset < variables.totalVariables() : "offset is larger than the number of variables";
         assert 0 < maxLength : "maxLength isn't positive: " + maxLength;

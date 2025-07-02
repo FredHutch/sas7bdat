@@ -1,8 +1,8 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadata;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadataPage;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitVariables;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7BdatMetadataPage;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -19,7 +19,7 @@ class RowSizeSubheader extends Subheader {
     private final String datasetType;
     private final String datasetLabel;
     private final int totalObservationsInDataset;
-    private final Sas7bdatUnix64bitMetadata metadata;
+    private final Sas7bdatMetadata metadata;
     private final long initialPageSequenceNumber;
 
     private final int rowSizeInBytes;
@@ -34,7 +34,7 @@ class RowSizeSubheader extends Subheader {
     private int totalPagesInDataset;
 
     RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
-        Sas7bdatUnix64bitVariables variables, int totalObservationsInDataset, Sas7bdatUnix64bitMetadata metadata) {
+        Sas7bdatVariables variables, int totalObservationsInDataset, Sas7bdatMetadata metadata) {
         this.datasetType = datasetType;
         this.datasetLabel = datasetLabel;
         this.totalObservationsInDataset = totalObservationsInDataset;
@@ -230,7 +230,7 @@ class RowSizeSubheader extends Subheader {
         // the second subheader added to the first page.
         writeRecordLocation(page, subheaderOffset + 512, 1, 2);
 
-        final Sas7bdatUnix64bitMetadataPage finalMetadataPage = metadata.currentMetadataPage;
+        final Sas7BdatMetadataPage finalMetadataPage = metadata.currentMetadataPage;
 
         // Unknown, but could be the location of the last Subheader block, in which case
         // the -1 doesn't include the truncated subheader.
