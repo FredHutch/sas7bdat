@@ -3,7 +3,7 @@ package org.scharp.sas7bdat;
 import org.junit.jupiter.api.Test;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadata;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitVariables;
-import org.scharp.sas7bdat.Sas7bdatWriter.TruncatedSubheader;
+import org.scharp.sas7bdat.Sas7bdatWriter.TerminalSubheader;
 
 import java.util.Arrays;
 import java.util.List;
@@ -192,7 +192,7 @@ public class ColumnTextTest {
         assertEquals(4, metadata.subheaders.size());
         assertInstanceOf(FillerSubheader.class, metadata.subheaders.get(0));
         assertInstanceOf(ColumnTextSubheader.class, metadata.subheaders.get(1)); // filled with UUIDs
-        assertInstanceOf(TruncatedSubheader.class, metadata.subheaders.get(2));
+        assertInstanceOf(TerminalSubheader.class, metadata.subheaders.get(2));
         assertInstanceOf(ColumnTextSubheader.class, metadata.subheaders.get(3)); // with only lastStringAdded
 
         // If everything is as expected, the new string should be the first string in the second ColumnTextSubheader.

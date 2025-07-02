@@ -363,11 +363,11 @@ public class Sas7bdatWriter implements AutoCloseable {
     }
 
     /**
-     * A zero-sized (truncated) subheader
+     * A zero-sized (truncated) subheader that is used to indicate there are no more subheaders on a page.
      */
-    static class TruncatedSubheader extends Subheader {
+    static class TerminalSubheader extends Subheader {
 
-        TruncatedSubheader() {
+        TerminalSubheader() {
         }
 
         @Override
@@ -441,7 +441,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
         boolean addSubheader(Subheader subheader) {
             assert !subheaderFinalized : "cannot add any more subheaders after they have been finalized";
-            assert !(subheader instanceof TruncatedSubheader) : "truncated subheaders should only be added by finalize";
+            assert !(subheader instanceof TerminalSubheader) : "terminal subheaders should only be added by finalize";
             assert observations.isEmpty() : "adding a subheader after data is written";
 
             // Determine if the page has enough space left to hold the subheader.
@@ -473,7 +473,7 @@ public class Sas7bdatWriter implements AutoCloseable {
 
             // Because we were careful to reserve space for this in addSubheader(), it should exist.
             assert SUBHEADER_OFFSET_SIZE_64BIT <= totalBytesRemaining() : "not enough space to write truncated subheader at end of section";
-            subheaders.add(new TruncatedSubheader());
+            subheaders.add(new TerminalSubheader());
             offsetOfNextSubheaderIndexEntry += SUBHEADER_OFFSET_SIZE_64BIT;
 
             subheaderFinalized = true;

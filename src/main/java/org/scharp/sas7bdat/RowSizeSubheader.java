@@ -3,7 +3,7 @@ package org.scharp.sas7bdat;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadata;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadataPage;
 import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitVariables;
-import org.scharp.sas7bdat.Sas7bdatWriter.TruncatedSubheader;
+import org.scharp.sas7bdat.Sas7bdatWriter.TerminalSubheader;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -298,7 +298,7 @@ class RowSizeSubheader extends Subheader {
             final Subheader subheader = entry.getKey();
             final int pageNumber = entry.getValue();
             if (pageNumber == firstPageWithColumnFormatSubheader) {
-                if (!(subheader instanceof ColumnFormatSubheader) && !(subheader instanceof TruncatedSubheader)) {
+                if (!(subheader instanceof ColumnFormatSubheader) && !(subheader instanceof TerminalSubheader)) {
                     blockOfFirstColumnFormatSubheader++;
                 }
             }
