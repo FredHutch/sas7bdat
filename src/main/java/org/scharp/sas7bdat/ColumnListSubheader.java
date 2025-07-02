@@ -19,6 +19,11 @@ class ColumnListSubheader extends Subheader {
      */
     private static final int MAX_COLUMNS_PER_SUBHEADER = 16345;
 
+    /**
+     * Number of bytes in each variable entry.
+     */
+    private static final int SIZE_OF_ENTRY = 2;
+
     private final static int FOOTER_PADDING = 12;
 
     private final static int OFFSET_OF_FIRST_COLUMN = 38;
@@ -63,12 +68,12 @@ class ColumnListSubheader extends Subheader {
      * @return The number of bytes of data in this subheader
      */
     private int sizeOfData() {
-        return totalColumns * 2 + OFFSET_OF_FIRST_COLUMN - SIGNATURE_SIZE;
+        return totalColumns * SIZE_OF_ENTRY + OFFSET_OF_FIRST_COLUMN - SIGNATURE_SIZE;
     }
 
     @Override
     int size() {
-        return totalColumns * 2 + OFFSET_OF_FIRST_COLUMN + FOOTER_PADDING;
+        return totalColumns * SIZE_OF_ENTRY + OFFSET_OF_FIRST_COLUMN + FOOTER_PADDING;
     }
 
     @Override
@@ -113,7 +118,7 @@ class ColumnListSubheader extends Subheader {
             }
             write2(page, subheaderOffset + offsetFromSubheaderStart, value);
 
-            offsetFromSubheaderStart += 2;
+            offsetFromSubheaderStart += SIZE_OF_ENTRY;
         }
 
         // There is some padding at the end.
