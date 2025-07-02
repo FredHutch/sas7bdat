@@ -63,6 +63,15 @@ class ColumnNameSubheader extends Subheader {
         return variables.size();
     }
 
+    /**
+     * The number of bytes of data in this subheader without signature or FOOTER_PADDING.
+     *
+     * @return The number of bytes of data in this subheader
+     */
+    private int sizeOfData() {
+        return variables.size() * SIZE_OF_ENTRY + 8;
+    }
+
     @Override
     int size() {
         return variables.size() * SIZE_OF_ENTRY + 28;
@@ -72,7 +81,7 @@ class ColumnNameSubheader extends Subheader {
     void writeSubheader(byte[] page, int subheaderOffset) {
         write8(page, subheaderOffset, SIGNATURE_COLUMN_NAME); // signature
 
-        write8(page, subheaderOffset + 8, (short) (size() - 20)); // remaining bytes in subheader
+        write8(page, subheaderOffset + 8, (short) sizeOfData()); // remaining bytes in subheader
 
         int offsetWithinSubheader = 16;
         for (Variable variable : variables) {
