@@ -17,11 +17,6 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
  */
 class RowSizeSubheader extends Subheader {
 
-    /**
-     * The number of bytes in a RowPageSubheader
-     */
-    private static final int PAGE_SIZE = 808;
-
     private final String datasetType;
     private final String datasetLabel;
     private final int totalObservationsInDataset;
@@ -96,7 +91,7 @@ class RowSizeSubheader extends Subheader {
 
     @Override
     int size() {
-        return PAGE_SIZE;
+        return 808;
     }
 
     @Override
