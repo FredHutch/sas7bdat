@@ -20,7 +20,7 @@ import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 import static org.scharp.sas7bdat.WriteUtil.writeAscii;
 
-public class Sas7bdatWriter implements AutoCloseable {
+public class Sas7bdatExporter implements AutoCloseable {
 
     // This can be anything, although it might need to be aligned.
     // sas chooses 0x10000 for small datasets and increments by 0x400 when more space is needed.
@@ -713,7 +713,7 @@ public class Sas7bdatWriter implements AutoCloseable {
         return (dividend + divisor - 1) / divisor;
     }
 
-    public Sas7bdatWriter(Path targetLocation, LocalDateTime createDate, String datasetType,
+    public Sas7bdatExporter(Path targetLocation, LocalDateTime createDate, String datasetType,
         String datasetLabel, List<Variable> variables, int totalObservationsInDataset) throws IOException {
 
         assert datasetType.getBytes(StandardCharsets.UTF_8).length <= 8;
@@ -954,7 +954,8 @@ public class Sas7bdatWriter implements AutoCloseable {
     public static void writeDataset(Path targetLocation, LocalDateTime createDate, String datasetType,
         String datasetLabel, List<Variable> variables, List<List<Object>> observations) throws IOException {
 
-        try (Sas7bdatWriter datasetWriter = new Sas7bdatWriter(targetLocation, createDate, datasetType, datasetLabel,
+        try (Sas7bdatExporter datasetWriter = new Sas7bdatExporter(targetLocation, createDate, datasetType,
+            datasetLabel,
             variables, observations.size())) {
 
             // Add observations

@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatWriter.Sas7bdatUnix64bitMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatUnix64bitMetadata;
 
 import java.util.Collection;
 

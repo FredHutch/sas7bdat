@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Unit test for {@link Sas7bdatWriter} */
+/** Unit test for {@link Sas7bdatExporter} */
 public class Sas7bdatTest {
 
     @Test
@@ -91,7 +91,7 @@ public class Sas7bdatTest {
         Path targetLocation = Path.of("sample.sas7bdat");
         try {
             // Write a data set.
-            Sas7bdatWriter.writeDataset(targetLocation, createDate, "my type", datasetLabel, variables, observations);
+            Sas7bdatExporter.writeDataset(targetLocation, createDate, "my type", datasetLabel, variables, observations);
 
             // Read the dataset with parso to confirm that it was written correctly.
             try (InputStream inputStream = Files.newInputStream(targetLocation)) {
