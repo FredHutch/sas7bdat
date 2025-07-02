@@ -20,24 +20,24 @@ class RowSizeSubheader extends Subheader {
     /**
      * The number of bytes in a RowPageSubheader
      */
-    static final int PAGE_SIZE = 808;
+    private static final int PAGE_SIZE = 808;
 
-    final String datasetType;
-    final String datasetLabel;
-    final int totalObservationsInDataset;
-    final Sas7bdatUnix64bitMetadata metadata;
-    final long initialPageSequenceNumber;
+    private final String datasetType;
+    private final String datasetLabel;
+    private final int totalObservationsInDataset;
+    private final Sas7bdatUnix64bitMetadata metadata;
+    private final long initialPageSequenceNumber;
 
-    final int rowSizeInBytes;
-    final int totalVariableNameLength;
-    final int maxVariableNameLength;
-    final int maxVariableLabelLength;
+    private final int rowSizeInBytes;
+    private final int totalVariableNameLength;
+    private final int maxVariableNameLength;
+    private final int maxVariableLabelLength;
 
-    int totalPossibleObservationsOnMixedPage;
-    int totalObservationsOnMixedPage;
-    int maxObservationsPerDataPage;
-    int totalMetadataPages;
-    int totalPagesInDataset;
+    private int totalPossibleObservationsOnMixedPage;
+    private int totalObservationsOnMixedPage;
+    private int maxObservationsPerDataPage;
+    private int totalMetadataPages;
+    private int totalPagesInDataset;
 
     RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
         Sas7bdatUnix64bitVariables variables, int totalObservationsInDataset, Sas7bdatUnix64bitMetadata metadata) {
