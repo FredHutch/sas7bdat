@@ -149,7 +149,6 @@ public class ColumnAttributesSubheaderTest {
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 1, maxSizeForThreeVariables);
         assertEquals(3, subheader.totalVariablesInSubheader());
 
-        // Write the contents of the subheader to a byte array.
         final byte[] expectedSubheaderData = new byte[] {
             -4, -1, -1, -1, -1, -1, -1, -1,  // signature
             56, 0, 0, 0, 0, 0, 0, 0, // size of data
