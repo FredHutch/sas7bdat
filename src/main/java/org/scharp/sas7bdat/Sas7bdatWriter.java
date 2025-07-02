@@ -364,7 +364,7 @@ public class Sas7bdatWriter implements AutoCloseable {
     }
 
     /**
-     * A subheader that contains some additional information about each subheader on the page.
+     * A subheader that contains some additional information about the repeatable subheaders.
      */
     static class SubheaderCountsSubheader extends Subheader {
         /**
