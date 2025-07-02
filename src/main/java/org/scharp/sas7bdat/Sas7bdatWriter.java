@@ -363,44 +363,6 @@ public class Sas7bdatWriter implements AutoCloseable {
     }
 
     /**
-     * A subheader that contains information about columns sizes.
-     */
-    static class ColumnSizeSubheader extends Subheader {
-        /**
-         * The number of bytes in a ColumnSizeSubheader
-         */
-        static final int PAGE_SIZE = 24;
-
-        int totalVariables;
-
-        ColumnSizeSubheader(List<Variable> variables) {
-            totalVariables = variables.size();
-        }
-
-        @Override
-        int size() {
-            return PAGE_SIZE;
-        }
-
-        @Override
-        void writeSubheader(byte[] page, int subheaderOffset) {
-            write8(page, subheaderOffset, SIGNATURE_COLUMN_SIZE); // signature
-            write8(page, subheaderOffset + 8, totalVariables); // number of columns
-            write8(page, subheaderOffset + 16, 0x00); // unknown, maybe padding
-        }
-
-        @Override
-        byte typeCode() {
-            return SUBHEADER_TYPE_A;
-        }
-
-        @Override
-        byte compressionCode() {
-            return COMPRESSION_UNCOMPRESSED;
-        }
-    }
-
-    /**
      * A subheader that contains information about row sizes.
      */
     static class RowSizeSubheader extends Subheader {
