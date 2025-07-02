@@ -20,6 +20,20 @@ class ColumnNameSubheader extends Subheader {
     final List<Variable> variables;
     private final ColumnText columnText;
 
+    /**
+     * Creates a column name subheader, which is a subheader of most variable names.
+     * <p>
+     * Most datasets have only one column name subheader.  However, with more than 4089 variables, need more than one.
+     * </p>
+     *
+     * @param variables
+     *     A list of variables to put into the column name subheader (as many as will fit).
+     * @param variablesOffset
+     *     The offset the {@code variables} list to start.  For the first column text subheader, this should be
+     *     {@code 0}.  Subsequent column text subheaders should continue where the previous one left off.
+     * @param columnText
+     *     The column text that holds the name of all variables in the variables list.
+     */
     ColumnNameSubheader(List<Variable> variables, int variablesOffset, ColumnText columnText) {
         // Determine how many variables, starting at offset, this subheader will hold.
         assert variablesOffset < variables.size();
