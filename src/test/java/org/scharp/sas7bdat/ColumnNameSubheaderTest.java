@@ -78,6 +78,7 @@ public class ColumnNameSubheaderTest {
         ColumnText columnText = newColumnText(variables);
 
         ColumnNameSubheader columnNameSubheader = new ColumnNameSubheader(variables, 0, columnText);
+        assertEquals(1, columnNameSubheader.totalVariablesInSubheader());
 
         final byte[] expectedSubheaderData = new byte[] {
             -1, -1, -1, -1, -1, -1, -1, -1,  // signature
@@ -150,6 +151,7 @@ public class ColumnNameSubheaderTest {
         ColumnText columnText = newColumnText(variables);
 
         ColumnNameSubheader columnNameSubheader = new ColumnNameSubheader(variables, 1, columnText);
+        assertEquals(3, columnNameSubheader.totalVariablesInSubheader());
 
         // Write the contents of the subheader to a byte array.
         final byte[] expectedSubheaderData = new byte[] {
@@ -205,6 +207,7 @@ public class ColumnNameSubheaderTest {
 
         ColumnText columnText = newColumnText(variables);
         ColumnNameSubheader columnNameSubheader = new ColumnNameSubheader(variables, 0, columnText);
+        assertEquals(4089, columnNameSubheader.totalVariablesInSubheader());
 
         int size = columnNameSubheader.size();
         assertEquals(32740, columnNameSubheader.size());

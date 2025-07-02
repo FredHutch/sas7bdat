@@ -22,7 +22,7 @@ class ColumnNameSubheader extends Subheader {
      */
     private static final int SIZE_OF_ENTRY = 8;
 
-    final List<Variable> variables;
+    private final List<Variable> variables;
     private final ColumnText columnText;
 
     /**
@@ -52,6 +52,15 @@ class ColumnNameSubheader extends Subheader {
         this.columnText = columnText;
 
         assert size() <= Short.MAX_VALUE : "Too many variables in ColumnNameSubheader";
+    }
+
+    /**
+     * Gets the number of variables that fit into this subheader.
+     *
+     * @return The number of variables
+     */
+    int totalVariablesInSubheader() {
+        return variables.size();
     }
 
     @Override
