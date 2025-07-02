@@ -144,7 +144,7 @@ public class ColumnAttributesSubheaderTest {
                 Format.UNSPECIFIED,
                 StrictnessMode.SAS_ANY)));
 
-        // MIN_SIZE is for a subheader with variables.  We add enough for 3 more (16*3) and subtract 1.
+        // MIN_SIZE is for a subheader with one variable.  We add enough for 3 more (16*3) and subtract 1.
         short maxSizeForThreeVariables = ColumnAttributesSubheader.MIN_SIZE + 16 * 3 - 1;
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 1, maxSizeForThreeVariables);
         assertEquals(3, subheader.totalVariablesInSubheader());
