@@ -8,10 +8,6 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
  * A subheader that contains information about columns sizes.
  */
 class ColumnSizeSubheader extends Subheader {
-    /**
-     * The number of bytes in a ColumnSizeSubheader
-     */
-    private static final int PAGE_SIZE = 24;
 
     private final int totalVariables;
 
@@ -21,7 +17,7 @@ class ColumnSizeSubheader extends Subheader {
 
     @Override
     int size() {
-        return PAGE_SIZE;
+        return 24;
     }
 
     @Override
