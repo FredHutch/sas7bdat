@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Unit test for {@link Sas7bdatWriter} */
 public class Sas7bdatTest {
 
     @Test
