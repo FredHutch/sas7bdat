@@ -1,0 +1,39 @@
+{
+    "testDescription" : "All labels and formats are the same string to test string reuse",
+
+    "label": "$ASCII",
+    "type": "$ASCII",
+    "creationDate": "2020-01-03T20:12:31",
+    "variables": [
+        {
+            "name": "V1",
+            "number": 1,
+            "type": "CHARACTER",
+            "label": "$ASCII",
+            "length": 10,
+            "outputFormat": { "name": "$ASCII", "width": 10, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "$ASCII", "width": 10, "numberOfDigits": 0 }
+        },
+        {
+            "name": "V2",
+            "number": 2,
+            "type": "CHARACTER",
+            "label": "$ASCII",
+            "length": 10,
+            "outputFormat": { "name": "$ASCII", "width": 10, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "$ASCII", "width": 10, "numberOfDigits": 0 }
+        },
+        {
+            "name": "V3",
+            "number": 3,
+            "type": "CHARACTER",
+            "label": "$ASCII",
+            "length": 10,
+            "outputFormat": { "name": "$ASCII", "width": 10, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "$ASCII", "width": 10, "numberOfDigits": 0 }
+        }
+    ],
+    "observations": [
+        ["value 1", "value 2", "value 3"]
+    ]
+}

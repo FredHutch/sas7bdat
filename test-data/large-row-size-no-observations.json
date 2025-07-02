@@ -1,0 +1,95 @@
+{
+    "testDescription" : "An observation row size that is larger than the default page with no observations",
+
+    "label": "DATASET",
+    "type": "DATA",
+    "creationDate": "2020-01-03T20:12:31",
+    "variables": [
+        {
+            "name": "V1",
+            "number": 1,
+            "type": "CHARACTER",
+            "label": "",
+            "length": 32000,
+            "outputFormat": {
+                "name": "",
+                "width": 0,
+                "numberOfDigits": 0
+            },
+            "inputFormat": {
+                "name": "",
+                "width": 1,
+                "numberOfDigits": 0
+            }
+        },
+        {
+            "name": "V2",
+            "number": 2,
+            "type": "CHARACTER",
+            "label": "",
+            "length": 32000,
+            "outputFormat": {
+                "name": "",
+                "width": 0,
+                "numberOfDigits": 0
+            },
+            "inputFormat": {
+                "name": "",
+                "width": 1,
+                "numberOfDigits": 0
+            }
+        },
+        {
+            "name": "V3",
+            "number": 3,
+            "type": "CHARACTER",
+            "label": "",
+            "length": 32000,
+            "outputFormat": {
+                "name": "",
+                "width": 0,
+                "numberOfDigits": 0
+            },
+            "inputFormat": {
+                "name": "",
+                "width": 1,
+                "numberOfDigits": 0
+            }
+        },
+        {
+            "name": "V4",
+            "number": 4,
+            "type": "CHARACTER",
+            "label": "",
+            "length": 32000,
+            "outputFormat": {
+                "name": "",
+                "width": 0,
+                "numberOfDigits": 0
+            },
+            "inputFormat": {
+                "name": "",
+                "width": 1,
+                "numberOfDigits": 0
+            }
+        },
+        {
+            "name": "V5",
+            "number": 5,
+            "type": "CHARACTER",
+            "label": "",
+            "length": 32000,
+            "outputFormat": {
+                "name": "",
+                "width": 0,
+                "numberOfDigits": 0
+            },
+            "inputFormat": {
+                "name": "",
+                "width": 1,
+                "numberOfDigits": 0
+            }
+        }
+    ],
+    "observations": []
+}
