@@ -94,8 +94,9 @@ public class Sas7bdatMetadata {
          * Sets the SAS7BDAT's dataset type.
          *
          * @param variables
-         *     A list of variables.  This list is copied, so subsequent changes to the list do not impact this builder
-         *     or the resulting {@code Sas7bdatMetadata}.
+         *     A list of variables given in the order in which they should appear in the SAS7BDAT dataset. This list is
+         *     copied, so subsequent changes to the list do not impact this builder or the resulting
+         *     {@code Sas7bdatMetadata}.
          *
          * @return this builder
          *
@@ -117,7 +118,6 @@ public class Sas7bdatMetadata {
                 if (variable == null) {
                     throw new NullPointerException("variables cannot contain a null entry");
                 }
-                // TODO: check that the variables are sequential...or maybe remove the sequence.
                 newList.add(variable);
             }
 
