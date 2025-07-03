@@ -104,7 +104,7 @@ class TestRandomSas7Bdat {
                 return name.toUpperCase().replaceAll(~/ +$/, '')
             }
 
-            def randomVariable = { Set<String> usedNames, int variableNumber ->
+            def randomVariable = { Set<String> usedNames ->
 
                 // Because all variable names within a dataset must be unique, we keep
                 // retrying until we generate a name that is not in use.
@@ -150,14 +150,7 @@ class TestRandomSas7Bdat {
                     inputFormat = FormatConstructor.newInstance(inputFormatName, inputFormatWidth, inputFormatNumberOfDigitsRightOfDecimalPoint)
                 }
 
-                return VariableConstructor.newInstance(
-                    name,
-                    variableNumber,
-                    type,
-                    length,
-                    label,
-                    outputFormat,
-                    inputFormat)
+                return VariableConstructor.newInstance(name, type, length, label, outputFormat, inputFormat)
             }
 
             def datasetLabel = randomStringGenerator.nextRandomString(256)
@@ -184,7 +177,7 @@ class TestRandomSas7Bdat {
             def variables = []
             for (int i = 1; i <= totalVariables; i++) {
                 // Add a new, randomly-generated variable
-                def newVariable = randomVariable(variableNames, i)
+                def newVariable = randomVariable(variableNames)
                 variables << newVariable
 
                 // Track the new variable's name so that we don't create two variables with the same name.
@@ -244,7 +237,6 @@ class TestRandomSas7Bdat {
                 variables.each { variable ->
                     generator.writeStartObject() // start of variable object
                     generator.writeStringField('name',   variable.name())
-                    generator.writeNumberField('number', variable.number())
                     generator.writeStringField('type',   variable.type().toString())
                     generator.writeStringField('label',  variable.label())
                     generator.writeNumberField('length', variable.length())
@@ -386,9 +378,6 @@ class TestRandomSas7Bdat {
 
                     checkFieldName(parser, "name")
                     def name = parser.getText()
-
-                    checkFieldName(parser, "number")
-                    def number = parser.getIntValue()
 
                     checkFieldName(parser, "type")
                     def type = parser.getText()
