@@ -48,32 +48,28 @@ public class SubheaderCountsSubheaderTest {
                 8,
                 "A label",
                 new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6),
-                StrictnessMode.SAS_ANY),
+                new Format("$INPUT", 9, 6)),
             new Variable(
                 "TEXT1",
                 VariableType.CHARACTER,
                 256,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "LONGTEXT2", //
                 VariableType.CHARACTER,
                 101,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "NUMBER 1", //
                 VariableType.NUMERIC,
                 8,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY));
+                Format.UNSPECIFIED));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
@@ -238,8 +234,7 @@ public class SubheaderCountsSubheaderTest {
                 8,
                 "A label",
                 new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6),
-                StrictnessMode.SAS_ANY));
+                new Format("$INPUT", 9, 6)));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);

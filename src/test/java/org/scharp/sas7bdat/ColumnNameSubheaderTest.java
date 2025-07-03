@@ -37,8 +37,7 @@ public class ColumnNameSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY));
+            new Format("$", 10)));
         ColumnText columnText = newColumnText(variables);
 
         ColumnNameSubheader columnNameSubheader = new ColumnNameSubheader(variables, 0, columnText);
@@ -53,8 +52,7 @@ public class ColumnNameSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY));
+            new Format("$", 10)));
         ColumnText columnText = newColumnText(variables);
 
         ColumnNameSubheader columnNameSubheader = new ColumnNameSubheader(variables, 0, columnText);
@@ -69,8 +67,7 @@ public class ColumnNameSubheaderTest {
             8,
             "A label",
             new Format("$OUTPUT", 8, 2),
-            new Format("$INPUT", 9, 6),
-            StrictnessMode.SAS_ANY));
+            new Format("$INPUT", 9, 6)));
 
         ColumnText columnText = newColumnText(variables);
 
@@ -114,32 +111,28 @@ public class ColumnNameSubheaderTest {
                 8,
                 "A label",
                 new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6),
-                StrictnessMode.SAS_ANY),
+                new Format("$INPUT", 9, 6)),
             new Variable(
                 "TEXT1",
                 VariableType.CHARACTER,
                 256,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "LONGTEXT2", //
                 VariableType.CHARACTER,
                 101,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "NUMBER 1", //
                 VariableType.NUMERIC,
                 8,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY));
+                Format.UNSPECIFIED));
 
         ColumnText columnText = newColumnText(variables);
 
@@ -192,8 +185,7 @@ public class ColumnNameSubheaderTest {
                 8,
                 "label is ignored",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY);
+                Format.UNSPECIFIED);
             variables.add(variable);
         }
 

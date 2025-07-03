@@ -29,8 +29,7 @@ public class Sas7bdatTest {
                         20,
                         "Some simple text",
                         Format.UNSPECIFIED,
-                        new Format("$", 10),
-                        StrictnessMode.SAS_ANY),
+                        new Format("$", 10)),
 
                     new Variable(
                         "AVERYLONG_0123456789_123456789VR",
@@ -38,8 +37,7 @@ public class Sas7bdatTest {
                         20,
                         "A second text variable with a long name",
                         new Format("$CHAR", 200),
-                        Format.UNSPECIFIED,
-                        StrictnessMode.SAS_ANY),
+                        Format.UNSPECIFIED),
 
                     new Variable(
                         "TEXT3",
@@ -47,8 +45,7 @@ public class Sas7bdatTest {
                         5,
                         "", // no label
                         new Format("$UPCASE", 10),
-                        Format.UNSPECIFIED,
-                        StrictnessMode.SAS_ANY),
+                        Format.UNSPECIFIED),
 
                     new Variable(
                         "Letter",
@@ -56,8 +53,7 @@ public class Sas7bdatTest {
                         1, // len
                         "A single letter", // label
                         new Format("$ASCII", 1),
-                        Format.UNSPECIFIED,
-                        StrictnessMode.SAS_ANY),
+                        Format.UNSPECIFIED),
 
                     new Variable(
                         "MY_NUMBER",
@@ -65,8 +61,7 @@ public class Sas7bdatTest {
                         8, // len
                         "A number", // label
                         Format.UNSPECIFIED,
-                        new Format("d", 10),
-                        StrictnessMode.SAS_ANY))).build();
+                        new Format("d", 10)))).build();
 
         List<List<Object>> observations = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {

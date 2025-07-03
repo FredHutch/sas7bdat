@@ -21,8 +21,7 @@ public class ColumnSizeSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY);
+            new Format("$", 10));
 
         ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(List.of(variable));
         assertEquals(SUBHEADER_TYPE_A, columnSizeSubheader.typeCode());
@@ -36,8 +35,7 @@ public class ColumnSizeSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY);
+            new Format("$", 10));
 
         ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(List.of(variable));
         assertEquals(COMPRESSION_UNCOMPRESSED, columnSizeSubheader.compressionCode());
@@ -80,8 +78,7 @@ public class ColumnSizeSubheaderTest {
                 20,
                 "A label",
                 Format.UNSPECIFIED,
-                new Format("$", 10),
-                StrictnessMode.SAS_ANY),
+                new Format("$", 10)),
 
             new Variable(
                 "VAR2",
@@ -89,8 +86,7 @@ public class ColumnSizeSubheaderTest {
                 8,
                 "A number",
                 Format.UNSPECIFIED,
-                new Format("", 10),
-                StrictnessMode.SAS_ANY),
+                new Format("", 10)),
 
             new Variable(
                 "VAR3",
@@ -98,8 +94,7 @@ public class ColumnSizeSubheaderTest {
                 20,
                 "A label",
                 Format.UNSPECIFIED,
-                new Format("$", 10),
-                StrictnessMode.SAS_ANY));
+                new Format("$", 10)));
 
         ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(variables);
 
@@ -129,8 +124,7 @@ public class ColumnSizeSubheaderTest {
                 8,
                 "label is ignored",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY);
+                Format.UNSPECIFIED);
             variables.add(variable);
         }
 

@@ -36,8 +36,7 @@ public class ColumnFormatSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY);
+            new Format("$", 10));
         ColumnText columnText = newColumnText(variable);
 
         ColumnFormatSubheader columnFormatSubheader = new ColumnFormatSubheader(variable, columnText);
@@ -52,8 +51,7 @@ public class ColumnFormatSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY);
+            new Format("$", 10));
         ColumnText columnText = newColumnText(variable);
 
         ColumnFormatSubheader columnFormatSubheader = new ColumnFormatSubheader(variable, columnText);
@@ -70,8 +68,7 @@ public class ColumnFormatSubheaderTest {
             8,
             "A label",
             new Format("$OUTPUT", 8, 2),
-            new Format("$INPUT", 9, 6),
-            StrictnessMode.SAS_ANY);
+            new Format("$INPUT", 9, 6));
 
         ColumnText columnText = newColumnText(variable);
 
@@ -131,8 +128,7 @@ public class ColumnFormatSubheaderTest {
             20,
             "", // no label
             Format.UNSPECIFIED, // no output format name, width, or digits
-            Format.UNSPECIFIED, // no input format name, width, or digits
-            StrictnessMode.SAS_ANY);
+            Format.UNSPECIFIED); // no input format name, width, or digits
 
         ColumnText columnText = newColumnText(variable);
 

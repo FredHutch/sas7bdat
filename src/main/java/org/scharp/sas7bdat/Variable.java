@@ -44,18 +44,16 @@ public final class Variable {
      * @param inputFormat
      *     The format to use when reading this variable's value in. This cannot be null, but it can be
      *     {@code Format.UNSPECIFIED}. SAS refers to this as "INFORMAT".
-     * @param strictness
-     *     How strictly the arguments should be checked for correctness.
      *
      * @throws NullPointerException
      *     if {@code variableName}, {@code type}, {@code label}, {@code outputFormat},
      *     {@code outputFormatJustification}, or {@code inputFormat} are {@code null}.
      * @throws IllegalArgumentException
      *     if {@code variableName} is not a well-formed SAS variable name or is too long; if {@code variableLength} is
-     *     out of range for {@code type}; if {@code label} is too long or doesn't adhere to the {@code strictnessMode}.
+     *     out of range for {@code type}; if {@code label} is too long.
      */
     public Variable(String variableName, VariableType type, int variableLength, String label, Format outputFormat,
-        Format inputFormat, StrictnessMode strictness) {
+        Format inputFormat) {
 
         ArgumentUtil.checkNotNull(type, "type");
         if (type == VariableType.NUMERIC) {
@@ -76,42 +74,15 @@ public final class Variable {
         if (variableName.isEmpty()) {
             throw new IllegalArgumentException("variable names cannot be blank");
         }
-        if (strictness == StrictnessMode.SAS_ANY) {
-            if (32 < variableName.getBytes(StandardCharsets.UTF_8).length) {
-                throw new IllegalArgumentException("variable names must not be longer than 32 bytes");
-            }
-        } else {
-            if (!variableName.matches("[A-Za-z_][\\w_]{0,7}")) {
-                // The variable name is not well-formed.  Throw the appropriate exception.
-                ArgumentUtil.checkMaximumLength(variableName, 8, "variable names");
-                ArgumentUtil.checkIsAscii(variableName, "variable names");
-                throw new IllegalArgumentException("variable name is illegal for SAS");
-            }
+        if (32 < variableName.getBytes(StandardCharsets.UTF_8).length) {
+            throw new IllegalArgumentException("variable names must not be longer than 32 bytes");
         }
 
         ArgumentUtil.checkNotNull(label, "label");
-        if (strictness == StrictnessMode.SAS_ANY) {
-            ArgumentUtil.checkMaximumLength(label, 256, "variable labels");
-        } else {
-            ArgumentUtil.checkMaximumLength(label, 40, "variable labels");
-        }
+        ArgumentUtil.checkMaximumLength(label, 256, "variable labels");
 
         ArgumentUtil.checkNotNull(outputFormat, "outputFormat");
         ArgumentUtil.checkNotNull(inputFormat, "inputFormat");
-
-        if (strictness == StrictnessMode.FDA_SUBMISSION) {
-            ArgumentUtil.checkIsAscii(label, "variable labels");
-
-            // SAS's XPORT engine truncates character variables to 200 when exporting.
-            // Interestingly, if a V5 XPORT exists with a variable whose length is longer than 200,
-            // a recent version of SAS's XPORT engine will import it without truncation.
-            // However, since SAS will not generate such an XPORT file, it's possible that
-            // other systems reading such a file would consider it malformed.
-            // So in the "FDA" strictness mode, we limit variables to 200.
-            if (200 < variableLength) {
-                throw new IllegalArgumentException("character variables must not have a length greater than 200");
-            }
-        }
 
         // TODO: format legal for type?
 
@@ -121,41 +92,6 @@ public final class Variable {
         this.label = label;
         this.outputFormat = outputFormat;
         this.inputFormat = inputFormat;
-    }
-
-    /**
-     * Constructs a variable object.
-     *
-     * @param variableName
-     *     The name of the variable. This cannot be {@code null}. To fit into an XPORT, this should be 8 characters or
-     *     fewer and only contain characters from the ASCII character set. SAS variable names must begin with a letter
-     *     or underscore and may only contain letters, underscores, and digits.
-     * @param type
-     *     The variable's type (character or numeric). This cannot be {@code null}.
-     * @param variableLength
-     *     The maximum number of bytes that any value can have. For numeric data, this must be in the range from 2 to 8.
-     *     For character data, this must be in the range from 1 to 200. All of this variable's value are stored with
-     *     this length. This is different from how many characters are displayed when formatting the values.
-     * @param label
-     *     The variable's label. This cannot be {@code null}. To fit into an XPORT, this should be 40 characters are
-     *     fewer and only contain characters from the ASCII character set.
-     * @param outputFormat
-     *     The format to use when displaying this variable's values. This cannot be {@code null}, but it can be
-     *     {@code Format.UNSPECIFIED}. SAS refers to this as "FORMAT".
-     * @param inputFormat
-     *     The format to use when reading this variable's value in. This cannot be {@code null}, but it can be
-     *     {@code Format.UNSPECIFIED}. SAS refers to this as "INFORMAT".
-     *
-     * @throws NullPointerException
-     *     if {@code variableName}, {@code type}, {@code label}, {@code outputFormat},
-     *     {@code outputFormatJustification}, or {@code inputFormat} are {@code null}.
-     * @throws IllegalArgumentException
-     *     if {@code variableName} is not a well-formed SAS variable name or is too long; if {@code variableLength} is
-     *     out of range for {@code type}; if {@code label} is too long or contains non-ASCII characters.
-     */
-    public Variable(String variableName, VariableType type, int variableLength, String label, Format outputFormat,
-        Format inputFormat) {
-        this(variableName, type, variableLength, label, outputFormat, inputFormat, StrictnessMode.FDA_SUBMISSION);
     }
 
     /**

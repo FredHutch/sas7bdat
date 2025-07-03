@@ -374,8 +374,7 @@ public class Sas7bdatMetadataTest {
                 8,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY);
+                Format.UNSPECIFIED);
             maxVariables.add(variable);
         }
 

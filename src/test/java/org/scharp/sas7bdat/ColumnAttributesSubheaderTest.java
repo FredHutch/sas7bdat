@@ -21,8 +21,7 @@ public class ColumnAttributesSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY);
+            new Format("$", 10));
         Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
@@ -37,8 +36,7 @@ public class ColumnAttributesSubheaderTest {
             20,
             "A label",
             Format.UNSPECIFIED,
-            new Format("$", 10),
-            StrictnessMode.SAS_ANY);
+            new Format("$", 10));
         Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
@@ -54,8 +52,7 @@ public class ColumnAttributesSubheaderTest {
             8,
             "A label",
             new Format("$OUTPUT", 8, 2),
-            new Format("$INPUT", 9, 6),
-            StrictnessMode.SAS_ANY);
+            new Format("$INPUT", 9, 6));
         Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
@@ -101,40 +98,35 @@ public class ColumnAttributesSubheaderTest {
                 8,
                 "A label",
                 new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6),
-                StrictnessMode.SAS_ANY),
+                new Format("$INPUT", 9, 6)),
             new Variable(
                 "TEXT1",
                 VariableType.CHARACTER,
                 256,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "LONGTEXT2", // longer than 8 characters
                 VariableType.CHARACTER,
                 101,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "NUMBER 1", // space in name
                 VariableType.NUMERIC,
                 8,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY),
+                Format.UNSPECIFIED),
             new Variable(
                 "AFTER",
                 VariableType.NUMERIC,
                 8,
                 "label",
                 Format.UNSPECIFIED,
-                Format.UNSPECIFIED,
-                StrictnessMode.SAS_ANY)));
+                Format.UNSPECIFIED)));
 
         // MIN_SIZE is for a subheader with one variable.  We add enough for 3 more (16*3) and subtract 1.
         short maxSizeForThreeVariables = ColumnAttributesSubheader.MIN_SIZE + 16 * 3 - 1;
