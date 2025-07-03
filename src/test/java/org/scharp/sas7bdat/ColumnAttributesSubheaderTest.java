@@ -17,7 +17,6 @@ public class ColumnAttributesSubheaderTest {
     void testTypeCode() {
         Variable variable = new Variable(
             "TEXT",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -34,7 +33,6 @@ public class ColumnAttributesSubheaderTest {
     void testCompressionCode() {
         Variable variable = new Variable(
             "TEXT",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -52,7 +50,6 @@ public class ColumnAttributesSubheaderTest {
         // A variable
         Variable variable = new Variable(
             "MY_VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "A label",
@@ -100,7 +97,6 @@ public class ColumnAttributesSubheaderTest {
         Sas7bdatVariables variables = new Sas7bdatVariables(List.of(
             new Variable(
                 "BEFORE",
-                1, // variable 1
                 VariableType.NUMERIC,
                 8,
                 "A label",
@@ -109,7 +105,6 @@ public class ColumnAttributesSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "TEXT1",
-                2, // variable 2
                 VariableType.CHARACTER,
                 256,
                 "label",
@@ -118,7 +113,6 @@ public class ColumnAttributesSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "LONGTEXT2", // longer than 8 characters
-                3, // variable 3
                 VariableType.CHARACTER,
                 101,
                 "label",
@@ -127,7 +121,6 @@ public class ColumnAttributesSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "NUMBER 1", // space in name
-                4, // variable 4
                 VariableType.NUMERIC,
                 8,
                 "label",
@@ -136,7 +129,6 @@ public class ColumnAttributesSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "AFTER",
-                5, // variable 5
                 VariableType.NUMERIC,
                 8,
                 "label",

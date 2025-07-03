@@ -46,7 +46,6 @@ public class RowSizeSubheaderTest {
         List<Variable> variableList = List.of(
             new Variable(
                 "VAR1",
-                1, // variable 1
                 VariableType.NUMERIC,
                 8,
                 "A label",
@@ -55,7 +54,6 @@ public class RowSizeSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "TEXT1",
-                2, // variable 2
                 VariableType.CHARACTER,
                 256,
                 "label",
@@ -64,7 +62,6 @@ public class RowSizeSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "LONGTEXT2", //
-                3, // variable 3
                 VariableType.CHARACTER,
                 101,
                 "label",
@@ -73,7 +70,6 @@ public class RowSizeSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "NUMBER 1", //
-                4, // variable 4
                 VariableType.NUMERIC,
                 8,
                 "label",
@@ -279,7 +275,6 @@ public class RowSizeSubheaderTest {
         List<Variable> variableList = List.of(
             new Variable(
                 "V",
-                1, // variable 1
                 VariableType.NUMERIC,
                 8,
                 "",

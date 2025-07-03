@@ -17,7 +17,6 @@ public class Sas7bdatMetadataTest {
     void setNullCreationTime() {
         Variable variable = new Variable(
             "VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "label",
@@ -44,7 +43,6 @@ public class Sas7bdatMetadataTest {
     void setNullDatasetType() {
         Variable variable = new Variable(
             "VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "label",
@@ -72,7 +70,6 @@ public class Sas7bdatMetadataTest {
     void setNullDatasetLabel() {
         Variable variable = new Variable(
             "VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "label",
@@ -100,7 +97,6 @@ public class Sas7bdatMetadataTest {
     void setNullVariables() {
         Variable variable = new Variable(
             "VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "label",
@@ -128,7 +124,6 @@ public class Sas7bdatMetadataTest {
     void setEmptyVariables() {
         Variable variable = new Variable(
             "VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "label",
@@ -156,7 +151,6 @@ public class Sas7bdatMetadataTest {
     void setNullVariable() {
         Variable variable1 = new Variable(
             "V1",
-            1,
             VariableType.NUMERIC,
             8,
             "a number",
@@ -165,7 +159,6 @@ public class Sas7bdatMetadataTest {
 
         Variable variable2 = new Variable(
             "V2",
-            2,
             VariableType.CHARACTER,
             5,
             "text",
@@ -174,7 +167,6 @@ public class Sas7bdatMetadataTest {
 
         Variable variable3 = new Variable(
             "V3",
-            2,
             VariableType.CHARACTER,
             100,
             "text",
@@ -213,7 +205,6 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to fix the error and continue building.
         Variable variable = new Variable(
             "VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "label",
@@ -233,7 +224,6 @@ public class Sas7bdatMetadataTest {
     void buildWithVariablesOnly() {
         Variable variable = new Variable(
             "V1",
-            1,
             VariableType.NUMERIC,
             8,
             "a number",
@@ -254,7 +244,6 @@ public class Sas7bdatMetadataTest {
     void buildWithRedundantSetting() {
         Variable variable1 = new Variable(
             "V1",
-            1,
             VariableType.NUMERIC,
             8,
             "a number",
@@ -263,7 +252,6 @@ public class Sas7bdatMetadataTest {
 
         Variable variable2 = new Variable(
             "V2",
-            2,
             VariableType.CHARACTER,
             5,
             "text",
@@ -297,7 +285,6 @@ public class Sas7bdatMetadataTest {
     void buildWithAllValueSet() {
         Variable variable1 = new Variable(
             "V1",
-            1,
             VariableType.NUMERIC,
             8,
             "a number",
@@ -306,7 +293,6 @@ public class Sas7bdatMetadataTest {
 
         Variable variable2 = new Variable(
             "V2",
-            2,
             VariableType.CHARACTER,
             5,
             "text",

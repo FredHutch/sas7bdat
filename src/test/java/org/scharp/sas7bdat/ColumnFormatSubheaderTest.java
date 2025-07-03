@@ -32,7 +32,6 @@ public class ColumnFormatSubheaderTest {
     void testTypeCode() {
         Variable variable = new Variable(
             "TEXT",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -49,7 +48,6 @@ public class ColumnFormatSubheaderTest {
     void testCompressionCode() {
         Variable variable = new Variable(
             "TEXT",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -68,7 +66,6 @@ public class ColumnFormatSubheaderTest {
         // A variable with all three strings, format width, and format digits.
         Variable variable = new Variable(
             "MY_VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "A label",
@@ -130,7 +127,6 @@ public class ColumnFormatSubheaderTest {
 
         Variable variable = new Variable(
             "MY_VAR",
-            1,
             VariableType.CHARACTER,
             20,
             "", // no label

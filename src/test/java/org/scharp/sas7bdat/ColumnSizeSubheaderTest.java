@@ -17,7 +17,6 @@ public class ColumnSizeSubheaderTest {
     void testTypeCode() {
         Variable variable = new Variable(
             "MY_VAR",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -33,7 +32,6 @@ public class ColumnSizeSubheaderTest {
     void testCompressionCode() {
         Variable variable = new Variable(
             "MY_VAR",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -78,7 +76,6 @@ public class ColumnSizeSubheaderTest {
         List<Variable> variables = List.of(
             new Variable(
                 "VAR1",
-                1, // variable number
                 VariableType.CHARACTER,
                 20,
                 "A label",
@@ -88,7 +85,6 @@ public class ColumnSizeSubheaderTest {
 
             new Variable(
                 "VAR2",
-                2, // variable number
                 VariableType.NUMERIC,
                 8,
                 "A number",
@@ -98,7 +94,6 @@ public class ColumnSizeSubheaderTest {
 
             new Variable(
                 "VAR3",
-                2, // variable number
                 VariableType.CHARACTER,
                 20,
                 "A label",
@@ -130,7 +125,6 @@ public class ColumnSizeSubheaderTest {
         for (int variableNumber = 1; variableNumber <= Short.MAX_VALUE; variableNumber++) {
             Variable variable = new Variable(
                 "VARIABLE_" + variableNumber,
-                variableNumber, // variable number
                 VariableType.NUMERIC,
                 8,
                 "label is ignored",

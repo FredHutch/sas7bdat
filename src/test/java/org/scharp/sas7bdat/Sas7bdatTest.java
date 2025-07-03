@@ -25,7 +25,6 @@ public class Sas7bdatTest {
                 List.of(
                     new Variable(
                         "TEXT",
-                        1,
                         VariableType.CHARACTER,
                         20,
                         "Some simple text",
@@ -35,7 +34,6 @@ public class Sas7bdatTest {
 
                     new Variable(
                         "AVERYLONG_0123456789_123456789VR",
-                        2,
                         VariableType.CHARACTER,
                         20,
                         "A second text variable with a long name",
@@ -45,7 +43,6 @@ public class Sas7bdatTest {
 
                     new Variable(
                         "TEXT3",
-                        3,
                         VariableType.CHARACTER,
                         5,
                         "", // no label
@@ -55,7 +52,6 @@ public class Sas7bdatTest {
 
                     new Variable(
                         "Letter",
-                        4,
                         VariableType.CHARACTER,
                         1, // len
                         "A single letter", // label
@@ -65,7 +61,6 @@ public class Sas7bdatTest {
 
                     new Variable(
                         "MY_NUMBER",
-                        5, // variable number
                         VariableType.NUMERIC,
                         8, // len
                         "A number", // label

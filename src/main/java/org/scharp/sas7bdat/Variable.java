@@ -3,10 +3,7 @@ package org.scharp.sas7bdat;
 import java.nio.charset.StandardCharsets;
 
 /**
- * A POJO that represents a variable.
- * <p>
- * This corresponds to a NAMESTR record when persisted in XPORT and a column when a dataset is viewed in a table.
- * </p>
+ * A variable or column in a SAS7BDAT file.
  * <p>
  * Instances of this class are immutable.
  * </p>
@@ -15,7 +12,6 @@ public final class Variable {
     private final VariableType type;
     private final String name;
     private final String label;
-    private final int number;
     private final int length;
     private final Format outputFormat;
     private final Format inputFormat;
@@ -27,8 +23,6 @@ public final class Variable {
      *     The name of the variable. This cannot be {@code null}. To fit into an XPORT, this should be 8 characters or
      *     fewer and only contain characters from the ASCII character set. SAS variable names must begin with a letter
      *     or underscore and may only contain letters, underscores, and digits.
-     * @param variableNumber
-     *     The variable's number.
      * @param type
      *     The variable's type (character or numeric). This cannot be {@code null}.
      * @param variableLength
@@ -60,8 +54,8 @@ public final class Variable {
      *     if {@code variableName} is not a well-formed SAS variable name or is too long; if {@code variableLength} is
      *     out of range for {@code type}; if {@code label} is too long or doesn't adhere to the {@code strictnessMode}.
      */
-    public Variable(String variableName, int variableNumber, VariableType type, int variableLength, String label,
-        Format outputFormat, Format inputFormat, StrictnessMode strictness) {
+    public Variable(String variableName, VariableType type, int variableLength, String label, Format outputFormat,
+        Format inputFormat, StrictnessMode strictness) {
 
         ArgumentUtil.checkNotNull(type, "type");
         if (type == VariableType.NUMERIC) {
@@ -122,7 +116,6 @@ public final class Variable {
         // TODO: format legal for type?
 
         this.name = variableName;
-        this.number = variableNumber;
         this.type = type;
         this.length = variableLength;
         this.label = label;
@@ -137,8 +130,6 @@ public final class Variable {
      *     The name of the variable. This cannot be {@code null}. To fit into an XPORT, this should be 8 characters or
      *     fewer and only contain characters from the ASCII character set. SAS variable names must begin with a letter
      *     or underscore and may only contain letters, underscores, and digits.
-     * @param variableNumber
-     *     The variable's number.
      * @param type
      *     The variable's type (character or numeric). This cannot be {@code null}.
      * @param variableLength
@@ -162,10 +153,9 @@ public final class Variable {
      *     if {@code variableName} is not a well-formed SAS variable name or is too long; if {@code variableLength} is
      *     out of range for {@code type}; if {@code label} is too long or contains non-ASCII characters.
      */
-    public Variable(String variableName, int variableNumber, VariableType type, int variableLength, String label,
-        Format outputFormat, Format inputFormat) {
-        this(variableName, variableNumber, type, variableLength, label, outputFormat, inputFormat,
-            StrictnessMode.FDA_SUBMISSION);
+    public Variable(String variableName, VariableType type, int variableLength, String label, Format outputFormat,
+        Format inputFormat) {
+        this(variableName, type, variableLength, label, outputFormat, inputFormat, StrictnessMode.FDA_SUBMISSION);
     }
 
     /**
@@ -187,13 +177,6 @@ public final class Variable {
      */
     public String label() {
         return label;
-    }
-
-    /**
-     * @return this variable's number (its column order).
-     */
-    public int number() {
-        return number;
     }
 
     /**

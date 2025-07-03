@@ -33,7 +33,6 @@ public class ColumnNameSubheaderTest {
     void testTypeCode() {
         List<Variable> variables = List.of(new Variable(
             "TEXT",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -50,7 +49,6 @@ public class ColumnNameSubheaderTest {
     void testCompressionCode() {
         List<Variable> variables = List.of(new Variable(
             "TEXT",
-            1,
             VariableType.CHARACTER,
             20,
             "A label",
@@ -67,7 +65,6 @@ public class ColumnNameSubheaderTest {
     void testSingleVariable() {
         List<Variable> variables = List.of(new Variable(
             "MY_VAR",
-            1,
             VariableType.NUMERIC,
             8,
             "A label",
@@ -113,7 +110,6 @@ public class ColumnNameSubheaderTest {
         List<Variable> variables = List.of(
             new Variable(
                 "BEFORE",
-                1, // variable 1
                 VariableType.NUMERIC,
                 8,
                 "A label",
@@ -122,7 +118,6 @@ public class ColumnNameSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "TEXT1",
-                2, // variable 2
                 VariableType.CHARACTER,
                 256,
                 "label",
@@ -131,7 +126,6 @@ public class ColumnNameSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "LONGTEXT2", //
-                3, // variable 3
                 VariableType.CHARACTER,
                 101,
                 "label",
@@ -140,7 +134,6 @@ public class ColumnNameSubheaderTest {
                 StrictnessMode.SAS_ANY),
             new Variable(
                 "NUMBER 1", //
-                4, // variable 4
                 VariableType.NUMERIC,
                 8,
                 "label",
@@ -195,7 +188,6 @@ public class ColumnNameSubheaderTest {
         for (int variableNumber = 1; variableNumber <= Short.MAX_VALUE; variableNumber++) {
             Variable variable = new Variable(
                 "VARIABLE_" + variableNumber,
-                variableNumber, // variable number
                 VariableType.NUMERIC,
                 8,
                 "label is ignored",
