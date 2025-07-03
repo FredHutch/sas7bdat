@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,14 +11,14 @@ import static org.scharp.sas7bdat.WriteUtil.write2;
 class ColumnText {
 
     private final Map<String, ColumnTextSubheader> textToSubheader;
-    private final Sas7bdatMetadata metadata;
+    private final Sas7bdatPageLayout pageLayout;
 
     private short subheaderIndex;
     private ColumnTextSubheader currentSubheader;
 
-    ColumnText(Sas7bdatMetadata metadata) {
+    ColumnText(Sas7bdatPageLayout pageLayout) {
         textToSubheader = new HashMap<>();
-        this.metadata = metadata;
+        this.pageLayout = pageLayout;
         subheaderIndex = 0;
 
         currentSubheader = new ColumnTextSubheader(subheaderIndex, ColumnTextSubheader.MAX_SIZE);
@@ -43,10 +43,10 @@ class ColumnText {
             currentSubheader.padToMaxSize();
 
             // Now that the size of the current subheader is fixed, it can be added to the metadata.
-            metadata.addSubheader(currentSubheader);
+            pageLayout.addSubheader(currentSubheader);
 
             // If we're near the end of the page, we create a subheader that will fill the remaining space.
-            final int bytesOnPageForSubheader = metadata.currentMetadataPage.totalBytesRemainingForNewSubheader();
+            final int bytesOnPageForSubheader = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
             final int minSizeOfColumnTextSubheaderWithText = ColumnTextSubheader.sizeOfSubheaderWithString(text);
             final short maxSize;
             if (bytesOnPageForSubheader <= minSizeOfColumnTextSubheaderWithText) {
@@ -78,7 +78,7 @@ class ColumnText {
 
     void noMoreText() {
         // Add the partially-filled ColumnTextSubheader to the metadata.
-        metadata.addSubheader(currentSubheader);
+        pageLayout.addSubheader(currentSubheader);
         currentSubheader = null;
     }
 

@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.List;
@@ -20,8 +20,8 @@ public class SubheaderCountsSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         assertEquals(SUBHEADER_TYPE_A, subheaderCountsSubheader.typeCode());
     }
@@ -32,8 +32,8 @@ public class SubheaderCountsSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, subheaderCountsSubheader.compressionCode());
     }
@@ -80,8 +80,8 @@ public class SubheaderCountsSubheaderTest {
                 StrictnessMode.SAS_ANY));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         // Add the subheaders that get counted to the metadata.
         // This is intentionally not a realistically constructed metadata; many of the repeated
@@ -89,27 +89,31 @@ public class SubheaderCountsSubheaderTest {
         // to the other subheader types.
 
         // Add two column text subheaders.
-        metadata.addSubheader(new ColumnTextSubheader((short) 0, (short) 500));
-        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
-        metadata.addSubheader(new ColumnTextSubheader((short) 1, (short) 500));
+        pageLayout.addSubheader(new ColumnTextSubheader((short) 0, (short) 500));
+        pageLayout.addSubheader(
+            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(new ColumnTextSubheader((short) 1, (short) 500));
 
         // Add one column attributes subheader
-        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
-        metadata.addSubheader(new ColumnAttributesSubheader(variables, 0, (short) 500));
+        pageLayout.addSubheader(
+            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(new ColumnAttributesSubheader(variables, 0, (short) 500));
 
         // Add three column name subheaders
-        ColumnText columnText = new ColumnText(metadata);
-        metadata.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
-        metadata.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
-        metadata.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
+        ColumnText columnText = new ColumnText(pageLayout);
+        pageLayout.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
+        pageLayout.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
+        pageLayout.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
 
         // Add four column list subheaders
-        metadata.addSubheader(new ColumnListSubheader(variables, 0));
-        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
-        metadata.addSubheader(new ColumnListSubheader(variables, 0));
-        metadata.addSubheader(new ColumnListSubheader(variables, 0));
-        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
-        metadata.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(
+            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(
+            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
 
         final byte[] expectedSubheaderData = new byte[] {
             0, -4, -1, -1, -1, -1, -1, -1,  // signature
@@ -247,8 +251,8 @@ public class SubheaderCountsSubheaderTest {
                 StrictnessMode.SAS_ANY));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, metadata);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         final byte[] expectedSubheaderData = new byte[] {
             0, -4, -1, -1, -1, -1, -1, -1,  // signature

@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.List;
@@ -20,9 +20,9 @@ public class RowSizeSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variables, 0, metadata);
+            variables, 0, pageLayout);
 
         assertEquals(SUBHEADER_TYPE_A, rowSizeSubheader.typeCode());
     }
@@ -33,9 +33,9 @@ public class RowSizeSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variables, 0, metadata);
+            variables, 0, pageLayout);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, rowSizeSubheader.compressionCode());
     }
@@ -82,19 +82,20 @@ public class RowSizeSubheaderTest {
                 StrictnessMode.SAS_ANY));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variables, 0x12456, metadata);
+            variables, 0x12456, pageLayout);
 
-        metadata.columnText.add("TYPE    ");
-        metadata.columnText.add("dataset label");
-        metadata.columnText.noMoreText();
+        pageLayout.columnText.add("TYPE    ");
+        pageLayout.columnText.add("dataset label");
+        pageLayout.columnText.noMoreText();
 
         // Add ColumnFormatSubheader, one on first page, two on second page.
-        metadata.addSubheader(new ColumnFormatSubheader(variableList.get(0), metadata.columnText));
-        metadata.addSubheader(new FillerSubheader(metadata.currentMetadataPage.totalBytesRemainingForNewSubheader()));
-        metadata.addSubheader(new ColumnFormatSubheader(variableList.get(1), metadata.columnText));
-        metadata.addSubheader(new ColumnFormatSubheader(variableList.get(2), metadata.columnText));
+        pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(0), pageLayout.columnText));
+        pageLayout.addSubheader(
+            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
+        pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
 
         // Set some values that appear in the row size subheader.
         rowSizeSubheader.setTotalPossibleObservationOnMixedPage(120);
@@ -288,10 +289,11 @@ public class RowSizeSubheaderTest {
                 StrictnessMode.SAS_ANY));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x20000, variables);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variables, 0, metadata);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x20000, variables);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variables, 0,
+            pageLayout);
 
-        metadata.columnText.add("        "); // must add the dataset type.
+        pageLayout.columnText.add("        "); // must add the dataset type.
 
         final byte[] expectedSubheaderData = new byte[] {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature

@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7BdatMetadataPage;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.nio.charset.StandardCharsets;
@@ -19,7 +19,7 @@ class RowSizeSubheader extends Subheader {
     private final String datasetType;
     private final String datasetLabel;
     private final int totalObservationsInDataset;
-    private final Sas7bdatMetadata metadata;
+    private final Sas7bdatPageLayout pageLayout;
     private final long initialPageSequenceNumber;
 
     private final int rowSizeInBytes;
@@ -34,11 +34,11 @@ class RowSizeSubheader extends Subheader {
     private int totalPagesInDataset;
 
     RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
-        Sas7bdatVariables variables, int totalObservationsInDataset, Sas7bdatMetadata metadata) {
+        Sas7bdatVariables variables, int totalObservationsInDataset, Sas7bdatPageLayout pageLayout) {
         this.datasetType = datasetType;
         this.datasetLabel = datasetLabel;
         this.totalObservationsInDataset = totalObservationsInDataset;
-        this.metadata = metadata; // this is filled in later by the caller
+        this.pageLayout = pageLayout; // this is filled in later by the caller
         this.initialPageSequenceNumber = pageSequenceGenerator.initialPageSequence();
 
         // Calculate some properties of a data row.
@@ -98,7 +98,7 @@ class RowSizeSubheader extends Subheader {
         write8(page, subheaderOffset, SIGNATURE_ROW_SIZE); // signature
 
         write8(page, subheaderOffset + 8, 0xF0); // unknown
-        write8(page, subheaderOffset + 16, metadata.subheaders.size() + 2); // unknown
+        write8(page, subheaderOffset + 16, pageLayout.subheaders.size() + 2); // unknown
         write8(page, subheaderOffset + 24, 0x00); // unknown
         write8(page, subheaderOffset + 32, 0x223011); // unknown
 
@@ -115,9 +115,9 @@ class RowSizeSubheader extends Subheader {
         int totalColumnFormatSubheadersOnFirstPage = 0;
         int secondPageWithColumnFormatSubheader = 0; // impossible value
         int totalColumnFormatSubheadersOnSecondPage = 0;
-        for (final Subheader subheader : metadata.subheaders) {
+        for (final Subheader subheader : pageLayout.subheaders) {
             if (subheader instanceof ColumnFormatSubheader) {
-                final int pageNumberOfSubheader = metadata.subheaderLocations.get(subheader);
+                final int pageNumberOfSubheader = pageLayout.subheaderLocations.get(subheader);
 
                 if (firstPageWithColumnFormatSubheader == 0) {
                     // This is the first ColumnFormatSubheader in the metadata.
@@ -158,7 +158,7 @@ class RowSizeSubheader extends Subheader {
         //
         // Calculate it with method 1.
         int unknownNumber = 0;
-        for (final Subheader subheader : metadata.subheaders) {
+        for (final Subheader subheader : pageLayout.subheaders) {
             if (subheader instanceof ColumnListSubheader) {
                 unknownNumber += subheader.size() - 28;
             }
@@ -230,7 +230,7 @@ class RowSizeSubheader extends Subheader {
         // the second subheader added to the first page.
         writeRecordLocation(page, subheaderOffset + 512, 1, 2);
 
-        final Sas7BdatMetadataPage finalMetadataPage = metadata.currentMetadataPage;
+        final Sas7BdatMetadataPage finalMetadataPage = pageLayout.currentMetadataPage;
 
         // Unknown, but could be the location of the last Subheader block, in which case
         // the -1 doesn't include the truncated subheader.
@@ -293,7 +293,7 @@ class RowSizeSubheader extends Subheader {
         // on the first page that has a ColumnFormatSubheader.  All of those subheaders are necessarily
         // before the ColumnFormatSubheader.
         int blockOfFirstColumnFormatSubheader = 1;
-        for (Map.Entry<Subheader, Integer> entry : metadata.subheaderLocations.entrySet()) {
+        for (Map.Entry<Subheader, Integer> entry : pageLayout.subheaderLocations.entrySet()) {
             final Subheader subheader = entry.getKey();
             final int pageNumber = entry.getValue();
             if (pageNumber == firstPageWithColumnFormatSubheader) {
@@ -322,13 +322,13 @@ class RowSizeSubheader extends Subheader {
         write2(page, subheaderOffset + 676, (short) 4); // unknown
 
         // The reference to the dataset label in the column text.
-        metadata.columnText.writeTextLocation(page, subheaderOffset + 678, datasetLabel);
+        pageLayout.columnText.writeTextLocation(page, subheaderOffset + 678, datasetLabel);
 
         // The reference to the dataset type string in the column text.
         // We pad with spaces to match what ColumnText does.
         String paddedDatasetType = datasetType +
             " ".repeat(8 - datasetType.getBytes(StandardCharsets.UTF_8).length);
-        metadata.columnText.writeTextLocation(page, subheaderOffset + 684, paddedDatasetType);
+        pageLayout.columnText.writeTextLocation(page, subheaderOffset + 684, paddedDatasetType);
 
         // Unknown
         write2(page, subheaderOffset + 690, (short) 0x00);
@@ -360,7 +360,7 @@ class RowSizeSubheader extends Subheader {
         // The value at 748 can cause SAS to crash if it's too small.
         // This makes me think it's an offset or count.
         int totalColumnTextSubheaders = 0;
-        for (Subheader subheader : metadata.subheaders) {
+        for (Subheader subheader : pageLayout.subheaders) {
             if (subheader instanceof ColumnTextSubheader) {
                 totalColumnTextSubheaders++;
             }

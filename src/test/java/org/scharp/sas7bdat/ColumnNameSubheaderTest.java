@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.util.ArrayList;
@@ -18,8 +18,8 @@ public class ColumnNameSubheaderTest {
     private static ColumnText newColumnText(List<Variable> variableList) {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, 0x10000, variables);
-        ColumnText columnText = new ColumnText(metadata);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        ColumnText columnText = new ColumnText(pageLayout);
 
         // Populate the column text with the strings from the variableList.
         for (Variable variable : variableList) {

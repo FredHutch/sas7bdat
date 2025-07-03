@@ -636,7 +636,7 @@ public class Sas7bdatExporter implements AutoCloseable {
      * <li>the location of each subheader</li>
      * </ol>
      */
-    static class Sas7bdatMetadata {
+    static class Sas7bdatPageLayout {
         final PageSequenceGenerator pageSequenceGenerator;
         final int pageSize;
         final Sas7bdatVariables variables;
@@ -647,8 +647,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
         Sas7BdatMetadataPage currentMetadataPage;
 
-        Sas7bdatMetadata(PageSequenceGenerator pageSequenceGenerator, int pageSize,
-            Sas7bdatVariables variables) {
+        Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, int pageSize, Sas7bdatVariables variables) {
             assert pageSize >= MINIMUM_PAGE_SIZE;
             this.pageSequenceGenerator = pageSequenceGenerator;
             this.pageSize = pageSize;
@@ -711,13 +710,11 @@ public class Sas7bdatExporter implements AutoCloseable {
         return (dividend + divisor - 1) / divisor;
     }
 
-    public Sas7bdatExporter(Path targetLocation, LocalDateTime createDate, String datasetType,
-        String datasetLabel, List<Variable> variables, int totalObservationsInDataset) throws IOException {
-
-        assert datasetType.getBytes(StandardCharsets.UTF_8).length <= 8;
+    public Sas7bdatExporter(Path targetLocation, Sas7bdatMetadata metadata, int totalObservationsInDataset)
+        throws IOException {
 
         outputStream = Files.newOutputStream(targetLocation);
-        datasetVariables = new Sas7bdatVariables(variables);
+        datasetVariables = new Sas7bdatVariables(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;
         pageSequenceGenerator = new PageSequenceGenerator();
 
@@ -730,19 +727,25 @@ public class Sas7bdatExporter implements AutoCloseable {
         pageSize = WriteUtil.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
         pageBuffer = new byte[pageSize];
 
-        Sas7bdatMetadata metadata = new Sas7bdatMetadata(pageSequenceGenerator, pageSize,
-            datasetVariables);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, datasetVariables);
 
         // Add the subheaders in the order in which they should be listed in the subheaders index.
         // Note that this is the reverse order in which they appear a metadata page.
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, datasetType, datasetLabel,
-            datasetVariables, totalObservationsInDataset, metadata);
-        metadata.addSubheader(rowSizeSubheader);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(
+            pageSequenceGenerator,
+            metadata.datasetType(),
+            metadata.datasetLabel(),
+            datasetVariables,
+            totalObservationsInDataset,
+            pageLayout);
+        pageLayout.addSubheader(rowSizeSubheader);
 
-        metadata.addSubheader(new ColumnSizeSubheader(variables));
+        pageLayout.addSubheader(new ColumnSizeSubheader(metadata.variables()));
 
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variables, metadata);
-        metadata.addSubheader(subheaderCountsSubheader);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(
+            metadata.variables(),
+            pageLayout);
+        pageLayout.addSubheader(subheaderCountsSubheader);
 
         // Next, SAS adds the ColumnTextSubheaders.  Since a Subheader cannot be larger than Short.MAX_SIZE
         // bytes, if there's a lot of metadata text, multiple ColumnTextSubheaders may be needed.
@@ -764,37 +767,41 @@ public class Sas7bdatExporter implements AutoCloseable {
         // Adding the string of 0x00 0x00 0x00 0x00 matches what SAS usually generates.
         // Sometimes SAS generates 0x00 0x00 0x00 0x14 or 0x00 0x00 0x00 0x1d,
         // but I don't know if this has any meaning.
-        metadata.columnText.add("\0\0\0\0");
+        pageLayout.columnText.add("\0\0\0\0");
 
-        metadata.columnText.add(" ".repeat(8)); // unknown
+        pageLayout.columnText.add(" ".repeat(8)); // unknown
 
         // Add the dataset type, padded with spaces.
         // We duplicateIfExists=true because if the datasetType is the empty string, we still
         // want to reserve the space for it, even though we added the same eight spaces above.
-        String paddedDatasetType = datasetType + " ".repeat(8 - datasetType.getBytes(StandardCharsets.UTF_8).length);
-        metadata.columnText.add(paddedDatasetType);
+        String paddedDatasetType = metadata.datasetType() +
+            " ".repeat(8 - metadata.datasetType().getBytes(StandardCharsets.UTF_8).length);
+        pageLayout.columnText.add(paddedDatasetType);
 
-        metadata.columnText.add("DATASTEP"); // add the PROC step which created the dataset
-        metadata.columnText.add(datasetLabel); // add the dataset label
+        pageLayout.columnText.add("DATASTEP"); // add the PROC step which created the dataset
+        pageLayout.columnText.add(metadata.datasetLabel()); // add the dataset label
 
-        for (Variable variable : variables) {
-            metadata.columnText.add(variable.name());
-            metadata.columnText.add(variable.label());
+        for (Variable variable : metadata.variables()) {
+            pageLayout.columnText.add(variable.name());
+            pageLayout.columnText.add(variable.label());
 
             // CONSIDER: SAS uppercases the format names before storing them.
-            metadata.columnText.add(variable.inputFormat().name());
-            metadata.columnText.add(variable.outputFormat().name());
+            pageLayout.columnText.add(variable.inputFormat().name());
+            pageLayout.columnText.add(variable.outputFormat().name());
         }
 
         // Add the partially-written column text subheader to the metadata page.
         // This is essential, as all column text subheaders must be added before
         // the next subheader type is added.
-        metadata.columnText.noMoreText();
+        pageLayout.columnText.noMoreText();
 
         int offset = 0;
         while (offset < datasetVariables.totalVariables()) {
-            ColumnNameSubheader nextSubheader = new ColumnNameSubheader(variables, offset, metadata.columnText);
-            metadata.addSubheader(nextSubheader);
+            ColumnNameSubheader nextSubheader = new ColumnNameSubheader(
+                metadata.variables(),
+                offset,
+                pageLayout.columnText);
+            pageLayout.addSubheader(nextSubheader);
             offset += nextSubheader.totalVariablesInSubheader();
         }
 
@@ -807,7 +814,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // If there isn't enough space on the current metadata page for a subheader that contains all variables,
             // then split the subheader so that we use all remaining space on the metadata pages.  This is what
             // SAS does.
-            final int spaceInPage = metadata.currentMetadataPage.totalBytesRemainingForNewSubheader();
+            final int spaceInPage = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
             final int maxSize;
             if (spaceInPage < ColumnAttributesSubheader.MIN_SIZE) {
                 // There's not enough space remaining for a useful header. Pick a large subheader for the next page.
@@ -817,7 +824,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             }
 
             ColumnAttributesSubheader nextSubheader = new ColumnAttributesSubheader(datasetVariables, offset, maxSize);
-            metadata.addSubheader(nextSubheader);
+            pageLayout.addSubheader(nextSubheader);
             offset += nextSubheader.totalVariablesInSubheader();
         }
 
@@ -826,25 +833,25 @@ public class Sas7bdatExporter implements AutoCloseable {
             offset = 0;
             while (offset < datasetVariables.totalVariables()) {
                 ColumnListSubheader nextSubheader = new ColumnListSubheader(datasetVariables, offset);
-                metadata.addSubheader(nextSubheader);
+                pageLayout.addSubheader(nextSubheader);
                 offset += nextSubheader.totalVariablesInSubheader();
             }
         }
-        for (Variable variable : variables) {
-            metadata.addSubheader(new ColumnFormatSubheader(variable, metadata.columnText));
+        for (Variable variable : metadata.variables()) {
+            pageLayout.addSubheader(new ColumnFormatSubheader(variable, pageLayout.columnText));
         }
 
         // Finalize the subheaders on the final metadata page.
-        metadata.finalizeSubheaders();
+        pageLayout.finalizeSubheaders();
 
         // Mark the final metadata page as a "mixed" page, even if it doesn't contain data.
         // This is what SAS does.  I don't know if this is necessary.
-        metadata.currentMetadataPage.setIsLastMetadataPage();
+        pageLayout.currentMetadataPage.setIsLastMetadataPage();
 
-        final int maxObservationsOnMixedPage = metadata.currentMetadataPage.maxObservations;
-        rowSizeSubheader.setTotalPossibleObservationOnMixedPage(metadata.currentMetadataPage.maxObservations);
+        final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations;
+        rowSizeSubheader.setTotalPossibleObservationOnMixedPage(pageLayout.currentMetadataPage.maxObservations);
 
-        final int totalNumberOfMetadataPages = metadata.completeMetadataPages.size() + 1;
+        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size() + 1;
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
         // Calculate how many observations fit on a data page.
@@ -870,20 +877,25 @@ public class Sas7bdatExporter implements AutoCloseable {
         // Write the file header.
         {
             String datasetName = targetLocation.getFileName().toString().replace(".sas7bdat", "");
-            Sas7bdatHeader header = new Sas7bdatHeader(pageSequenceGenerator, pageSize, pageSize,
-                datasetName, createDate, totalPagesInDataset);
+            Sas7bdatHeader header = new Sas7bdatHeader(
+                pageSequenceGenerator,
+                pageSize,
+                pageSize,
+                datasetName,
+                metadata.creationTime(),
+                totalPagesInDataset);
             header.write(pageBuffer);
             outputStream.write(pageBuffer);
         }
 
         // Write out all complete metadata pages (but not the last one, which can hold observations)
-        for (Sas7BdatMetadataPage currentMetadataPage : metadata.completeMetadataPages) {
+        for (Sas7BdatMetadataPage currentMetadataPage : pageLayout.completeMetadataPages) {
             writePage(currentMetadataPage);
         }
 
         totalObservationsWritten = 0;
         totalPagesAllocated = totalNumberOfMetadataPages;
-        currentPage = metadata.currentMetadataPage;
+        currentPage = pageLayout.currentMetadataPage;
     }
 
     public void writeObservation(List<Object> observation) throws IOException {
@@ -949,12 +961,10 @@ public class Sas7bdatExporter implements AutoCloseable {
         }
     }
 
-    public static void writeDataset(Path targetLocation, LocalDateTime createDate, String datasetType,
-        String datasetLabel, List<Variable> variables, List<List<Object>> observations) throws IOException {
+    public static void writeDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
+        throws IOException {
 
-        try (Sas7bdatExporter datasetWriter = new Sas7bdatExporter(targetLocation, createDate, datasetType,
-            datasetLabel,
-            variables, observations.size())) {
+        try (Sas7bdatExporter datasetWriter = new Sas7bdatExporter(targetLocation, metadata, observations.size())) {
 
             // Add observations
             for (List<Object> observation : observations) {

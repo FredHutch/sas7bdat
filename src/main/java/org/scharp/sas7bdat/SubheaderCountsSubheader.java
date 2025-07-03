@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 
 import java.util.Collection;
 
@@ -16,11 +16,11 @@ class SubheaderCountsSubheader extends Subheader {
     private static final int PAGE_SIZE = 600;
 
     private final Collection<Variable> variables;
-    private final Sas7bdatMetadata metadata;
+    private final Sas7bdatPageLayout pageLayout;
 
-    SubheaderCountsSubheader(Collection<Variable> variables, Sas7bdatMetadata metadata) {
+    SubheaderCountsSubheader(Collection<Variable> variables, Sas7bdatPageLayout pageLayout) {
         this.variables = variables;
-        this.metadata = metadata; // this is filled in later by the caller
+        this.pageLayout = pageLayout; // this is filled in later by the caller
     }
 
     private <T extends Subheader> void writeSubheaderInformation(byte[] page, int offset, Class<T> clazz,
@@ -35,8 +35,8 @@ class SubheaderCountsSubheader extends Subheader {
         if (clazz != null) {
             short currentPageNumber = 0; // impossible number
             short subheaderPositionOnPage = 0;
-            for (Subheader subheader : metadata.subheaders) {
-                short subheaderPageNumber = metadata.subheaderLocations.get(subheader).shortValue();
+            for (Subheader subheader : pageLayout.subheaders) {
+                short subheaderPageNumber = pageLayout.subheaderLocations.get(subheader).shortValue();
                 if (subheaderPageNumber == currentPageNumber) {
                     // This subheader is on the same page as the previous subheader.
                     subheaderPositionOnPage++;
@@ -85,7 +85,7 @@ class SubheaderCountsSubheader extends Subheader {
         // the data.  However, setting this to small or negative value doesn't prevent SAS
         // from reading the dataset, so its value may be ignored.
         int maxSubheaderPayloadSize = 0;
-        for (Subheader subheader : metadata.subheaders) {
+        for (Subheader subheader : pageLayout.subheaders) {
             if (subheader instanceof ColumnTextSubheader columnTextSubheader) {
                 maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnTextSubheader.sizeOfData());
 
