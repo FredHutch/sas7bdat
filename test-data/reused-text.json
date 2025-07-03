@@ -7,7 +7,6 @@
     "variables": [
         {
             "name": "V1",
-            "number": 1,
             "type": "CHARACTER",
             "label": "$ASCII",
             "length": 10,
@@ -16,7 +15,6 @@
         },
         {
             "name": "V2",
-            "number": 2,
             "type": "CHARACTER",
             "label": "$ASCII",
             "length": 10,
@@ -25,7 +23,6 @@
         },
         {
             "name": "V3",
-            "number": 3,
             "type": "CHARACTER",
             "label": "$ASCII",
             "length": 10,

@@ -7,7 +7,6 @@
     "variables": [
         {
             "name": "A",
-            "number": 1,
             "type": "CHARACTER",
             "label": "",
             "length": 1,
@@ -24,7 +23,6 @@
         },
         {
             "name": "B",
-            "number": 2,
             "type": "CHARACTER",
             "label": "",
             "length": 1,
@@ -41,7 +39,6 @@
         },
         {
             "name": "C",
-            "number": 3,
             "type": "CHARACTER",
             "label": "",
             "length": 1,
@@ -58,7 +55,6 @@
         },
         {
             "name": "D",
-            "number": 4,
             "type": "CHARACTER",
             "label": "",
             "length": 1,
@@ -75,7 +71,6 @@
         },
         {
             "name": "E",
-            "number": 5,
             "type": "CHARACTER",
             "label": "",
             "length": 1,
@@ -92,7 +87,6 @@
         },
         {
             "name": "F",
-            "number": 6,
             "type": "CHARACTER",
             "label": "",
             "length": 1,

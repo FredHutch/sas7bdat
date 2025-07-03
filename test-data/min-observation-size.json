@@ -7,7 +7,6 @@
     "variables": [
         {
             "name": "V",
-            "number": 1,
             "type": "CHARACTER",
             "label": "",
             "length": 1,
