@@ -25,3 +25,7 @@ replay_pid*
 
 # mvn build directory
 target
+
+# Test result files
+test-data/java-*.sas7bdat
+test-data/sas-*.sas7bdat
