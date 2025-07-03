@@ -92,8 +92,7 @@ public class RowSizeSubheaderTest {
 
         // Add ColumnFormatSubheader, one on first page, two on second page.
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(0), pageLayout.columnText));
-        pageLayout.addSubheader(
-            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
 

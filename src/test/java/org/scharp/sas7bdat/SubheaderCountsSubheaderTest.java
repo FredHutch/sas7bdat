@@ -90,13 +90,11 @@ public class SubheaderCountsSubheaderTest {
 
         // Add two column text subheaders.
         pageLayout.addSubheader(new ColumnTextSubheader((short) 0, (short) 500));
-        pageLayout.addSubheader(
-            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnTextSubheader((short) 1, (short) 500));
 
         // Add one column attributes subheader
-        pageLayout.addSubheader(
-            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnAttributesSubheader(variables, 0, (short) 500));
 
         // Add three column name subheaders
@@ -107,12 +105,10 @@ public class SubheaderCountsSubheaderTest {
 
         // Add four column list subheaders
         pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
-        pageLayout.addSubheader(
-            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
         pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
-        pageLayout.addSubheader(
-            new FillerSubheader(pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
 
         final byte[] expectedSubheaderData = new byte[] {
