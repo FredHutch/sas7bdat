@@ -56,7 +56,7 @@ public class Sas7bdatMetadataTest {
         String badDatasetType = sigma + "3456789";
         assertEquals(8, badDatasetType.length(), "TEST BUG: not testing encoding expansion");
         Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.datasetType(badDatasetType));
-        assertEquals("datasetType must not be longer than 8 bytes when encoding in UTF-8", exception.getMessage());
+        assertEquals("datasetType must not be longer than 8 bytes when encoded with UTF-8", exception.getMessage());
 
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.

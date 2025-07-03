@@ -72,10 +72,7 @@ public class Sas7bdatMetadata {
             ArgumentUtil.checkNotNull(datasetType, "datasetType");
 
             // dataset types can't be longer than 8 bytes.
-            if (8 < datasetType.getBytes(StandardCharsets.UTF_8).length) {
-                throw new IllegalArgumentException(
-                    "datasetType must not be longer than 8 bytes when encoding in " + StandardCharsets.UTF_8);
-            }
+            ArgumentUtil.checkMaximumLength(datasetType, StandardCharsets.UTF_8, 8, "datasetType");
 
             this.datasetType = datasetType;
             return this;
