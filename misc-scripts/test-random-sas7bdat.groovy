@@ -19,15 +19,15 @@ import java.lang.reflect.Constructor
 
 class TestRandomSas7Bdat {
 
-    private static final Class Sas7bdatWriter
+    private static final Class Sas7bdatExporter
+    private static final Class Sas7bdatMetadata
     private static final Class Variable
-    private static final Class StrictnessMode
     private static final Class VariableType
     private static final Class Format
 
     private static final Constructor FormatConstructor
     private static final Constructor VariableConstructor
-    private static final Constructor Sas7bdatWriterConstructor
+    private static final Constructor Sas7bdatExporterConstructor
 
     // Make sure the library has been compiled.
     // It should be relative to this script's location.
@@ -44,30 +44,25 @@ class TestRandomSas7Bdat {
         }
 
         TestRandomSas7Bdat.classLoader.rootLoader.addURL(new URL(jarFile.toUri().toString()))
-        Sas7bdatWriter = Class.forName("org.scharp.sas7bdat.Sas7bdatWriter")
-        Variable       = Class.forName("org.scharp.sas7bdat.Variable")
-        StrictnessMode = Class.forName("org.scharp.sas7bdat.StrictnessMode")
-        VariableType   = Class.forName("org.scharp.sas7bdat.VariableType")
-        Format         = Class.forName("org.scharp.sas7bdat.Format")
+        Sas7bdatExporter = Class.forName("org.scharp.sas7bdat.Sas7bdatExporter")
+        Sas7bdatMetadata = Class.forName("org.scharp.sas7bdat.Sas7bdatMetadata")
+        Variable         = Class.forName("org.scharp.sas7bdat.Variable")
+        VariableType     = Class.forName("org.scharp.sas7bdat.VariableType")
+        Format           = Class.forName("org.scharp.sas7bdat.Format")
 
         FormatConstructor = Format.getDeclaredConstructor(String.class, int.class, int.class)
 
         VariableConstructor = Variable.getDeclaredConstructor(
             String.class,   // variableName
-            int.class,      // variableNumber
             VariableType,   // type
             int.class,      // variableLength
             String.class,   // label
             Format,         // outputFormat
-            Format,         // inputFormat
-            StrictnessMode) // strictness
+            Format)         // inputFormat
 
-        Sas7bdatWriterConstructor = Sas7bdatWriter.getDeclaredConstructor(
+        Sas7bdatExporterConstructor = Sas7bdatExporter.getDeclaredConstructor(
             Path.class,           // targetLocation
-            LocalDateTime.class,  // createDate
-            String.class,         // datasetType
-            String.class,         // datasetLabel
-            List.class,           // variables
+            Sas7bdatMetadata,     // metadata
             int.class)            // totalObservations
     }
 
@@ -162,8 +157,7 @@ class TestRandomSas7Bdat {
                     length,
                     label,
                     outputFormat,
-                    inputFormat,
-                    StrictnessMode.SAS_ANY)
+                    inputFormat)
             }
 
             def datasetLabel = randomStringGenerator.nextRandomString(256)
@@ -413,13 +407,11 @@ class TestRandomSas7Bdat {
 
                     metadata.variables << VariableConstructor.newInstance(
                         name,
-                        number,
                         VariableType.valueOf(type),
                         length,
                         label,
                         outputFormat,
-                        inputFormat,
-                        StrictnessMode.SAS_ANY)
+                        inputFormat)
 
                     checkObjectEnd(parser, 'variable')
                 }
@@ -524,30 +516,25 @@ class TestRandomSas7Bdat {
                 |}
                 |
                 |getClass().classLoader.rootLoader.addURL(new URL(jarFile.toUri().toString()))
-                |Sas7bdatWriter = Class.forName("org.scharp.sas7bdat.Sas7bdatWriter")
-                |Variable       = Class.forName("org.scharp.sas7bdat.Variable")
-                |StrictnessMode = Class.forName("org.scharp.sas7bdat.StrictnessMode")
-                |VariableType   = Class.forName("org.scharp.sas7bdat.VariableType")
-                |Format         = Class.forName("org.scharp.sas7bdat.Format")
+                |Sas7bdatExporter = Class.forName("org.scharp.sas7bdat.Sas7bdatExporter")
+                |Sas7bdatMetadata = Class.forName("org.scharp.sas7bdat.Sas7bdatMetadata")
+                |Variable         = Class.forName("org.scharp.sas7bdat.Variable")
+                |VariableType     = Class.forName("org.scharp.sas7bdat.VariableType")
+                |Format           = Class.forName("org.scharp.sas7bdat.Format")
                 |
                 |Constructor FormatConstructor = Format.getDeclaredConstructor(String.class, int.class, int.class)
                 |
                 |Constructor VariableConstructor = Variable.getDeclaredConstructor(
                 |    String.class,   // variableName
-                |    int.class,      // variableNumber
                 |    VariableType,   // type
                 |    int.class,      // variableLength
                 |    String.class,   // label
                 |    Format,         // outputFormat
-                |    Format,         // inputFormat
-                |    StrictnessMode) // strictness
+                |    Format)         // inputFormat
                 |
-                |Constructor Sas7bdatWriterConstructor = Sas7bdatWriter.getDeclaredConstructor(
+                |Constructor Sas7bdatExporterConstructor = Sas7bdatExporter.getDeclaredConstructor(
                 |    Path.class,           // targetLocation
-                |    LocalDateTime.class,  // createDate
-                |    String.class,         // datasetType
-                |    String.class,         // datasetLabel
-                |    List.class,           // variables
+                |    Sas7bdatMetadata,     // metadata
                 |    int.class)            // totalObservations
                 |
                 |def sas7BdatPath = Path.of("random.sas7bdat")
@@ -560,13 +547,11 @@ class TestRandomSas7Bdat {
                 writer.writeLine """
                     |    VariableConstructor.newInstance(
                     |        ${quoteStringLiteral(variable.name())},
-                    |        ${variable.number()},
                     |        VariableType.${variable.type()},
                     |        ${variable.length()},
                     |        ${quoteStringLiteral(variable.label())},
                     |        ${quoteFormat(variable.outputFormat())},
-                    |        ${quoteFormat(variable.inputFormat())},
-                    |        StrictnessMode.SAS_ANY),
+                    |        ${quoteFormat(variable.inputFormat())}),
                     """.trim().stripMargin()
             }
 
@@ -594,12 +579,14 @@ class TestRandomSas7Bdat {
             }
 
             writer.writeLine """
-                |def datasetWriter = Sas7bdatWriterConstructor.newInstance(
+                |def datasetExporter = Sas7bdatExporterConstructor.newInstance(
                 |    sas7BdatPath,
-                |    creationDate,
-                |    datasetType,
-                |    datasetLabel,
-                |    variables,
+                |    Sas7bdatMetadata.builder().
+                |        creationTime(creationDate).
+                |        datasetType(datasetType).
+                |        datasetLabel(datasetLabel).
+                |        variables(variables).
+                |        build(),
                 |    $metadata.totalObservations)
                 |
                 """.trim().stripMargin()
@@ -631,7 +618,7 @@ class TestRandomSas7Bdat {
                 }
 
                 // Write the observation
-                writer.append "datasetWriter.writeObservation([" // start of observation
+                writer.append "datasetExporter.writeObservation([" // start of observation
                 observation.eachWithIndex { value, i ->
                     // quote character values
                     writer.append metadata.variables[i].type() == VariableType.CHARACTER ? "'$value'" : "$value"
@@ -654,7 +641,7 @@ class TestRandomSas7Bdat {
             }
 
             // We're done writing the dataset
-            writer.writeLine "datasetWriter.close()"
+            writer.writeLine "datasetExporter.close()"
         }
 
         groovyScript.setExecutable(true)
@@ -1114,19 +1101,21 @@ class TestRandomSas7Bdat {
         //
         // Use sas-transport to write out the dataset as a SAS7BDAT.
         //
-        def datasetWriter = Sas7bdatWriterConstructor.newInstance(
+        def datasetExporter = Sas7bdatExporterConstructor.newInstance(
             sas7BdatPath,
-            metadata.creationDate,
-            metadata.datasetType,
-            metadata.datasetLabel,
-            metadata.variables,
+            Sas7bdatMetadata.builder().
+                creationTime(metadata.creationDate).
+                datasetType(metadata.datasetType).
+                datasetLabel(metadata.datasetLabel).
+                variables(metadata.variables).
+                build(),
             metadata.totalObservations)
 
         // Add each observation
-        Dataset.processObservations(testCaseFile) { observation -> datasetWriter.writeObservation(observation) }
-        assert datasetWriter.isComplete()
+        Dataset.processObservations(testCaseFile) { observation -> datasetExporter.writeObservation(observation) }
+        assert datasetExporter.isComplete()
 
-        datasetWriter.close()
+        datasetExporter.close()
 
         // Confirm that SAS reads the file in the way we expected it to be created.
         checkSas7BdatFile(sas7BdatPath, testCaseFile, false)
