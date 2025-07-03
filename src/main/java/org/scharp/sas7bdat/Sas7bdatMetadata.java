@@ -1,5 +1,6 @@
 package org.scharp.sas7bdat;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,10 +65,18 @@ public class Sas7bdatMetadata {
          *
          * @throws NullPointerException
          *     if {@code datasetType} is {@code null}.
+         * @throws IllegalArgumentException
+         *     if {@code datasetType} is longer than 8 bytes when encoded in UTF-8.
          */
         public Builder datasetType(String datasetType) {
             ArgumentUtil.checkNotNull(datasetType, "datasetType");
-            // TODO: check that the type is well-formed.
+
+            // dataset types can't be longer than 8 bytes.
+            if (8 < datasetType.getBytes(StandardCharsets.UTF_8).length) {
+                throw new IllegalArgumentException(
+                    "datasetType must not be longer than 8 bytes when encoding in " + StandardCharsets.UTF_8);
+            }
+
             this.datasetType = datasetType;
             return this;
         }

@@ -40,6 +40,36 @@ public class Sas7bdatMetadataTest {
     }
 
     @Test
+    void setLongDatasetType() {
+        Variable variable = new Variable(
+            "VAR",
+            VariableType.NUMERIC,
+            8,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        LocalDateTime beforeBuilder = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
+
+        // Setting the dataset type to a value that's 8 characters but 9 bytes in UTF-8 should be an error.
+        final String sigma = "\u03C3"; // GREEK SMALL LETTER SIGMA (two bytes in UTF-8)
+        String badDatasetType = sigma + "3456789";
+        assertEquals(8, badDatasetType.length(), "TEST BUG: not testing encoding expansion");
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.datasetType(badDatasetType));
+        assertEquals("datasetType must not be longer than 8 bytes when encoding in UTF-8", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertNotNull(metadata.creationTime());
+        assertFalse(metadata.creationTime().isBefore(beforeBuilder));
+        assertEquals("DATA", metadata.datasetType());
+        assertEquals("", metadata.datasetLabel());
+        assertEquals(1, metadata.variables().size());
+        assertEquals(variable, metadata.variables().get(0));
+    }
+
+    @Test
     void setNullDatasetType() {
         Variable variable = new Variable(
             "VAR",
