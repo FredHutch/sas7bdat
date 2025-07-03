@@ -730,7 +730,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, datasetVariables);
 
         // Add the subheaders in the order in which they should be listed in the subheaders index.
-        // Note that this is the reverse order in which they appear a metadata page.
+        // Note that this is the reverse order in which they appear on a metadata page.
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(
             pageSequenceGenerator,
             metadata.datasetType(),
