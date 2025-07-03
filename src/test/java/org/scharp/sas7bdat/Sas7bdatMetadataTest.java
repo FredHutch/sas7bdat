@@ -9,7 +9,6 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class Sas7bdatMetadataTest {
@@ -62,7 +61,6 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -89,7 +87,6 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -116,7 +113,6 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -143,7 +139,6 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -170,7 +165,6 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -215,7 +209,6 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -243,7 +236,6 @@ public class Sas7bdatMetadataTest {
             Format.UNSPECIFIED);
         Sas7bdatMetadata metadata = builder.variables(List.of(variable)).build();
 
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals("", metadata.datasetLabel());
@@ -264,7 +256,6 @@ public class Sas7bdatMetadataTest {
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().variables(List.of(variable)).build();
 
-        assertNotNull(metadata.creationTime());
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertEquals("DATA", metadata.datasetType());
         assertEquals(1, metadata.variables().size());
