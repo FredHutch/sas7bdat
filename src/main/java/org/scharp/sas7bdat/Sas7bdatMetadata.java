@@ -87,11 +87,16 @@ public class Sas7bdatMetadata {
          * @return this builder
          *
          * @throws NullPointerException
-         *     if {@code datasetlabel} is {@code null}.
+         *     if {@code datasetLabel} is {@code null}.
+         * @throws IllegalArgumentException
+         *     if {@code datasetLabel} is longer than 256 bytes when encoded in UTF-8.
          */
         public Builder datasetLabel(String datasetLabel) {
             ArgumentUtil.checkNotNull(datasetLabel, "datasetLabel");
-            // TODO: check that the label is well-formed
+
+            // dataset labels can't be longer than 256 bytes.
+            ArgumentUtil.checkMaximumLength(datasetLabel, StandardCharsets.UTF_8, 256, "datasetLabel");
+
             this.datasetLabel = datasetLabel;
             return this;
         }

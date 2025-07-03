@@ -3,6 +3,7 @@ package org.scharp.sas7bdat;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -96,6 +97,33 @@ public class Sas7bdatMetadataTest {
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+    }
+
+    @Test
+    void setLongDatasetLabel() {
+        List<Variable> variables = List.of(
+            new Variable(
+                "VAR",
+                VariableType.NUMERIC,
+                8,
+                "label",
+                Format.UNSPECIFIED,
+                Format.UNSPECIFIED));
+        LocalDateTime beforeBuilder = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(variables).datasetLabel("before");
+
+        // Setting the dataset label a string that's > 256 bytes should throw an exception.
+        final String sigma = "\u03C3"; // GREEK SMALL LETTER SIGMA (two bytes in UTF-8)
+        String badDatasetLabel = sigma.repeat(128) + "x";
+        assertEquals(129, badDatasetLabel.length(), "TEST BUG: not testing encoding expansion");
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.datasetLabel(badDatasetLabel));
+        assertEquals("datasetLabel must not be longer than 256 bytes when encoded with UTF-8", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "before", variables);
     }
 
     @Test
@@ -316,5 +344,56 @@ public class Sas7bdatMetadataTest {
             build();
 
         assertSas7bdatMetadata(metadata, creationTime, "MY_TYPE", "My Label", List.of(variable1, variable2));
+    }
+
+    @Test
+    void buildWithMinimValues() {
+        List<Variable> minVariables = List.of(
+            new Variable("V", VariableType.CHARACTER, 1, "", Format.UNSPECIFIED, Format.UNSPECIFIED));
+
+        final LocalDateTime minCreationTime = LocalDateTime.of(1582, 1, 1, 0, 0, 0);
+
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            creationTime(minCreationTime).
+            datasetType("").
+            datasetLabel("").
+            variables(minVariables).
+            build();
+
+        assertSas7bdatMetadata(metadata, minCreationTime, "", "", minVariables);
+    }
+
+    @Test
+    void buildWithMaximumValues() {
+        // The maximum number of variables is 32767.
+        List<Variable> maxVariables = new ArrayList<>(Short.MAX_VALUE);
+        for (int i = 0; i < Short.MAX_VALUE; i++) {
+            Variable variable = new Variable(
+                "VARIABLE_" + i,
+                VariableType.CHARACTER,
+                8,
+                "label",
+                Format.UNSPECIFIED,
+                Format.UNSPECIFIED,
+                StrictnessMode.SAS_ANY);
+            maxVariables.add(variable);
+        }
+
+        final LocalDateTime maxCreationTime = LocalDateTime.of(19_900, 12, 31, 23, 59, 59);
+
+        // The maximum length of a dataset type is 8 bytes.
+        final String maxType = "DATATYPE";
+
+        // The maximum length of a dataset label is 256 bytes.
+        final String maxLabel = "X".repeat(256);
+
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            creationTime(maxCreationTime).
+            datasetType(maxType).
+            datasetLabel(maxLabel).
+            variables(maxVariables).
+            build();
+
+        assertSas7bdatMetadata(metadata, maxCreationTime, maxType, maxLabel, maxVariables);
     }
 }
