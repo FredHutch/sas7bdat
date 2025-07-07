@@ -190,7 +190,7 @@ public class Sas7bdatMetadata {
      *
      * @return A new builder.
      */
-    static Builder builder() {
+    public static Builder builder() {
         return new Builder(LocalDateTime.now(), "DATA", "", List.of());
     }
 

@@ -1,10 +1,15 @@
-package org.scharp.sas7bdat;
+package org.scharp.sas7bdat.javadoc;
 
 import com.epam.parso.CSVDataWriter;
 import com.epam.parso.SasFileReader;
 import com.epam.parso.impl.CSVDataWriterImpl;
 import com.epam.parso.impl.SasFileReaderImpl;
 import org.junit.jupiter.api.Test;
+import org.scharp.sas7bdat.Format;
+import org.scharp.sas7bdat.Sas7bdatExporter;
+import org.scharp.sas7bdat.Sas7bdatMetadata;
+import org.scharp.sas7bdat.Variable;
+import org.scharp.sas7bdat.VariableType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +20,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A class for executing the sample code that's within the package JavaDoc.
+ */
 public class Sas7bdatTest {
 
     private static void exportDataset(Path targetLocation) throws IOException {
