@@ -209,6 +209,28 @@ public class Sas7bdatMetadataTest {
     }
 
     @Test
+    void setReusedVariableName() {
+        Variable variable1a = new Variable("V1", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Variable variable2 = new Variable("V2", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Variable variable3 = new Variable("V3", VariableType.CHARACTER, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Variable variable1b = new Variable("V1", VariableType.CHARACTER, 1, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+
+        LocalDateTime beforeBuilder = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable2));
+
+        // Setting the variables with a repeated name should throw an exception.
+        List<Variable> badVariableList = List.of(variable1a, variable3, variable1b);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.variables(badVariableList));
+        assertEquals("variables contains two variables named \"V1\"", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable2));
+    }
+
+    @Test
     void setEmptyVariables() {
         Variable variable = new Variable(
             "VAR",

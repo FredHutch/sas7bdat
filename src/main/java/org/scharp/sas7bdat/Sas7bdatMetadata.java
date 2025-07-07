@@ -4,7 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A class that represents the metadata (creation date, variables, etc.) of a SAS7BDAT file.
@@ -127,7 +129,8 @@ public class Sas7bdatMetadata {
          * @throws NullPointerException
          *     if {@code variables} is {@code null} or contains a {@code null} entry.
          * @throws IllegalArgumentException
-         *     if {@code variables} is empty or has more than 32767 entries.
+         *     if {@code variables} is empty, has more than 32767 entries, or contains two variables with the same
+         *     name.
          */
         public Builder variables(List<Variable> variables) {
             // Check that the variables list is well-formed
@@ -140,11 +143,18 @@ public class Sas7bdatMetadata {
                     "A SAS7BDAT cannot have more than " + Short.MAX_VALUE + " variables");
             }
 
-            // Copy the variables while checking for null entries.
+            // Copy the variables while checking for null entries and duplicate names.
             List<Variable> newList = new ArrayList<>(variables.size());
+            Set<String> variableNames = new HashSet<>(variables.size() * 2);
             for (Variable variable : variables) {
                 if (variable == null) {
                     throw new NullPointerException("variables cannot contain a null entry");
+                }
+
+                // Check if this variable's name matches another variable's name.
+                if (!variableNames.add(variable.name())) {
+                    throw new IllegalArgumentException(
+                        "variables contains two variables named \"" + variable.name() + "\"");
                 }
                 newList.add(variable);
             }
