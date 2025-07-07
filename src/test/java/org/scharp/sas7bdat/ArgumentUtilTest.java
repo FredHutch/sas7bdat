@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/** Tests for {@link ArgumentUtil} */
 public class ArgumentUtilTest {
 
     /** Tests for {@link ArgumentUtil#checkMaximumLength(String, Charset, int, String)} */
