@@ -220,7 +220,7 @@ public class Sas7bdatMetadataTest {
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
-        // Setting the variables to null should throw an exception.
+        // Setting the variables to the empty list should throw an exception.
         Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.variables(List.of()));
         assertEquals("variables must not be empty", exception.getMessage());
 
@@ -229,6 +229,40 @@ public class Sas7bdatMetadataTest {
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
         assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+    }
+
+    @Test
+    void setTooManyVariables() {
+        // Create a variables list that is too long.
+        List<Variable> tooManyVariables = new ArrayList<>(Short.MAX_VALUE + 1);
+        for (int i = 0; i < Short.MAX_VALUE + 1; i++) {
+            Variable variable = new Variable(
+                "VARIABLE_" + i,
+                VariableType.CHARACTER,
+                8,
+                "label",
+                Format.UNSPECIFIED,
+                Format.UNSPECIFIED);
+            tooManyVariables.add(variable);
+        }
+
+        // Create a legal list of variables.
+        List<Variable> legalVariables = List.of(tooManyVariables.get(0));
+
+        // Create the builder.
+        LocalDateTime beforeBuilder = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(legalVariables);
+
+        // Setting the variables to a list that's too long should throw an exception.
+        // The maximum number of variables is 32767.
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.variables(tooManyVariables));
+        assertEquals("A SAS7BDAT cannot have more than 32767 variables", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", legalVariables);
     }
 
     @Test

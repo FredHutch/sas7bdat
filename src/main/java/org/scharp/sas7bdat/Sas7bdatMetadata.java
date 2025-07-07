@@ -127,13 +127,17 @@ public class Sas7bdatMetadata {
          * @throws NullPointerException
          *     if {@code variables} is {@code null} or contains a {@code null} entry.
          * @throws IllegalArgumentException
-         *     if {@code variables} is empty.
+         *     if {@code variables} is empty or has more than 32767 entries.
          */
         public Builder variables(List<Variable> variables) {
             // Check that the variables list is well-formed
             ArgumentUtil.checkNotNull(variables, "variables");
             if (variables.isEmpty()) {
                 throw new IllegalArgumentException("variables must not be empty");
+            }
+            if (Short.MAX_VALUE < variables.size()) {
+                throw new IllegalArgumentException(
+                    "A SAS7BDAT cannot have more than " + Short.MAX_VALUE + " variables");
             }
 
             // Copy the variables while checking for null entries.
