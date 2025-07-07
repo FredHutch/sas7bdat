@@ -329,6 +329,77 @@ public class Sas7bdatMetadataTest {
     }
 
     @Test
+    void testVariablesIsCopied() {
+        // Tests that the builder's variables is copied.
+        List<Variable> mutableVariables = new ArrayList<>();
+        Variable originalVariable = new Variable(
+            "ORIGINAL",
+            VariableType.CHARACTER,
+            10,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        mutableVariables.add(originalVariable);
+
+        // Create and populate the builder.
+        LocalDateTime creationTime = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().
+            creationTime(creationTime).
+            variables(mutableVariables);
+
+        // Modify the variables that we gave to the builder.
+        Variable replacementVariable = new Variable(
+            "REPLACEMENT",
+            VariableType.CHARACTER,
+            13,
+            "a new variable",
+            new Format("$UPCASE", 10),
+            Format.UNSPECIFIED);
+        mutableVariables.clear();
+        mutableVariables.add(replacementVariable);
+
+        // Finish building.
+        Sas7bdatMetadata metadata = builder.build();
+
+        // Confirm that the metadata reflects the variables that were given to the builder, not what they became.
+        assertSas7bdatMetadata(metadata, creationTime, "DATA", "", List.of(originalVariable));
+    }
+
+    /** Test that the return value of {@link Sas7bdatMetadata#variables()} doesn't support modification operations. */
+    @Test
+    void testVariablesIsUnmodifiable() {
+
+        List<Variable> mutableVariables = new ArrayList<>();
+        Variable originalVariable = new Variable(
+            "ORIGINAL",
+            VariableType.CHARACTER,
+            10,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        mutableVariables.add(originalVariable);
+
+        // Create the metadata
+        LocalDateTime creationTime = LocalDateTime.now();
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            creationTime(creationTime).
+            variables(mutableVariables).
+            build();
+
+        // Get the variables from the metadata
+        List<Variable> returnedVariables = metadata.variables();
+
+        // Attempt to modify the variables.
+        assertThrows(UnsupportedOperationException.class, () -> returnedVariables.clear());
+        assertThrows(UnsupportedOperationException.class, () -> returnedVariables.remove(originalVariable));
+        assertThrows(UnsupportedOperationException.class, () -> returnedVariables.remove(0));
+        assertThrows(UnsupportedOperationException.class, () -> returnedVariables.add(originalVariable));
+
+        // Confirm that the metadata still reflects the variables that were given to the builder.
+        assertSas7bdatMetadata(metadata, creationTime, "DATA", "", List.of(originalVariable));
+    }
+
+    @Test
     void buildWithAllDefaults() {
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder();
