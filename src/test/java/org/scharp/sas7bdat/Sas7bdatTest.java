@@ -12,65 +12,61 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Sas7bdatTest {
 
-    private static void writeDataset(Path targetLocation) throws IOException {
+    private static void exportDataset(Path targetLocation) throws IOException {
+
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             datasetLabel("A sample dataset").
             variables(
                 List.of(
                     new Variable(
-                        "TEXT",
+                        "CITY",
                         VariableType.CHARACTER,
-                        20,
-                        "Some simple text",
-                        Format.UNSPECIFIED,
-                        new Format("$", 10)),
+                        20, // string length
+                        "Name of city", // label
+                        new Format("$CHAR", 18), // output format
+                        Format.UNSPECIFIED), //
 
-                    new Variable(
-                        "AVERYLONG_0123456789_123456789VR",
-                        VariableType.CHARACTER,
-                        20,
-                        "A second text variable with a long name",
-                        new Format("$CHAR", 200),
-                        Format.UNSPECIFIED),
+                    new Variable(//
+                        "STATE",
+                        VariableType.CHARACTER, //
+                        2, // string length
+                        "Postal abbreviation of state", //
+                        new Format("$CHAR", 2), //
+                        Format.UNSPECIFIED), //
 
-                    new Variable(
-                        "TEXT3",
-                        VariableType.CHARACTER,
-                        5,
-                        "", // no label
-                        new Format("$UPCASE", 10),
-                        Format.UNSPECIFIED),
+                    new Variable(//
+                        "HIGH", //
+                        VariableType.NUMERIC, //
+                        8, //
+                        "Average daily high in F", //
+                        new Format("", 5), //
+                        Format.UNSPECIFIED), //
 
-                    new Variable(
-                        "Letter",
-                        VariableType.CHARACTER,
-                        1, // len
-                        "A single letter", // label
-                        new Format("$ASCII", 1),
-                        Format.UNSPECIFIED),
+                    new Variable(//
+                        "LOW", //
+                        VariableType.NUMERIC, //
+                        8, //
+                        "Average daily low in F", //
+                        new Format("", 5), //
+                        Format.UNSPECIFIED))).build();
 
-                    new Variable(
-                        "MY_NUMBER",
-                        VariableType.NUMERIC,
-                        8, // len
-                        "A number", // label
-                        Format.UNSPECIFIED,
-                        new Format("d", 10)))).build();
+        List<List<Object>> observations = Arrays.asList(
+            Arrays.asList("Atlanta", "GA", 72, 53),
+            Arrays.asList("Austin", "TX", 80, 5),
+            Arrays.asList("Baltimore", "MD", 65, 45),
+            Arrays.asList("Birmingham", "AL", 74, 53),
+            Arrays.asList("Boston", "MA", 59, null), // null means missing
+            Arrays.asList("Buffalo", "NY", 56, 40),
+            // ...
+            Arrays.asList("Virginia Beach", "VA", 68, 52),
+            Arrays.asList("Washington", "DC", 68, 52));
 
-        List<List<Object>> observations = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-            observations.add(Arrays.asList("Value #1 for Var #1!", "Value #1 for Var #2$", "Text3", "A", i));
-            observations.add(Arrays.asList("Value #2 for Var #1@", "Value #2 for Var #2$", "Text3", "B", i));
-            observations.add(Arrays.asList("Value #3 for Var #1@", "Value #3 for Var #2$", "Text3", "C", i));
-        }
-
-        // Write a data set.
+        // Export the data set a SAS7BDAT file.
         Sas7bdatExporter.writeDataset(targetLocation, metadata, observations);
     }
 
@@ -80,7 +76,7 @@ public class Sas7bdatTest {
         Path targetLocation = Files.createTempFile("sas7bdat-sample-", ".sas7bdat");
         try {
             // Execute the sample code to create a dataset.
-            writeDataset(targetLocation);
+            exportDataset(targetLocation);
 
             // Read the dataset with parso to confirm that it was written correctly.
             try (InputStream inputStream = Files.newInputStream(targetLocation)) {
