@@ -47,10 +47,23 @@ public class Sas7bdatMetadata {
          *
          * @throws NullPointerException
          *     if {@code creationTime} is {@code null}.
+         * @throws IllegalArgumentException
+         *     if {@code creationTime} is before the year 1582 or after the year 19900.
          */
         public Builder creationTime(LocalDateTime creationTime) {
             ArgumentUtil.checkNotNull(creationTime, "creationTime");
-            // TODO: check that the creation time is in the range supported by SAS.
+
+            // Check that the creation time is in the range supported by SAS.
+            // According to
+            //    https://support.sas.com/documentation/cdl/en/lrcon/62955/HTML/default/viewer.htm#a002200738.htm
+            // SAS only supports "dates ranging from A.D. 1582 to A.D. 19,900".
+            int creationDateYear = creationTime.getYear();
+            if (creationDateYear < 1582) {
+                throw new IllegalArgumentException("creationTime must not be before the year 1582");
+            } else if (19_900 < creationDateYear) {
+                throw new IllegalArgumentException("creationTime must not be after the year 19900");
+            }
+
             this.creationTime = creationTime;
             return this;
         }

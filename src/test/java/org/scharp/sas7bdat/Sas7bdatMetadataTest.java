@@ -28,6 +28,42 @@ public class Sas7bdatMetadataTest {
     }
 
     @Test
+    void setEarlyCreationTime() {
+        LocalDateTime goodCreationTime = LocalDateTime.of(2000, 1, 2, 3, 4, 5, 6);
+        Variable variable = new Variable("VAR", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable))
+            .creationTime(goodCreationTime);
+
+        // Setting the creation time to a value that's before 1582 should be an error.
+        LocalDateTime badCreationTime = LocalDateTime.of(1581, 12, 31, 23, 59, 59);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.creationTime(badCreationTime));
+        assertEquals("creationTime must not be before the year 1582", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertSas7bdatMetadata(metadata, goodCreationTime, "DATA", "", List.of(variable));
+    }
+
+    @Test
+    void setLateCreationTime() {
+        LocalDateTime goodCreationTime = LocalDateTime.of(2000, 1, 2, 3, 4, 5, 6);
+        Variable variable = new Variable("VAR", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable))
+            .creationTime(goodCreationTime);
+
+        // Setting the creation time to a value that's before 19,900 should be an error.
+        LocalDateTime badCreationTime = LocalDateTime.of(19_901, 1, 1, 0, 0, 0);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.creationTime(badCreationTime));
+        assertEquals("creationTime must not be after the year 19900", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertSas7bdatMetadata(metadata, goodCreationTime, "DATA", "", List.of(variable));
+    }
+
+    @Test
     void setNullCreationTime() {
         Variable variable = new Variable(
             "VAR",
