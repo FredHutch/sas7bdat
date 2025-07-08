@@ -2,7 +2,6 @@ package org.scharp.sas7bdat;
 
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7BdatMetadataPage;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;

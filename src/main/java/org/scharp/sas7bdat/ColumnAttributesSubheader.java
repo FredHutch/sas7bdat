@@ -1,7 +1,5 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
-
 import java.util.Arrays;
 import java.util.List;
 

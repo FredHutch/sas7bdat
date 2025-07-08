@@ -1,7 +1,5 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatVariables;
-
 import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;

@@ -28,116 +28,6 @@ public class Sas7bdatExporter implements AutoCloseable {
 
     private static final int DATA_PAGE_HEADER_SIZE = 40;
 
-    /** A collection of variables in a sas7bdat file that knows how variables are laid out */
-    static class Sas7bdatVariables {
-
-        private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
-
-        final List<Variable> variables;
-        final int[] physicalOffsets;
-        private final int rowLength;
-
-        Sas7bdatVariables(List<Variable> variablesList) {
-            variables = new ArrayList<>(variablesList);
-            physicalOffsets = new int[variables.size()];
-
-            // Calculate the physical offset of each variable.
-            int rowOffset = 0;
-
-            // sas generates datasets such that the numeric variables are
-            // all first.  I suspect this is because SAS wants to place them according
-            // to their natural alignment of 8 bytes without adding padding.  The
-            // easiest way to do this is to make them all first.
-            boolean hasNumericType = false;
-            int i = 0;
-            for (Variable variable : variables) {
-                if (variable.type() == VariableType.NUMERIC) {
-                    hasNumericType = true;
-
-                    physicalOffsets[i] = rowOffset;
-
-                    // Advance to the offset of the next variable.
-                    rowOffset += variable.length();
-                }
-                i++;
-            }
-            i = 0;
-            for (Variable variable : variables) {
-                if (variable.type() == VariableType.CHARACTER) {
-                    physicalOffsets[i] = rowOffset;
-
-                    // Advance to the offset of the next variable.
-                    rowOffset += variable.length();
-                }
-                i++;
-            }
-
-            // Make sure that padding is added after the last variable if the first variable needs it.
-            // If there's any numeric variable, then a numeric variable is given first, and it should be aligned
-            // to an 8-byte boundary.
-            if (hasNumericType) {
-                rowOffset = WriteUtil.align(rowOffset, 8);
-            }
-
-            rowLength = rowOffset;
-        }
-
-        void writeObservation(byte[] buffer, int offsetOfObservation, List<Object> observation) {
-
-            assert observation.size() == totalVariables(); // TODO: throw an exception on bad input
-
-            for (int i = 0; i < physicalOffsets.length; i++) {
-                final Variable variable = variables.get(i);
-                final Object value = observation.get(i);
-
-                // TODO: strict type checking for observation
-                final byte[] valueBytes;
-                if (VariableType.CHARACTER == variable.type()) {
-                    // TODO: limit valueBytes to the size of the variable
-                    valueBytes = value.toString().getBytes(StandardCharsets.UTF_8);
-                } else {
-                    // NOTE: datasets which SAS generates seem to keep numeric values aligned on byte offsets that
-                    // are multiples of 8.  Sometimes it physically re-organizes the integer variables to be
-                    // consecutive.  Sometimes, it adds padding between the observations.
-
-                    if (value instanceof Number) {
-                        long valueBits = Double.doubleToRawLongBits(((Number) value).doubleValue());
-                        valueBytes = new byte[] { //
-                            (byte) (valueBits >> 0), //
-                            (byte) (valueBits >> 8), //
-                            (byte) (valueBits >> 16), //
-                            (byte) (valueBits >> 24), //
-                            (byte) (valueBits >> 32), //
-                            (byte) (valueBits >> 40), //
-                            (byte) (valueBits >> 48), //
-                            (byte) (valueBits >> 56), //
-                        };
-                    } else {
-                        valueBytes = MISSING_NUMERIC;
-                    }
-                }
-
-                final int offsetOfValue = offsetOfObservation + physicalOffsets[i];
-                assert offsetOfValue + variable.length() < buffer.length;
-                assert valueBytes.length <= variable.length();
-
-                // Copy the data
-                System.arraycopy(valueBytes, 0, buffer, offsetOfValue, valueBytes.length);
-
-                // Pad the data
-                Arrays.fill(buffer, offsetOfValue + valueBytes.length, offsetOfValue + variable.length(), (byte) ' ');
-            }
-        }
-
-        int rowLength() {
-            return rowLength;
-        }
-
-        int totalVariables() {
-            return physicalOffsets.length;
-        }
-    }
-
     private static class Sas7bdatHeader {
 
         private static final byte ALIGNMENT_OFFSET_0 = 0x22;
@@ -452,7 +342,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // An observation takes up space equal to its size in bytes, plus one bit.
             // The extra bit is for an "is deleted" flag that is added at the end of the observations.
             final int totalBitsRemaining = 8 * totalBytesRemaining();
-            final int totalBitsPerObservation = 8 * variables.rowLength + 1;
+            final int totalBitsPerObservation = 8 * variables.rowLength() + 1;
             maxObservations = totalBitsRemaining / totalBitsPerObservation;
         }
 
@@ -468,7 +358,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
             // There's space for the observation.
             // It will be written just after the last subheader index entry or the previous observation written.
-            offsetOfNextSubheaderIndexEntry += variables.rowLength;
+            offsetOfNextSubheaderIndexEntry += variables.rowLength();
             observations.add(observation);
 
             // metadata pages that also have data are "mixed" pages.
@@ -516,7 +406,7 @@ public class Sas7bdatExporter implements AutoCloseable {
                 DATA_PAGE_HEADER_SIZE + // standard page header
                     subheaders.size() * SUBHEADER_OFFSET_SIZE_64BIT + // subheader index
                     subheaders.stream().map(Subheader::size).reduce(0, Integer::sum) + // subheaders
-                    observations.size() * variables.rowLength + // observations
+                    observations.size() * variables.rowLength() + // observations
                     divideAndRoundUp(observations.size(), 8)); // observation deleted flags
             write8(data, 24, totalBytesFree);
 
@@ -538,7 +428,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // Write the observations.
             for (List<Object> observation : observations) {
                 variables.writeObservation(data, offset, observation);
-                offset += variables.rowLength;
+                offset += variables.rowLength();
             }
             assert offsetOfNextSubheaderIndexEntry == offset;
 
@@ -565,7 +455,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // An observation takes up space equal to its size in bytes, plus one bit.
             // The extra bit is for an "is deleted" flag that is added at the end of the observations.
             final int totalBitsRemaining = 8 * (pageSize - DATA_PAGE_HEADER_SIZE);
-            final int totalBitsPerObservation = 8 * variables.rowLength + 1;
+            final int totalBitsPerObservation = 8 * variables.rowLength() + 1;
             return totalBitsRemaining / totalBitsPerObservation;
         }
 
@@ -604,7 +494,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // SAS uses numbers that are 0% - 5% bytes smaller than the ones calculated below.
             int totalBytesFree = pageSize - (
                 DATA_PAGE_HEADER_SIZE + // standard page header
-                    observations.size() * variables.rowLength + // observations
+                    observations.size() * variables.rowLength() + // observations
                     divideAndRoundUp(observations.size(), 8)); // observation deleted flags
             write8(data, 24, totalBytesFree);
 
@@ -616,7 +506,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             int offset = 40;
             for (List<Object> observation : observations) {
                 variables.writeObservation(data, offset, observation);
-                offset += variables.rowLength;
+                offset += variables.rowLength();
             }
 
             // Immediately before the end of the page are the "is deleted" flags.
