@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Unit tests for {@link Sas7bdatVariables}. */
 public class Sas7bdatVariablesTest {
@@ -41,7 +43,7 @@ public class Sas7bdatVariablesTest {
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
         assertEquals(3, variables.totalVariables());
         assertEquals(10 + 1 + 8, variables.rowLength());
-        assertArrayEquals(new int[] { 0, 10, 11 }, variables.physicalOffsets);
+        assertEquals(List.of(0, 10, 11), variables.physicalOffsets());
 
         byte[] actualData = new byte[30];
         variables.writeObservation(actualData, 0, List.of("Variable 1", "2", "EightChr")); // all full-length
@@ -103,7 +105,7 @@ public class Sas7bdatVariablesTest {
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
         assertEquals(4, variables.totalVariables());
         assertEquals(8 * 4, variables.rowLength());
-        assertArrayEquals(new int[] { 0, 8, 16, 24 }, variables.physicalOffsets);
+        assertEquals(List.of(0, 8, 16, 24), variables.physicalOffsets());
 
         // Write 1 four different ways.
         byte[] actualData = new byte[32];
@@ -197,7 +199,7 @@ public class Sas7bdatVariablesTest {
         Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
         assertEquals(4, variables.totalVariables());
         assertEquals(10 + 8 + 13 + 8 + 1, variables.rowLength()); // +1 rounds up to the nearest 8-byte boundary
-        assertArrayEquals(new int[] { 16, 0, 26, 8 }, variables.physicalOffsets); // numerics first
+        assertEquals(List.of(16, 0, 26, 8), variables.physicalOffsets()); // numerics first
 
         byte[] actualData = new byte[40];
         variables.writeObservation(actualData, 0, List.of("Variable 1", 2, "ThirteenChars", -1)); // all full-length
@@ -209,6 +211,119 @@ public class Sas7bdatVariablesTest {
                 'V', 'a', 'r', 'i', 'a', 'b', 'l', 'e', ' ', '1', // var 1 ("Variable 1")
                 'T', 'h', 'i', 'r', 't', 'e', 'e', 'n', 'C', 'h', 'a', 'r', 's', // var 3 ("ThirteenChars")
                 0, // padding
+            },
+            actualData);
+    }
+
+    /** Tests that the variables argument to {@code Sas7bdatVaraibles}'s constructor is copied. */
+    @Test
+    void testVariablesIsCopied() {
+        // Tests that the constructor's variables argument is copied.
+        Variable originalVariable1 = new Variable(
+            "ORIGINAL",
+            VariableType.CHARACTER,
+            10,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        Variable originalVariable2 = new Variable(
+            "ORIGINAL",
+            VariableType.CHARACTER,
+            5,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        List<Variable> mutableVariables = new ArrayList<>();
+        mutableVariables.add(originalVariable1);
+        mutableVariables.add(originalVariable2);
+
+        // Create the sas7bdat variables.
+        Sas7bdatVariables variables = new Sas7bdatVariables(mutableVariables);
+
+        // Modify the variables that we gave to the constructor.
+        Variable replacementVariable = new Variable(
+            "REPLACEMENT",
+            VariableType.NUMERIC,
+            8,
+            "a new variable",
+            new Format("", 10),
+            Format.UNSPECIFIED);
+        mutableVariables.clear();
+        mutableVariables.add(replacementVariable);
+
+        // Confirm that the total variables reflects the original variables
+        assertEquals(2, variables.totalVariables());
+
+        // Confirm that the row length reflects the original variables
+        assertEquals(15, variables.rowLength());
+
+        // Confirm data is written according to the original variables.
+        byte[] actualData = new byte[15];
+        variables.writeObservation(actualData, 0, List.of("Original", "Value"));
+        assertArrayEquals(
+            new byte[] {
+                'O', 'r', 'i', 'g', 'i', 'n', 'a', 'l', ' ', ' ',// originalVariable1 ("Original")
+                'V', 'a', 'l', 'u', 'e', // originalVariable2 ("Value")
+            },
+            actualData);
+    }
+
+    @Test
+    void testPhysicalOffsetsIsUnmodifiable() {
+        Variable originalVariable1 = new Variable(
+            "ORIGINAL",
+            VariableType.CHARACTER,
+            10,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        Variable originalVariable2 = new Variable(
+            "ORIGINAL",
+            VariableType.CHARACTER,
+            5,
+            "label",
+            Format.UNSPECIFIED,
+            Format.UNSPECIFIED);
+        List<Variable> mutableVariables = new ArrayList<>();
+        mutableVariables.add(originalVariable1);
+        mutableVariables.add(originalVariable2);
+
+        // Create the sas7bdat variables.
+        Sas7bdatVariables variables = new Sas7bdatVariables(mutableVariables);
+
+        // Get the physical offsets
+        List<Integer> returnedPhysicalOffsets = variables.physicalOffsets();
+
+        // Attempt to modify the variables.
+        assertThrows(UnsupportedOperationException.class, () -> returnedPhysicalOffsets.clear());
+        assertThrows(UnsupportedOperationException.class, () -> returnedPhysicalOffsets.remove(Integer.valueOf(0)));
+        assertThrows(UnsupportedOperationException.class, () -> returnedPhysicalOffsets.remove(0));
+        assertThrows(UnsupportedOperationException.class, () -> returnedPhysicalOffsets.add(5));
+
+        // Modify the variables that we gave to the constructor.
+        Variable replacementVariable = new Variable(
+            "REPLACEMENT",
+            VariableType.NUMERIC,
+            8,
+            "a new variable",
+            new Format("", 10),
+            Format.UNSPECIFIED);
+        mutableVariables.clear();
+        mutableVariables.add(replacementVariable);
+
+        // Confirm that the total variables reflects the original variables
+        assertEquals(2, variables.totalVariables());
+
+        // Confirm that the row length reflects the original variables
+        assertEquals(15, variables.rowLength());
+
+        // Confirm data is written according to the original variables.
+        byte[] actualData = new byte[15];
+        variables.writeObservation(actualData, 0, List.of("Original", "Value"));
+        assertArrayEquals(
+            new byte[] {
+                'O', 'r', 'i', 'g', 'i', 'n', 'a', 'l', ' ', ' ',// originalVariable1 ("Original")
+                'V', 'a', 'l', 'u', 'e', // originalVariable2 ("Value")
             },
             actualData);
     }

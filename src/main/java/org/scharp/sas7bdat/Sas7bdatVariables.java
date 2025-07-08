@@ -3,6 +3,7 @@ package org.scharp.sas7bdat;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /** A collection of variables in a sas7bdat file that knows how variables are laid out */
@@ -11,7 +12,7 @@ class Sas7bdatVariables {
     private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
 
     final List<Variable> variables;
-    final int[] physicalOffsets;
+    private final int[] physicalOffsets;
     private final int rowLength;
 
     Sas7bdatVariables(List<Variable> variablesList) {
@@ -112,5 +113,21 @@ class Sas7bdatVariables {
 
     int totalVariables() {
         return physicalOffsets.length;
+    }
+
+    /**
+     * Returns the row offset of each variable's data as a list of Integers.
+     * <p>
+     * The list is given in the same order as the variables. Note that the offsets may not be monotonically increasing
+     * as the physical order of the variable's values do not necessarily match the logical order within the data set.
+     *
+     * @return An unmodifiable list of integers
+     */
+    List<Integer> physicalOffsets() {
+        List<Integer> list = new ArrayList<>(physicalOffsets.length);
+        for (int i = 0; i < physicalOffsets.length; i++) {
+            list.add(physicalOffsets[i]);
+        }
+        return Collections.unmodifiableList(list);
     }
 }

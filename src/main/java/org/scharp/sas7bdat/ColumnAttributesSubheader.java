@@ -1,6 +1,5 @@
 package org.scharp.sas7bdat;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
@@ -30,7 +29,7 @@ class ColumnAttributesSubheader extends Subheader {
 
     private final int totalVariablesInSubheader;
     private final List<Variable> variables;
-    private final int[] physicalOffsets;
+    private final List<Integer> physicalOffsets;
 
     /**
      * Constructs a new column attributes subheader using a sublist of a given set of variables.
@@ -57,7 +56,7 @@ class ColumnAttributesSubheader extends Subheader {
         // Copy the variables and their physical offsets.
         int limit = offset + totalVariablesInSubheader;
         this.variables = variables.variables.subList(offset, limit);
-        physicalOffsets = Arrays.copyOfRange(variables.physicalOffsets, offset, limit);
+        physicalOffsets = variables.physicalOffsets().subList(offset, limit);
     }
 
     /**
@@ -95,7 +94,7 @@ class ColumnAttributesSubheader extends Subheader {
         int i = 0;
         for (Variable variable : variables) {
             // offset of variable in bytes when in data row
-            write8(page, subheaderOffset + offsetWithinSubheader, physicalOffsets[i]);
+            write8(page, subheaderOffset + offsetWithinSubheader, physicalOffsets.get(i));
 
             // column width
             write4(page, subheaderOffset + offsetWithinSubheader + 8, variable.length());
