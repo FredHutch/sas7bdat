@@ -16,8 +16,8 @@ public class ColumnNameSubheaderTest {
 
     private static ColumnText newColumnText(List<Variable> variableList) {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // Populate the column text with the strings from the variableList.

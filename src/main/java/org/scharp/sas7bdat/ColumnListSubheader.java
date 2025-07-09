@@ -29,10 +29,10 @@ class ColumnListSubheader extends Subheader {
     private final int totalVariables;
     private final int totalColumns;
 
-    ColumnListSubheader(Sas7bdatVariables variables, int variablesOffset) {
+    ColumnListSubheader(Sas7bdatVariablesLayout variablesLayout, int variablesOffset) {
         // Determine how many variables, starting at offset, this subheader will hold.
-        assert variablesOffset < variables.totalVariables();
-        int variablesRemaining = variables.totalVariables() - variablesOffset;
+        assert variablesOffset < variablesLayout.totalVariables();
+        int variablesRemaining = variablesLayout.totalVariables() - variablesOffset;
         int totalVariablesInSubheader = Math.min(variablesRemaining, MAX_COLUMNS_PER_SUBHEADER);
 
         totalVariables = totalVariablesInSubheader;

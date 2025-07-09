@@ -33,7 +33,7 @@ class RowSizeSubheader extends Subheader {
     private int totalPagesInDataset;
 
     RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
-        Sas7bdatVariables variables, int totalObservationsInDataset, Sas7bdatPageLayout pageLayout) {
+        Sas7bdatVariablesLayout variablesLayout, int totalObservationsInDataset, Sas7bdatPageLayout pageLayout) {
         this.datasetType = datasetType;
         this.datasetLabel = datasetLabel;
         this.totalObservationsInDataset = totalObservationsInDataset;
@@ -44,7 +44,7 @@ class RowSizeSubheader extends Subheader {
         int totalVariableNameLength = 0;
         int maxVariableNameLength = 0;
         int maxVariableLabelLength = 0;
-        for (Variable variable : variables.variables()) {
+        for (Variable variable : variablesLayout.variables()) {
             totalVariableNameLength += ColumnTextSubheader.sizeof(variable.name());
 
             if (maxVariableNameLength < ColumnTextSubheader.sizeof(variable.name())) {
@@ -55,7 +55,7 @@ class RowSizeSubheader extends Subheader {
             }
         }
 
-        this.rowSizeInBytes = variables.rowLength();
+        this.rowSizeInBytes = variablesLayout.rowLength();
         this.totalVariableNameLength = totalVariableNameLength;
         this.maxVariableNameLength = maxVariableNameLength;
         this.maxVariableLabelLength = maxVariableLabelLength;

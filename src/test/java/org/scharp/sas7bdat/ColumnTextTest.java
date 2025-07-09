@@ -20,8 +20,8 @@ public class ColumnTextTest {
         // Create a ColumnText
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // Add a long string to the ColumnTextSubheader
@@ -132,8 +132,8 @@ public class ColumnTextTest {
     static int totalNumberUuidsToFillFirstColumnTextSubheader() {
         // Create a ColumnText
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // We want to determine how many strings need to be added before the last ColumnTextSubheader on
@@ -160,8 +160,8 @@ public class ColumnTextTest {
         // Create a ColumnText
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
 
         // Add a subheader to the page such that, when ColumnText adds the first subheader
         // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next

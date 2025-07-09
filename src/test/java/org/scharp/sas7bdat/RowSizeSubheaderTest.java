@@ -18,10 +18,10 @@ public class RowSizeSubheaderTest {
         // Create a RowSizeSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variables, 0, pageLayout);
+            variablesLayout, 0, pageLayout);
 
         assertEquals(SUBHEADER_TYPE_A, rowSizeSubheader.typeCode());
     }
@@ -31,10 +31,10 @@ public class RowSizeSubheaderTest {
         // Create a RowSizeSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variables, 0, pageLayout);
+            variablesLayout, 0, pageLayout);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, rowSizeSubheader.compressionCode());
     }
@@ -72,10 +72,10 @@ public class RowSizeSubheaderTest {
                 Format.UNSPECIFIED,
                 Format.UNSPECIFIED));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variables, 0x12456, pageLayout);
+            variablesLayout, 0x12456, pageLayout);
 
         pageLayout.columnText.add("TYPE    ");
         pageLayout.columnText.add("dataset label");
@@ -276,9 +276,9 @@ public class RowSizeSubheaderTest {
                 Format.UNSPECIFIED,
                 Format.UNSPECIFIED));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x20000, variables);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variables, 0,
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x20000, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout, 0,
             pageLayout);
 
         pageLayout.columnText.add("        "); // must add the dataset type.

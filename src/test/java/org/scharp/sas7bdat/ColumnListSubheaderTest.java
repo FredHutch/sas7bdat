@@ -22,9 +22,9 @@ public class ColumnListSubheaderTest {
             "A label",
             Format.UNSPECIFIED,
             new Format("$", 10)));
-        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
-        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
+        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
         assertEquals(SUBHEADER_TYPE_B, columnListSubheader.typeCode());
     }
 
@@ -37,9 +37,9 @@ public class ColumnListSubheaderTest {
             "A label",
             Format.UNSPECIFIED,
             new Format("$", 10)));
-        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
-        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
+        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
         assertEquals(COMPRESSION_UNCOMPRESSED, columnListSubheader.compressionCode());
     }
 
@@ -53,9 +53,9 @@ public class ColumnListSubheaderTest {
                 "A label",
                 new Format("$OUTPUT", 8, 2),
                 new Format("$INPUT", 9, 6)));
-        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
-        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
+        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
         assertEquals(1, columnListSubheader.totalVariablesInSubheader());
 
         final byte[] expectedSubheaderData = new byte[] {
@@ -129,9 +129,9 @@ public class ColumnListSubheaderTest {
                 Format.UNSPECIFIED,
                 Format.UNSPECIFIED));
 
-        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
-        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 1);
+        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 1);
         assertEquals(3, columnListSubheader.totalVariablesInSubheader());
 
         // Write the contents of the subheader to a byte array.
@@ -184,8 +184,8 @@ public class ColumnListSubheaderTest {
             variablesList.add(variable);
         }
 
-        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
-        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variables, 0);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
+        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
         assertEquals(16345, columnListSubheader.totalVariablesInSubheader());
 
         int size = columnListSubheader.size();

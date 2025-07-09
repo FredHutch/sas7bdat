@@ -276,7 +276,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         final long pageSequenceNumber;
         final List<Subheader> subheaders;
         final List<List<Object>> observations;
-        final Sas7bdatVariables variables;
+        final Sas7bdatVariablesLayout variablesLayout;
 
         short pageType;
         int offsetOfNextSubheaderIndexEntry; // also the index of the last observation written.
@@ -284,12 +284,13 @@ public class Sas7bdatExporter implements AutoCloseable {
         boolean subheaderFinalized;
         int maxObservations;
 
-        Sas7BdatMetadataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize, Sas7bdatVariables variables) {
+        Sas7BdatMetadataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
+            Sas7bdatVariablesLayout variablesLayout) {
             this.pageSize = pageSize;
 
             pageSequenceGenerator.incrementPageSequence();
             this.pageSequenceNumber = pageSequenceGenerator.currentPageSequence();
-            this.variables = variables;
+            this.variablesLayout = variablesLayout;
 
             subheaders = new ArrayList<>();
             observations = new ArrayList<>();
@@ -342,7 +343,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // An observation takes up space equal to its size in bytes, plus one bit.
             // The extra bit is for an "is deleted" flag that is added at the end of the observations.
             final int totalBitsRemaining = 8 * totalBytesRemaining();
-            final int totalBitsPerObservation = 8 * variables.rowLength() + 1;
+            final int totalBitsPerObservation = 8 * variablesLayout.rowLength() + 1;
             maxObservations = totalBitsRemaining / totalBitsPerObservation;
         }
 
@@ -358,7 +359,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
             // There's space for the observation.
             // It will be written just after the last subheader index entry or the previous observation written.
-            offsetOfNextSubheaderIndexEntry += variables.rowLength();
+            offsetOfNextSubheaderIndexEntry += variablesLayout.rowLength();
             observations.add(observation);
 
             // metadata pages that also have data are "mixed" pages.
@@ -406,7 +407,7 @@ public class Sas7bdatExporter implements AutoCloseable {
                 DATA_PAGE_HEADER_SIZE + // standard page header
                     subheaders.size() * SUBHEADER_OFFSET_SIZE_64BIT + // subheader index
                     subheaders.stream().map(Subheader::size).reduce(0, Integer::sum) + // subheaders
-                    observations.size() * variables.rowLength() + // observations
+                    observations.size() * variablesLayout.rowLength() + // observations
                     divideAndRoundUp(observations.size(), 8)); // observation deleted flags
             write8(data, 24, totalBytesFree);
 
@@ -427,8 +428,8 @@ public class Sas7bdatExporter implements AutoCloseable {
 
             // Write the observations.
             for (List<Object> observation : observations) {
-                variables.writeObservation(data, offset, observation);
-                offset += variables.rowLength();
+                variablesLayout.writeObservation(data, offset, observation);
+                offset += variablesLayout.rowLength();
             }
             assert offsetOfNextSubheaderIndexEntry == offset;
 
@@ -446,27 +447,28 @@ public class Sas7bdatExporter implements AutoCloseable {
     static class Sas7BdatDataPage extends Sas7bdatPage {
 
         final int pageSize;
-        final Sas7bdatVariables variables;
+        final Sas7bdatVariablesLayout variablesLayout;
         final int maxPossibleObservations;
         final long pageSequenceNumber;
         final List<List<Object>> observations;
 
-        static int maxObservationsPerPage(int pageSize, Sas7bdatVariables variables) {
+        static int maxObservationsPerPage(int pageSize, Sas7bdatVariablesLayout variablesLayout) {
             // An observation takes up space equal to its size in bytes, plus one bit.
             // The extra bit is for an "is deleted" flag that is added at the end of the observations.
             final int totalBitsRemaining = 8 * (pageSize - DATA_PAGE_HEADER_SIZE);
-            final int totalBitsPerObservation = 8 * variables.rowLength() + 1;
+            final int totalBitsPerObservation = 8 * variablesLayout.rowLength() + 1;
             return totalBitsRemaining / totalBitsPerObservation;
         }
 
-        Sas7BdatDataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize, Sas7bdatVariables variables) {
+        Sas7BdatDataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
+            Sas7bdatVariablesLayout variablesLayout) {
             this.pageSize = pageSize;
-            this.variables = variables;
+            this.variablesLayout = variablesLayout;
 
             pageSequenceGenerator.incrementPageSequence();
             pageSequenceNumber = pageSequenceGenerator.currentPageSequence();
 
-            maxPossibleObservations = maxObservationsPerPage(pageSize, variables);
+            maxPossibleObservations = maxObservationsPerPage(pageSize, variablesLayout);
             assert 0 < maxPossibleObservations : "page size too small to hold an observation";
             observations = new ArrayList<>(maxPossibleObservations);
         }
@@ -494,7 +496,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             // SAS uses numbers that are 0% - 5% bytes smaller than the ones calculated below.
             int totalBytesFree = pageSize - (
                 DATA_PAGE_HEADER_SIZE + // standard page header
-                    observations.size() * variables.rowLength() + // observations
+                    observations.size() * variablesLayout.rowLength() + // observations
                     divideAndRoundUp(observations.size(), 8)); // observation deleted flags
             write8(data, 24, totalBytesFree);
 
@@ -505,8 +507,8 @@ public class Sas7bdatExporter implements AutoCloseable {
 
             int offset = 40;
             for (List<Object> observation : observations) {
-                variables.writeObservation(data, offset, observation);
-                offset += variables.rowLength();
+                variablesLayout.writeObservation(data, offset, observation);
+                offset += variablesLayout.rowLength();
             }
 
             // Immediately before the end of the page are the "is deleted" flags.
@@ -529,7 +531,7 @@ public class Sas7bdatExporter implements AutoCloseable {
     static class Sas7bdatPageLayout {
         final PageSequenceGenerator pageSequenceGenerator;
         final int pageSize;
-        final Sas7bdatVariables variables;
+        final Sas7bdatVariablesLayout variablesLayout;
         final ColumnText columnText;
         final List<Subheader> subheaders;
         final List<Sas7BdatMetadataPage> completeMetadataPages;
@@ -537,17 +539,18 @@ public class Sas7bdatExporter implements AutoCloseable {
 
         Sas7BdatMetadataPage currentMetadataPage;
 
-        Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, int pageSize, Sas7bdatVariables variables) {
+        Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, int pageSize,
+            Sas7bdatVariablesLayout variablesLayout) {
             assert pageSize >= MINIMUM_PAGE_SIZE;
             this.pageSequenceGenerator = pageSequenceGenerator;
             this.pageSize = pageSize;
-            this.variables = variables;
+            this.variablesLayout = variablesLayout;
             this.columnText = new ColumnText(this);
 
             subheaders = new ArrayList<>();
             completeMetadataPages = new ArrayList<>();
             subheaderLocations = new IdentityHashMap<>();
-            currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variables);
+            currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variablesLayout);
         }
 
         void finalizeSubheaders() {
@@ -570,7 +573,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
                 // Create a new page.
                 completeMetadataPages.add(currentMetadataPage);
-                currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variables);
+                currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variablesLayout);
 
                 // Add the subheader to the new page.
                 boolean success = currentMetadataPage.addSubheader(subheader);
@@ -584,7 +587,7 @@ public class Sas7bdatExporter implements AutoCloseable {
     }
 
     private final OutputStream outputStream;
-    private final Sas7bdatVariables datasetVariables;
+    private final Sas7bdatVariablesLayout variablesLayout;
     private final int totalObservationsInDataset;
     private final PageSequenceGenerator pageSequenceGenerator;
     private final int pageSize;
@@ -604,7 +607,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         throws IOException {
 
         outputStream = Files.newOutputStream(targetLocation);
-        datasetVariables = new Sas7bdatVariables(metadata.variables());
+        variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;
         pageSequenceGenerator = new PageSequenceGenerator();
 
@@ -613,11 +616,11 @@ public class Sas7bdatExporter implements AutoCloseable {
         //
 
         // When SAS generates a dataset, it seems to pick page sizes that are multiples of 1KiB (0x400).
-        int dataPageSizeForSingleObservation = DATA_PAGE_HEADER_SIZE + datasetVariables.rowLength() + 1; // +1 is for the "is deleted" flag
+        int dataPageSizeForSingleObservation = DATA_PAGE_HEADER_SIZE + variablesLayout.rowLength() + 1; // +1 is for the "is deleted" flag
         pageSize = WriteUtil.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
         pageBuffer = new byte[pageSize];
 
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, datasetVariables);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
 
         // Add the subheaders in the order in which they should be listed in the subheaders index.
         // Note that this is the reverse order in which they appear on a metadata page.
@@ -625,7 +628,7 @@ public class Sas7bdatExporter implements AutoCloseable {
             pageSequenceGenerator,
             metadata.datasetType(),
             metadata.datasetLabel(),
-            datasetVariables,
+            variablesLayout,
             totalObservationsInDataset,
             pageLayout);
         pageLayout.addSubheader(rowSizeSubheader);
@@ -686,7 +689,7 @@ public class Sas7bdatExporter implements AutoCloseable {
         pageLayout.columnText.noMoreText();
 
         int offset = 0;
-        while (offset < datasetVariables.totalVariables()) {
+        while (offset < variablesLayout.totalVariables()) {
             ColumnNameSubheader nextSubheader = new ColumnNameSubheader(
                 metadata.variables(),
                 offset,
@@ -697,7 +700,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
         // Add the ColumnAttributesSubheaders
         offset = 0;
-        while (offset < datasetVariables.totalVariables()) {
+        while (offset < variablesLayout.totalVariables()) {
             // Datasets that are generated by SAS limit the size of this subheader to 24588 bytes.
             // In theory, it should be able to hold (Short.MAX_VALUE - 8) / 16 bytes, or 2047 variables.
             //
@@ -713,16 +716,16 @@ public class Sas7bdatExporter implements AutoCloseable {
                 maxSize = Math.min(24588, spaceInPage);
             }
 
-            ColumnAttributesSubheader nextSubheader = new ColumnAttributesSubheader(datasetVariables, offset, maxSize);
+            ColumnAttributesSubheader nextSubheader = new ColumnAttributesSubheader(variablesLayout, offset, maxSize);
             pageLayout.addSubheader(nextSubheader);
             offset += nextSubheader.totalVariablesInSubheader();
         }
 
-        if (1 < datasetVariables.totalVariables()) {
+        if (1 < variablesLayout.totalVariables()) {
             // TODO when is this needed?  when there's more than one variable?
             offset = 0;
-            while (offset < datasetVariables.totalVariables()) {
-                ColumnListSubheader nextSubheader = new ColumnListSubheader(datasetVariables, offset);
+            while (offset < variablesLayout.totalVariables()) {
+                ColumnListSubheader nextSubheader = new ColumnListSubheader(variablesLayout, offset);
                 pageLayout.addSubheader(nextSubheader);
                 offset += nextSubheader.totalVariablesInSubheader();
             }
@@ -746,7 +749,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
         // Calculate how many observations fit on a data page.
         final int observationsPerDataPage = Sas7BdatDataPage.maxObservationsPerPage(pageSize,
-            datasetVariables);
+            variablesLayout);
         rowSizeSubheader.setMaxObservationsPerDataPage(observationsPerDataPage);
 
         // Calculate how many pages will be needed in the dataset.
@@ -801,7 +804,7 @@ public class Sas7bdatExporter implements AutoCloseable {
 
             // Start a new page.
             totalPagesAllocated++;
-            currentPage = new Sas7BdatDataPage(pageSequenceGenerator, pageSize, datasetVariables);
+            currentPage = new Sas7BdatDataPage(pageSequenceGenerator, pageSize, variablesLayout);
 
             // Write the observation to the new page.
             boolean success = currentPage.addObservation(observation);

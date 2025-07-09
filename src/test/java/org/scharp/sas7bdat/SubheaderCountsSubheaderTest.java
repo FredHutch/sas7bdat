@@ -18,8 +18,8 @@ public class SubheaderCountsSubheaderTest {
         // Create a SubheaderCountsSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         assertEquals(SUBHEADER_TYPE_A, subheaderCountsSubheader.typeCode());
@@ -30,8 +30,8 @@ public class SubheaderCountsSubheaderTest {
         // Create a SubheaderCountsSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, subheaderCountsSubheader.compressionCode());
@@ -70,8 +70,8 @@ public class SubheaderCountsSubheaderTest {
                 Format.UNSPECIFIED,
                 Format.UNSPECIFIED));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         // Add the subheaders that get counted to the metadata.
@@ -86,7 +86,7 @@ public class SubheaderCountsSubheaderTest {
 
         // Add one column attributes subheader
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
-        pageLayout.addSubheader(new ColumnAttributesSubheader(variables, 0, (short) 500));
+        pageLayout.addSubheader(new ColumnAttributesSubheader(variablesLayout, 0, (short) 500));
 
         // Add three column name subheaders
         ColumnText columnText = new ColumnText(pageLayout);
@@ -95,12 +95,12 @@ public class SubheaderCountsSubheaderTest {
         pageLayout.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
 
         // Add four column list subheaders
-        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
-        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
-        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
-        pageLayout.addSubheader(new ColumnListSubheader(variables, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
 
         final byte[] expectedSubheaderData = new byte[] {
             0, -4, -1, -1, -1, -1, -1, -1,  // signature
@@ -235,8 +235,8 @@ public class SubheaderCountsSubheaderTest {
                 new Format("$OUTPUT", 8, 2),
                 new Format("$INPUT", 9, 6)));
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariables variables = new Sas7bdatVariables(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variables);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
 
         final byte[] expectedSubheaderData = new byte[] {

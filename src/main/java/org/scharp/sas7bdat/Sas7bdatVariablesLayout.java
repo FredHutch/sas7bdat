@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 /** A collection of variables in a sas7bdat file that knows how variables are laid out */
-class Sas7bdatVariables {
+class Sas7bdatVariablesLayout {
 
     private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
 
@@ -15,7 +15,7 @@ class Sas7bdatVariables {
     private final int[] physicalOffsets;
     private final int rowLength;
 
-    Sas7bdatVariables(List<Variable> variablesList) {
+    Sas7bdatVariablesLayout(List<Variable> variablesList) {
         variables = new ArrayList<>(variablesList); // copy to a class that has O(1) random access
         physicalOffsets = new int[variables.size()];
 

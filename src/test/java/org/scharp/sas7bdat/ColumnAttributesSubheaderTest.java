@@ -21,9 +21,9 @@ public class ColumnAttributesSubheaderTest {
             "A label",
             Format.UNSPECIFIED,
             new Format("$", 10));
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
 
-        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
+        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
         assertEquals(SUBHEADER_TYPE_B, subheader.typeCode());
     }
 
@@ -36,9 +36,9 @@ public class ColumnAttributesSubheaderTest {
             "A label",
             Format.UNSPECIFIED,
             new Format("$", 10));
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
 
-        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
+        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
         assertEquals(COMPRESSION_UNCOMPRESSED, subheader.compressionCode());
     }
 
@@ -52,9 +52,9 @@ public class ColumnAttributesSubheaderTest {
             "A label",
             new Format("$OUTPUT", 8, 2),
             new Format("$INPUT", 9, 6));
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(variable));
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
 
-        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 0, Short.MAX_VALUE);
+        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
         assertEquals(1, subheader.totalVariablesInSubheader());
 
         // Write the contents of the subheader to a byte array.
@@ -90,7 +90,7 @@ public class ColumnAttributesSubheaderTest {
 
     @Test
     void testSublistOfVariables() {
-        Sas7bdatVariables variables = new Sas7bdatVariables(List.of(
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             new Variable(
                 "BEFORE",
                 VariableType.NUMERIC,
@@ -129,7 +129,8 @@ public class ColumnAttributesSubheaderTest {
 
         // MIN_SIZE is for a subheader with one variable.  We add enough for 3 more (16*3) and subtract 1.
         short maxSizeForThreeVariables = ColumnAttributesSubheader.MIN_SIZE + 16 * 3 - 1;
-        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variables, 1, maxSizeForThreeVariables);
+        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 1,
+            maxSizeForThreeVariables);
         assertEquals(3, subheader.totalVariablesInSubheader());
 
         final byte[] expectedSubheaderData = new byte[] {

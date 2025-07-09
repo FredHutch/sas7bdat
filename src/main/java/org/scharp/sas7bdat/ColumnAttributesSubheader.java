@@ -34,7 +34,7 @@ class ColumnAttributesSubheader extends Subheader {
     /**
      * Constructs a new column attributes subheader using a sublist of a given set of variables.
      *
-     * @param variables
+     * @param variablesLayout
      *     All variables in the dataset.
      * @param offset
      *     The offset within {@code variables} of the first variable to include in the new subheader.
@@ -42,21 +42,21 @@ class ColumnAttributesSubheader extends Subheader {
      *     The maximum size, in bytes, of the new subheader.  This may limit the number of variables in the new
      *     subheader.
      */
-    ColumnAttributesSubheader(Sas7bdatVariables variables, int offset, int maxLength) {
+    ColumnAttributesSubheader(Sas7bdatVariablesLayout variablesLayout, int offset, int maxLength) {
         // Determine how many variables, starting at offset, this subheader will hold.
-        assert offset < variables.totalVariables() : "offset is larger than the number of variables";
+        assert offset < variablesLayout.totalVariables() : "offset is larger than the number of variables";
         assert 0 < maxLength : "maxLength isn't positive: " + maxLength;
         assert MIN_SIZE <= maxLength : "maxLength is too small: " + maxLength;
         assert maxLength <= Short.MAX_VALUE : "maxLength is too large: " + maxLength;
 
-        final int variablesRemaining = variables.totalVariables() - offset;
+        final int variablesRemaining = variablesLayout.totalVariables() - offset;
         final int variablesInMaxLength = (maxLength - (OFFSET_OF_FIRST_ENTRY + FOOTER_PADDING)) / SIZE_OF_ENTRY;
         totalVariablesInSubheader = Math.min(variablesRemaining, variablesInMaxLength);
 
         // Copy the variables and their physical offsets.
         int limit = offset + totalVariablesInSubheader;
-        this.variables = variables.variables().subList(offset, limit);
-        physicalOffsets = variables.physicalOffsets().subList(offset, limit);
+        this.variables = variablesLayout.variables().subList(offset, limit);
+        physicalOffsets = variablesLayout.physicalOffsets().subList(offset, limit);
     }
 
     /**
