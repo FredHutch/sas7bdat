@@ -11,7 +11,7 @@ class Sas7bdatVariables {
 
     private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
 
-    final List<Variable> variables;
+    private final List<Variable> variables;
     private final int[] physicalOffsets;
     private final int rowLength;
 
@@ -113,6 +113,15 @@ class Sas7bdatVariables {
 
     int totalVariables() {
         return physicalOffsets.length;
+    }
+
+    /**
+     * Returns a list of variables that is equal to the one given in the constructor.  This list is not modifiable.
+     *
+     * @return An unmodifiable list of variables.  This is never {@code null}.
+     */
+    List<Variable> variables() {
+        return Collections.unmodifiableList(variables);
     }
 
     /**

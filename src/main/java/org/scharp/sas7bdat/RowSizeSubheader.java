@@ -44,7 +44,7 @@ class RowSizeSubheader extends Subheader {
         int totalVariableNameLength = 0;
         int maxVariableNameLength = 0;
         int maxVariableLabelLength = 0;
-        for (Variable variable : variables.variables) {
+        for (Variable variable : variables.variables()) {
             totalVariableNameLength += ColumnTextSubheader.sizeof(variable.name());
 
             if (maxVariableNameLength < ColumnTextSubheader.sizeof(variable.name())) {

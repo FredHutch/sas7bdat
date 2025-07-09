@@ -55,7 +55,7 @@ class ColumnAttributesSubheader extends Subheader {
 
         // Copy the variables and their physical offsets.
         int limit = offset + totalVariablesInSubheader;
-        this.variables = variables.variables.subList(offset, limit);
+        this.variables = variables.variables().subList(offset, limit);
         physicalOffsets = variables.physicalOffsets().subList(offset, limit);
     }
 
