@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/** Unit tests for {@link Sas7bdatMetadata}. */
 public class Sas7bdatMetadataTest {
 
     private static void assertSas7bdatMetadata(Sas7bdatMetadata metadata, LocalDateTime expectedCreationTime,
