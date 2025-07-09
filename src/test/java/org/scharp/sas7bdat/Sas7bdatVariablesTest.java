@@ -290,12 +290,10 @@ public class Sas7bdatVariablesTest {
             "label",
             Format.UNSPECIFIED,
             Format.UNSPECIFIED);
-        List<Variable> mutableVariables = new ArrayList<>();
-        mutableVariables.add(originalVariable1);
-        mutableVariables.add(originalVariable2);
+        List<Variable> variablesList = List.of(originalVariable1, originalVariable2);
 
         // Create the sas7bdat variables.
-        Sas7bdatVariables variables = new Sas7bdatVariables(mutableVariables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
 
         // Get the variables
         List<Variable> returnedVariables = variables.variables();
@@ -306,21 +304,13 @@ public class Sas7bdatVariablesTest {
         assertThrows(UnsupportedOperationException.class, () -> returnedVariables.remove(0));
         assertThrows(UnsupportedOperationException.class, () -> returnedVariables.add(originalVariable2));
 
-        // Modify the variables that we gave to the constructor.
-        Variable replacementVariable = new Variable(
-            "REPLACEMENT",
-            VariableType.NUMERIC,
-            8,
-            "a new variable",
-            new Format("", 10),
-            Format.UNSPECIFIED);
-        mutableVariables.clear();
-        mutableVariables.add(replacementVariable);
-
-        // Confirm that the total variables reflects the original variables
+        // Confirm that the total variables reflects the original variables.
         assertEquals(2, variables.totalVariables());
 
-        // Confirm that the row length reflects the original variables
+        // Confirm that the variables reflect the original variables.
+        assertEquals(variablesList, variables.variables());
+
+        // Confirm that the row length reflects the original variables.
         assertEquals(15, variables.rowLength());
 
         // Confirm data is written according to the original variables.
@@ -350,12 +340,10 @@ public class Sas7bdatVariablesTest {
             "label",
             Format.UNSPECIFIED,
             Format.UNSPECIFIED);
-        List<Variable> mutableVariables = new ArrayList<>();
-        mutableVariables.add(originalVariable1);
-        mutableVariables.add(originalVariable2);
+        List<Variable> variablesList = List.of(originalVariable1, originalVariable2);
 
         // Create the sas7bdat variables.
-        Sas7bdatVariables variables = new Sas7bdatVariables(mutableVariables);
+        Sas7bdatVariables variables = new Sas7bdatVariables(variablesList);
 
         // Get the physical offsets.
         List<Integer> returnedPhysicalOffsets = variables.physicalOffsets();
@@ -366,19 +354,11 @@ public class Sas7bdatVariablesTest {
         assertThrows(UnsupportedOperationException.class, () -> returnedPhysicalOffsets.remove(0));
         assertThrows(UnsupportedOperationException.class, () -> returnedPhysicalOffsets.add(5));
 
-        // Modify the variables that we gave to the constructor.
-        Variable replacementVariable = new Variable(
-            "REPLACEMENT",
-            VariableType.NUMERIC,
-            8,
-            "a new variable",
-            new Format("", 10),
-            Format.UNSPECIFIED);
-        mutableVariables.clear();
-        mutableVariables.add(replacementVariable);
-
         // Confirm that the total variables reflects the original variables
         assertEquals(2, variables.totalVariables());
+
+        // Confirm that the variables reflect the original variables.
+        assertEquals(variablesList, variables.variables());
 
         // Confirm that the row length reflects the original variables
         assertEquals(15, variables.rowLength());
