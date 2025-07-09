@@ -33,7 +33,7 @@ class RowSizeSubheader extends Subheader {
     private int totalPagesInDataset;
 
     RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
-        Sas7bdatVariablesLayout variablesLayout, int totalObservationsInDataset, Sas7bdatPageLayout pageLayout) {
+        Sas7bdatVariablesLayout variablesLayout, Sas7bdatPageLayout pageLayout, int totalObservationsInDataset) {
         this.datasetType = datasetType;
         this.datasetLabel = datasetLabel;
         this.totalObservationsInDataset = totalObservationsInDataset;

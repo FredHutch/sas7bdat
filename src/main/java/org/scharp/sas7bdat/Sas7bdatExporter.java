@@ -629,8 +629,8 @@ public class Sas7bdatExporter implements AutoCloseable {
             metadata.datasetType(),
             metadata.datasetLabel(),
             variablesLayout,
-            totalObservationsInDataset,
-            pageLayout);
+            pageLayout,
+            totalObservationsInDataset);
         pageLayout.addSubheader(rowSizeSubheader);
 
         pageLayout.addSubheader(new ColumnSizeSubheader(metadata.variables()));

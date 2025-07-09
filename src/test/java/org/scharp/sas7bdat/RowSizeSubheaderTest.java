@@ -21,7 +21,7 @@ public class RowSizeSubheaderTest {
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variablesLayout, 0, pageLayout);
+            variablesLayout, pageLayout, 0);
 
         assertEquals(SUBHEADER_TYPE_A, rowSizeSubheader.typeCode());
     }
@@ -34,7 +34,7 @@ public class RowSizeSubheaderTest {
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variablesLayout, 0, pageLayout);
+            variablesLayout, pageLayout, 0);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, rowSizeSubheader.compressionCode());
     }
@@ -75,7 +75,7 @@ public class RowSizeSubheaderTest {
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
-            variablesLayout, 0x12456, pageLayout);
+            variablesLayout, pageLayout, 0x12456);
 
         pageLayout.columnText.add("TYPE    ");
         pageLayout.columnText.add("dataset label");
@@ -278,8 +278,8 @@ public class RowSizeSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x20000, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout, 0,
-            pageLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout,
+            pageLayout, 0);
 
         pageLayout.columnText.add("        "); // must add the dataset type.
 
