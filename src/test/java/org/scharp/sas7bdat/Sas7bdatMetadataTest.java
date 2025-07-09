@@ -485,4 +485,48 @@ public class Sas7bdatMetadataTest {
 
         assertSas7bdatMetadata(metadata, maxCreationTime, maxType, maxLabel, maxVariables);
     }
+
+    /** Tests that {@link Sas7bdatMetadata.Builder#build} can be invoked multiple times.  This is weird but legal */
+    @Test
+    void buildMultipleTimes() {
+
+        Variable variable1 = Variable.builder().
+            name("V1").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("a number").build();
+
+        Variable variable2 = Variable.builder().
+            name("V2").
+            type(VariableType.CHARACTER).
+            length(5).
+            label("text").
+            inputFormat(new Format("$UPCASE", 5)).
+            build();
+
+        // Create a metadata builder.
+        LocalDateTime creationTime = LocalDateTime.now();
+        Sas7bdatMetadata.Builder metadataBuilder = Sas7bdatMetadata.builder().
+            creationTime(creationTime).
+            datasetType("TYPE").
+            datasetLabel("Dataset Label").
+            variables(List.of(variable1));
+
+        // Build a metadata object
+        Sas7bdatMetadata metadata = metadataBuilder.build();
+        assertSas7bdatMetadata(metadata, creationTime, "TYPE", "Dataset Label", List.of(variable1));
+
+        // Build an identical metadata object
+        metadata = metadataBuilder.build();
+        assertSas7bdatMetadata(metadata, creationTime, "TYPE", "Dataset Label", List.of(variable1));
+
+        // Change some fields and build a metadata object.
+        LocalDateTime newCreationTime = LocalDateTime.parse("2020-01-13T12:34:56");
+        metadata = metadataBuilder.creationTime(newCreationTime).variables(List.of(variable2)).build();
+        assertSas7bdatMetadata(metadata, newCreationTime, "TYPE", "Dataset Label", List.of(variable2));
+
+        // Change the rest of the fields and build a metadata object.
+        metadata = metadataBuilder.datasetLabel("new label").datasetType("new type").build();
+        assertSas7bdatMetadata(metadata, newCreationTime, "new type", "new label", List.of(variable2));
+    }
 }
