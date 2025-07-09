@@ -31,7 +31,7 @@ public class Sas7bdatMetadataTest {
     @Test
     void setEarlyCreationTime() {
         LocalDateTime goodCreationTime = LocalDateTime.of(2000, 1, 2, 3, 4, 5, 6);
-        Variable variable = new Variable("VAR", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).build();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable))
             .creationTime(goodCreationTime);
 
@@ -49,7 +49,7 @@ public class Sas7bdatMetadataTest {
     @Test
     void setLateCreationTime() {
         LocalDateTime goodCreationTime = LocalDateTime.of(2000, 1, 2, 3, 4, 5, 6);
-        Variable variable = new Variable("VAR", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).build();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable))
             .creationTime(goodCreationTime);
 
@@ -66,13 +66,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setNullCreationTime() {
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).build();
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
@@ -89,13 +83,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setLongDatasetType() {
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
@@ -115,13 +103,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setNullDatasetType() {
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
@@ -139,13 +121,7 @@ public class Sas7bdatMetadataTest {
     @Test
     void setLongDatasetLabel() {
         List<Variable> variables = List.of(
-            new Variable(
-                "VAR",
-                VariableType.NUMERIC,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED));
+            Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build());
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(variables).datasetLabel("before");
 
@@ -165,13 +141,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setNullDatasetLabel() {
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
@@ -188,13 +158,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setNullVariables() {
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
@@ -211,10 +175,10 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setReusedVariableName() {
-        Variable variable1a = new Variable("V1", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
-        Variable variable2 = new Variable("V2", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
-        Variable variable3 = new Variable("V3", VariableType.CHARACTER, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
-        Variable variable1b = new Variable("V1", VariableType.CHARACTER, 1, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+        Variable variable1a = Variable.builder().name("V1").type(VariableType.NUMERIC).length(8).build();
+        Variable variable2 = Variable.builder().name("V2").type(VariableType.NUMERIC).length(8).build();
+        Variable variable3 = Variable.builder().name("V3").type(VariableType.CHARACTER).length(8).build();
+        Variable variable1b = Variable.builder().name("V1").type(VariableType.CHARACTER).length(1).build();
 
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable2));
@@ -233,13 +197,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setEmptyVariables() {
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
 
@@ -258,14 +216,9 @@ public class Sas7bdatMetadataTest {
     void setTooManyVariables() {
         // Create a variables list that is too long.
         List<Variable> tooManyVariables = new ArrayList<>(Short.MAX_VALUE + 1);
+        Variable.Builder variableBuilder = Variable.builder().type(VariableType.CHARACTER).length(8).label("label");
         for (int i = 0; i < Short.MAX_VALUE + 1; i++) {
-            Variable variable = new Variable(
-                "VARIABLE_" + i,
-                VariableType.CHARACTER,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED);
+            Variable variable = variableBuilder.name("VARIABLE_" + i).build();
             tooManyVariables.add(variable);
         }
 
@@ -290,29 +243,27 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void setNullVariable() {
-        Variable variable1 = new Variable(
-            "V1",
-            VariableType.NUMERIC,
-            8,
-            "a number",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable1 = Variable.builder().
+            name("V1").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("a number").build();
 
-        Variable variable2 = new Variable(
-            "V2",
-            VariableType.CHARACTER,
-            5,
-            "text",
-            Format.UNSPECIFIED,
-            new Format("$UPCASE", 5));
+        Variable variable2 = Variable.builder().
+            name("V2").
+            type(VariableType.CHARACTER).
+            length(5).
+            label("text").
+            inputFormat(new Format("$UPCASE", 5)).
+            build();
 
-        Variable variable3 = new Variable(
-            "V3",
-            VariableType.CHARACTER,
-            100,
-            "text",
-            Format.UNSPECIFIED,
-            new Format("$ASCII", 10));
+        Variable variable3 = Variable.builder().
+            name("V3").
+            type(VariableType.CHARACTER).
+            length(100).
+            label("text").
+            inputFormat(new Format("$ASCII", 10)).
+            build();
 
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable1));
@@ -331,15 +282,14 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void testVariablesIsCopied() {
-        // Tests that the builder's variables is copied.
+        // Tests that the metadata builder's variables is copied.
         List<Variable> mutableVariables = new ArrayList<>();
-        Variable originalVariable = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            10,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable originalVariable = Variable.builder().
+            name("ORIGINAL").
+            type(VariableType.CHARACTER).
+            length(10).
+            label("label").
+            build();
         mutableVariables.add(originalVariable);
 
         // Create and populate the builder.
@@ -349,13 +299,13 @@ public class Sas7bdatMetadataTest {
             variables(mutableVariables);
 
         // Modify the variables that we gave to the builder.
-        Variable replacementVariable = new Variable(
-            "REPLACEMENT",
-            VariableType.CHARACTER,
-            13,
-            "a new variable",
-            new Format("$UPCASE", 10),
-            Format.UNSPECIFIED);
+        Variable replacementVariable = Variable.builder().
+            name("REPLACEMENT").
+            type(VariableType.CHARACTER).
+            length(13).
+            label("a new variable").
+            outputFormat(new Format("$UPCASE", 10)).
+            build();
         mutableVariables.clear();
         mutableVariables.add(replacementVariable);
 
@@ -369,22 +319,18 @@ public class Sas7bdatMetadataTest {
     /** Test that the return value of {@link Sas7bdatMetadata#variables()} doesn't support modification operations. */
     @Test
     void testVariablesIsUnmodifiable() {
-
-        List<Variable> mutableVariables = new ArrayList<>();
-        Variable originalVariable = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            10,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
-        mutableVariables.add(originalVariable);
+        Variable originalVariable = Variable.builder().
+            name("VAR").
+            type(VariableType.CHARACTER).
+            length(10).
+            label("label").
+            build();
 
         // Create the metadata
         LocalDateTime creationTime = LocalDateTime.now();
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             creationTime(creationTime).
-            variables(mutableVariables).
+            variables(List.of(originalVariable)).
             build();
 
         // Get the variables from the metadata
@@ -411,13 +357,7 @@ public class Sas7bdatMetadataTest {
 
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to fix the error and continue building.
-        Variable variable = new Variable(
-            "VAR",
-            VariableType.NUMERIC,
-            8,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
         Sas7bdatMetadata metadata = builder.variables(List.of(variable)).build();
 
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
@@ -426,13 +366,7 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void buildWithVariablesOnly() {
-        Variable variable = new Variable(
-            "V1",
-            VariableType.NUMERIC,
-            8,
-            "a number",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable = Variable.builder().name("V1").type(VariableType.NUMERIC).length(8).label("number").build();
 
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().variables(List.of(variable)).build();
@@ -443,21 +377,19 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void buildWithRedundantSetting() {
-        Variable variable1 = new Variable(
-            "V1",
-            VariableType.NUMERIC,
-            8,
-            "a number",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable variable1 = Variable.builder().
+            name("V1").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("a number").build();
 
-        Variable variable2 = new Variable(
-            "V2",
-            VariableType.CHARACTER,
-            5,
-            "text",
-            Format.UNSPECIFIED,
-            new Format("$UPCASE", 5));
+        Variable variable2 = Variable.builder().
+            name("V2").
+            type(VariableType.CHARACTER).
+            length(5).
+            label("text").
+            inputFormat(new Format("$UPCASE", 5)).
+            build();
 
         final LocalDateTime finalCreationTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0, 1);
 
@@ -482,21 +414,20 @@ public class Sas7bdatMetadataTest {
 
     @Test
     void buildWithAllValueSet() {
-        Variable variable1 = new Variable(
-            "V1",
-            VariableType.NUMERIC,
-            8,
-            "a number",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
 
-        Variable variable2 = new Variable(
-            "V2",
-            VariableType.CHARACTER,
-            5,
-            "text",
-            Format.UNSPECIFIED,
-            new Format("$UPCASE", 5));
+        Variable variable1 = Variable.builder().
+            name("V1").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("a number").build();
+
+        Variable variable2 = Variable.builder().
+            name("V2").
+            type(VariableType.CHARACTER).
+            length(5).
+            label("text").
+            inputFormat(new Format("$UPCASE", 5)).
+            build();
 
         final LocalDateTime creationTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0, 1);
 
@@ -513,7 +444,7 @@ public class Sas7bdatMetadataTest {
     @Test
     void buildWithMinimumValues() {
         List<Variable> minVariables = List.of(
-            new Variable("V", VariableType.CHARACTER, 1, "", Format.UNSPECIFIED, Format.UNSPECIFIED));
+            Variable.builder().name("V").type(VariableType.CHARACTER).length(1).build());
 
         final LocalDateTime minCreationTime = LocalDateTime.of(1582, 1, 1, 0, 0, 0);
 
@@ -531,14 +462,9 @@ public class Sas7bdatMetadataTest {
     void buildWithMaximumValues() {
         // The maximum number of variables is 32767.
         List<Variable> maxVariables = new ArrayList<>(Short.MAX_VALUE);
+        Variable.Builder builder = Variable.builder().type(VariableType.CHARACTER).length(Short.MAX_VALUE);
         for (int i = 0; i < Short.MAX_VALUE; i++) {
-            Variable variable = new Variable(
-                "VARIABLE_" + i,
-                VariableType.CHARACTER,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED);
+            Variable variable = builder.name("VARIABLE_" + i).build();
             maxVariables.add(variable);
         }
 

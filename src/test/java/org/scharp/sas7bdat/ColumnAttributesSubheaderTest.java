@@ -14,13 +14,12 @@ public class ColumnAttributesSubheaderTest {
 
     @Test
     void testTypeCode() {
-        Variable variable = new Variable(
-            "TEXT",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10));
+        Variable variable = Variable.builder().
+            name("TEXT").
+            type(VariableType.CHARACTER).
+            length(20).
+            label("A label").
+            outputFormat(new Format("$", 10)).build();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
@@ -29,13 +28,12 @@ public class ColumnAttributesSubheaderTest {
 
     @Test
     void testCompressionCode() {
-        Variable variable = new Variable(
-            "TEXT",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10));
+        Variable variable = Variable.builder().
+            name("TEXT").
+            type(VariableType.CHARACTER).
+            length(20).
+            label("A label").
+            outputFormat(new Format("$", 10)).build();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
@@ -45,13 +43,13 @@ public class ColumnAttributesSubheaderTest {
     @Test
     void testSingleVariable() {
         // A variable
-        Variable variable = new Variable(
-            "MY_VAR",
-            VariableType.NUMERIC,
-            8,
-            "A label",
-            new Format("$OUTPUT", 8, 2),
-            new Format("$INPUT", 9, 6));
+        Variable variable = Variable.builder().
+            name("MY_VAR").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("A label").
+            outputFormat(new Format("$OUTPUT", 8, 2)).
+            inputFormat(new Format("$INPUT", 9, 6)).build();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
 
         ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
@@ -91,41 +89,37 @@ public class ColumnAttributesSubheaderTest {
     @Test
     void testSublistOfVariables() {
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
-            new Variable(
-                "BEFORE",
-                VariableType.NUMERIC,
-                8,
-                "A label",
-                new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6)),
-            new Variable(
-                "TEXT1",
-                VariableType.CHARACTER,
-                256,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "LONGTEXT2", // longer than 8 characters
-                VariableType.CHARACTER,
-                101,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "NUMBER 1", // space in name
-                VariableType.NUMERIC,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "AFTER",
-                VariableType.NUMERIC,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED)));
+            Variable.builder().
+                name("BEFORE").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("A label").
+                outputFormat(new Format("$OUTPUT", 8, 2)).
+                inputFormat(new Format("$INPUT", 9, 6)).build(),
+
+            Variable.builder().
+                name("TEXT1").
+                type(VariableType.CHARACTER).
+                length(256).
+                label("label").build(),
+
+            Variable.builder().
+                name("LONGTEXT2"). // longer than 8 characters
+                type(VariableType.CHARACTER).
+                length(101).
+                label("label").build(),
+
+            Variable.builder().
+                name("NUMBER 1"). // space in name
+                type(VariableType.NUMERIC).
+                length(8).
+                label("label").build(),
+
+            Variable.builder().
+                name("AFTER").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("label").build()));
 
         // MIN_SIZE is for a subheader with one variable.  We add enough for 3 more (16*3) and subtract 1.
         short maxSizeForThreeVariables = ColumnAttributesSubheader.MIN_SIZE + 16 * 3 - 1;

@@ -15,28 +15,14 @@ public class ColumnSizeSubheaderTest {
 
     @Test
     void testTypeCode() {
-        Variable variable = new Variable(
-            "MY_VAR",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10));
-
+        Variable variable = Variable.builder().name("MY_VAR").type(VariableType.CHARACTER).length(20).build();
         ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(List.of(variable));
         assertEquals(SUBHEADER_TYPE_A, columnSizeSubheader.typeCode());
     }
 
     @Test
     void testCompressionCode() {
-        Variable variable = new Variable(
-            "MY_VAR",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10));
-
+        Variable variable = Variable.builder().name("MY_VAR").type(VariableType.CHARACTER).length(20).build();
         ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(List.of(variable));
         assertEquals(COMPRESSION_UNCOMPRESSED, columnSizeSubheader.compressionCode());
     }
@@ -72,29 +58,29 @@ public class ColumnSizeSubheaderTest {
     @Test
     void testManyColumns() {
         List<Variable> variables = List.of(
-            new Variable(
-                "VAR1",
-                VariableType.CHARACTER,
-                20,
-                "A label",
-                Format.UNSPECIFIED,
-                new Format("$", 10)),
+            Variable.builder().
+                name("VAR1").
+                type(VariableType.CHARACTER).
+                length(20).
+                label("A label").
+                outputFormat(new Format("$", 10)).
+                build(),
 
-            new Variable(
-                "VAR2",
-                VariableType.NUMERIC,
-                8,
-                "A number",
-                Format.UNSPECIFIED,
-                new Format("", 10)),
+            Variable.builder().
+                name("VAR2").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("A number").
+                inputFormat(new Format("", 10)).
+                build(),
 
-            new Variable(
-                "VAR3",
-                VariableType.CHARACTER,
-                20,
-                "A label",
-                Format.UNSPECIFIED,
-                new Format("$", 10)));
+            Variable.builder().
+                name("VAR3").
+                type(VariableType.CHARACTER).
+                length(20).
+                label("A label").
+                inputFormat(new Format("$", 10)).
+                build());
 
         ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(variables);
 
@@ -117,14 +103,9 @@ public class ColumnSizeSubheaderTest {
     void testMaximumNumberOfVariables() {
         // Create a list with the most number of variables that a SAS7BDAT can have.
         List<Variable> variables = new ArrayList<>(Short.MAX_VALUE);
+        Variable.Builder builder = Variable.builder().type(VariableType.NUMERIC).length(8).label("label is ignored");
         for (int variableNumber = 1; variableNumber <= Short.MAX_VALUE; variableNumber++) {
-            Variable variable = new Variable(
-                "VARIABLE_" + variableNumber,
-                VariableType.NUMERIC,
-                8,
-                "label is ignored",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED);
+            Variable variable = builder.name("VARIABLE_" + variableNumber).build();
             variables.add(variable);
         }
 

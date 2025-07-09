@@ -31,37 +31,38 @@ public class Sas7bdatTest {
             datasetLabel("A sample dataset").
             variables(
                 List.of(
-                    new Variable(
-                        "CITY",
-                        VariableType.CHARACTER,
-                        20, // string length
-                        "Name of city", // label
-                        new Format("$CHAR", 18), // output format
-                        Format.UNSPECIFIED), //
+                    Variable.builder().
+                        name("CITY").
+                        type(VariableType.CHARACTER).
+                        length(20).
+                        label("Name of city").
+                        outputFormat(new Format("$CHAR", 18)).
+                        build(),
 
-                    new Variable(//
-                        "STATE",
-                        VariableType.CHARACTER, //
-                        2, // string length
-                        "Postal abbreviation of state", //
-                        new Format("$CHAR", 2), //
-                        Format.UNSPECIFIED), //
+                    Variable.builder().
+                        name("STATE").
+                        type(VariableType.CHARACTER).
+                        length(2).
+                        label("Postal abbreviation of state").
+                        outputFormat(new Format("$CHAR", 2)).
+                        build(),
 
-                    new Variable(//
-                        "HIGH", //
-                        VariableType.NUMERIC, //
-                        8, //
-                        "Average daily high in F", //
-                        new Format("", 5), //
-                        Format.UNSPECIFIED), //
+                    Variable.builder().
+                        name("HIGH").
+                        type(VariableType.NUMERIC).
+                        length(8).
+                        label("Average daily high in F").
+                        outputFormat(new Format("", 5)).
+                        build(),
 
-                    new Variable(//
-                        "LOW", //
-                        VariableType.NUMERIC, //
-                        8, //
-                        "Average daily low in F", //
-                        new Format("", 5), //
-                        Format.UNSPECIFIED))).build();
+                    Variable.builder().
+                        name("LOW").
+                        type(VariableType.NUMERIC).
+                        length(8).
+                        label("Average daily low in F").
+                        outputFormat(new Format("", 5)).
+                        build()
+                )).build();
 
         List<List<Object>> observations = Arrays.asList(
             Arrays.asList("Atlanta", "GA", 72, 53),

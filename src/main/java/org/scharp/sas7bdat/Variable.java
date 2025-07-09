@@ -224,25 +224,24 @@ public final class Variable {
     }
 
     /**
-     * Constructs a variable object checking the input according to a strictness.
+     * Constructs a variable object without doing any parameter validation.
      *
+     * @param name
+     *     The variable's name.
      * @param type
-     *     The variable's type (character or numeric). This cannot be {@code null}.
+     *     The variable's type (character or numeric)
      * @param variableLength
-     *     The maximum number of bytes that any value can have. For numeric data, this must be in the range from 2 to 8.
-     *     For character data, this must be in the range from 1 to Short.MAX_VALUE.
+     *     The maximum number of bytes that any value can have.
      * @param label
      *     The variable's label.
      * @param outputFormat
-     *     The format to use when displaying this variable's values. This cannot be {@code null}, but it can be
-     *     {@code Format.UNSPECIFIED}. SAS refers to this as "FORMAT".
+     *     The format to use when displaying this variable's values.
      * @param inputFormat
-     *     The format to use when reading this variable's value in. This cannot be null, but it can be
-     *     {@code Format.UNSPECIFIED}. SAS refers to this as "INFORMAT".
+     *     The format to use when reading this variable's value in.
      */
-    public Variable(String variableName, VariableType type, int variableLength, String label, Format outputFormat,
+    private Variable(String name, VariableType type, int variableLength, String label, Format outputFormat,
         Format inputFormat) {
-        this.name = variableName;
+        this.name = name;
         this.type = type;
         this.length = variableLength;
         this.label = label;
@@ -258,7 +257,7 @@ public final class Variable {
     }
 
     /**
-     * @return this variable's name. This may be the empty string but never {@code null}.
+     * @return this variable's name. This is never {@code null}.
      */
     public String name() {
         return name;
@@ -279,8 +278,8 @@ public final class Variable {
     }
 
     /**
-     * @return The format to use when rendering values for display. This is never null. SAS refers to this as the
-     *     "FORMAT".
+     * @return The format to use when rendering values for display. This is never {@code null}. SAS refers to this as
+     *     the "FORMAT".
      */
     public Format outputFormat() {
         return outputFormat;

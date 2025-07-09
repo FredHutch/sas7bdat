@@ -29,13 +29,7 @@ public class ColumnFormatSubheaderTest {
 
     @Test
     void testTypeCode() {
-        Variable variable = new Variable(
-            "TEXT",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10));
+        Variable variable = Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20).build();
         ColumnText columnText = newColumnText(variable);
 
         ColumnFormatSubheader columnFormatSubheader = new ColumnFormatSubheader(variable, columnText);
@@ -44,13 +38,7 @@ public class ColumnFormatSubheaderTest {
 
     @Test
     void testCompressionCode() {
-        Variable variable = new Variable(
-            "TEXT",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10));
+        Variable variable = Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20).build();
         ColumnText columnText = newColumnText(variable);
 
         ColumnFormatSubheader columnFormatSubheader = new ColumnFormatSubheader(variable, columnText);
@@ -59,15 +47,15 @@ public class ColumnFormatSubheaderTest {
 
     @Test
     void testVariableWithAllFields() {
-
         // A variable with all three strings, format width, and format digits.
-        Variable variable = new Variable(
-            "MY_VAR",
-            VariableType.NUMERIC,
-            8,
-            "A label",
-            new Format("$OUTPUT", 8, 2),
-            new Format("$INPUT", 9, 6));
+        Variable variable = Variable.builder().
+            name("MY_VAR").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("A label").
+            outputFormat(new Format("$OUTPUT", 8, 2)).
+            inputFormat(new Format("$INPUT", 9, 6)).
+            build();
 
         ColumnText columnText = newColumnText(variable);
 
@@ -120,14 +108,8 @@ public class ColumnFormatSubheaderTest {
 
     @Test
     void testVariableWithNoFields() {
-
-        Variable variable = new Variable(
-            "MY_VAR",
-            VariableType.CHARACTER,
-            20,
-            "", // no label
-            Format.UNSPECIFIED, // no output format name, width, or digits
-            Format.UNSPECIFIED); // no input format name, width, or digits
+        // No label, input format, or output format
+        Variable variable = Variable.builder().name("MY_VAR").type(VariableType.CHARACTER).length(20).build();
 
         ColumnText columnText = newColumnText(variable);
 

@@ -15,13 +15,8 @@ public class ColumnListSubheaderTest {
 
     @Test
     void testTypeCode() {
-        List<Variable> variablesList = List.of(new Variable(
-            "TEXT",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10)));
+        List<Variable> variablesList = List.of(
+            Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20).build());
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
@@ -30,13 +25,8 @@ public class ColumnListSubheaderTest {
 
     @Test
     void testCompressionCode() {
-        List<Variable> variablesList = List.of(new Variable(
-            "TEXT",
-            VariableType.CHARACTER,
-            20,
-            "A label",
-            Format.UNSPECIFIED,
-            new Format("$", 10)));
+        List<Variable> variablesList = List.of(
+            Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20).build());
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
@@ -46,13 +36,14 @@ public class ColumnListSubheaderTest {
     @Test
     void testSingleVariable() {
         List<Variable> variablesList = List.of(
-            new Variable(
-                "MY_VAR",
-                VariableType.NUMERIC,
-                8,
-                "A label",
-                new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6)));
+            Variable.builder().
+                name("MY_VAR").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("A label").
+                outputFormat(new Format("$OUTPUT", 8, 2)).
+                inputFormat(new Format("$INPUT", 9, 6)).
+                build());
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
         ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
@@ -100,34 +91,10 @@ public class ColumnListSubheaderTest {
     @Test
     void testSublistOfVariables() {
         List<Variable> variablesList = List.of(
-            new Variable(
-                "BEFORE",
-                VariableType.NUMERIC,
-                8,
-                "A label",
-                new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6)),
-            new Variable(
-                "TEXT1",
-                VariableType.CHARACTER,
-                256,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "LONGTEXT2", //
-                VariableType.CHARACTER,
-                101,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "NUMBER 1", //
-                VariableType.NUMERIC,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED));
+            Variable.builder().name("BEFORE").type(VariableType.NUMERIC).length(8).label("A label").build(),
+            Variable.builder().name("TEXT1").type(VariableType.CHARACTER).length(256).label("label").build(),
+            Variable.builder().name("LONGTEXT2").type(VariableType.CHARACTER).length(101).label("label").build(),
+            Variable.builder().name("NUMBER 1").type(VariableType.NUMERIC).length(8).label("label").build());
 
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
 
@@ -173,14 +140,9 @@ public class ColumnListSubheaderTest {
     void testMaximumNumberOfVariables() {
         // Create a list with the most number of variables that a SAS7BDAT can have.
         List<Variable> variablesList = new ArrayList<>(Short.MAX_VALUE);
+        Variable.Builder builder = Variable.builder().type(VariableType.NUMERIC).length(8).label("label is ignored");
         for (int variableNumber = 1; variableNumber <= Short.MAX_VALUE; variableNumber++) {
-            Variable variable = new Variable(
-                "VARIABLE_" + variableNumber,
-                VariableType.NUMERIC,
-                8,
-                "label is ignored",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED);
+            Variable variable = builder.name("VARIABLE_" + variableNumber).build();
             variablesList.add(variable);
         }
 

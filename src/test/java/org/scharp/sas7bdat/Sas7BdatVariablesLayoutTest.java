@@ -18,27 +18,29 @@ public class Sas7BdatVariablesLayoutTest {
     @Test
     void testAllCharacterVariables() {
         List<Variable> variableList = List.of(
-            new Variable(
-                "VARIABLE_1",
-                VariableType.CHARACTER,
-                10, // string length
-                "label 1", // label
-                new Format("$CHAR", 18), // output format
-                Format.UNSPECIFIED), //
-            new Variable(
-                "VARIABLE_2",
-                VariableType.CHARACTER,
-                1, // string length
-                "label 2",
-                new Format("$CHAR", 2),
-                Format.UNSPECIFIED),
-            new Variable(
-                "VARIABLE_3",
-                VariableType.CHARACTER,
-                8,
-                "label 3",
-                new Format("", 5),
-                Format.UNSPECIFIED));
+            Variable.builder().
+                name("VARIABLE_1").
+                type(VariableType.CHARACTER).
+                length(10).
+                label("label 1").
+                outputFormat(new Format("$CHAR", 18)).
+                build(),
+
+            Variable.builder().
+                name("VARIABLE_2").
+                type(VariableType.CHARACTER).
+                length(1).
+                label("label 2").
+                outputFormat(new Format("$CHAR", 2)).
+                build(),
+
+            Variable.builder().
+                name("VARIABLE_3").
+                type(VariableType.CHARACTER).
+                length(8).
+                label("label 3").
+                outputFormat(new Format("", 5)).
+                build());
 
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         assertEquals(variableList, variablesLayout.variables());
@@ -68,40 +70,41 @@ public class Sas7BdatVariablesLayoutTest {
             -1, -1, -1, -1, -1, -1, -1,  // after observation (7 bytes)
         };
         assertArrayEquals(expectedData, actualData);
-
     }
 
     @Test
     void testAllNumericVariables() {
         List<Variable> variableList = List.of(
-            new Variable(
-                "num1",
-                VariableType.NUMERIC,
-                8, // length is always 8
-                "a number",
-                Format.UNSPECIFIED, // output format
-                Format.UNSPECIFIED),
-            new Variable(
-                "number2",
-                VariableType.NUMERIC,
-                8, // length
-                "another number",
-                new Format("", 5, 2),
-                Format.UNSPECIFIED),
-            new Variable(
-                "Number3",
-                VariableType.NUMERIC,
-                8,
-                "a third number",
-                new Format("", 5),
-                Format.UNSPECIFIED),
-            new Variable(
-                "Number 4",
-                VariableType.NUMERIC,
-                8,
-                "the last number",
-                new Format("", 5),
-                Format.UNSPECIFIED));
+            Variable.builder().
+                name("num1").
+                type(VariableType.NUMERIC).
+                length(8). // length is always 8
+                label("a number").
+                build(),
+
+            Variable.builder().
+                name("number2").
+                type(VariableType.NUMERIC).
+                length(8). // length is always 8
+                label("another number").
+                outputFormat(new Format("", 5, 2)).
+                build(),
+
+            Variable.builder().
+                name("Number3").
+                type(VariableType.NUMERIC).
+                length(8). // length is always 8
+                label("a third number").
+                outputFormat(new Format("", 5)).
+                build(),
+
+            Variable.builder().
+                name("Number 4").
+                type(VariableType.NUMERIC).
+                length(8). // length is always 8
+                label("the last number").
+                outputFormat(new Format("", 5)).
+                build());
 
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         assertEquals(variableList, variablesLayout.variables());
@@ -168,34 +171,37 @@ public class Sas7BdatVariablesLayoutTest {
     @Test
     void testMixedTypeVariables() {
         List<Variable> variableList = List.of(
-            new Variable(
-                "VARIABLE_1",
-                VariableType.CHARACTER,
-                10, // string length
-                "label 1", // label
-                new Format("$CHAR", 18), // output format
-                Format.UNSPECIFIED), //
-            new Variable(
-                "VARIABLE_2",
-                VariableType.NUMERIC,
-                8, // length
-                "label 2",
-                new Format("", 5, 2),
-                Format.UNSPECIFIED),
-            new Variable(
-                "VARIABLE_3",
-                VariableType.CHARACTER,
-                13,
-                "label 3",
-                new Format("", 5),
-                Format.UNSPECIFIED),
-            new Variable(
-                "NUMERIC_2",
-                VariableType.NUMERIC,
-                8,
-                "label 3",
-                new Format("", 5),
-                Format.UNSPECIFIED));
+            Variable.builder().
+                name("VARIABLE_1").
+                type(VariableType.CHARACTER).
+                length(10).
+                label("label 1").
+                outputFormat(new Format("$CHAR", 18)).
+                build(),
+
+            Variable.builder().
+                name("VARIABLE_2").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("label 2").
+                outputFormat(new Format("", 5, 2)).
+                build(),
+
+            Variable.builder().
+                name("VARIABLE_3").
+                type(VariableType.CHARACTER).
+                length(13).
+                label("label 3").
+                outputFormat(new Format("", 5)).
+                build(),
+
+            Variable.builder().
+                name("NUMERIC_2").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("label 3").
+                outputFormat(new Format("", 5)).
+                build());
 
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         assertEquals(variableList, variablesLayout.variables());
@@ -222,20 +228,20 @@ public class Sas7BdatVariablesLayoutTest {
     @Test
     void testVariablesIsCopied() {
         // Tests that the constructor's variables argument is copied.
-        Variable originalVariable1 = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            10,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
-        Variable originalVariable2 = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            5,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable originalVariable1 = Variable.builder().
+            name("ORIGINAL").
+            type(VariableType.CHARACTER).
+            length(10).
+            label("label").
+            build();
+
+        Variable originalVariable2 = Variable.builder().
+            name("ORIGINAL").
+            type(VariableType.CHARACTER).
+            length(5).
+            label("label").
+            build();
+
         List<Variable> mutableVariables = new ArrayList<>();
         mutableVariables.add(originalVariable1);
         mutableVariables.add(originalVariable2);
@@ -244,13 +250,13 @@ public class Sas7BdatVariablesLayoutTest {
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(mutableVariables);
 
         // Modify the variables that we gave to the constructor.
-        Variable replacementVariable = new Variable(
-            "REPLACEMENT",
-            VariableType.NUMERIC,
-            8,
-            "a new variable",
-            new Format("", 10),
-            Format.UNSPECIFIED);
+        Variable replacementVariable = Variable.builder().
+            name("REPLACEMENT").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("a new variable").
+            outputFormat(new Format("", 10)).
+            build();
         mutableVariables.clear();
         mutableVariables.add(replacementVariable);
 
@@ -276,20 +282,8 @@ public class Sas7BdatVariablesLayoutTest {
 
     @Test
     void testVariablesIsUnmodifiable() {
-        Variable originalVariable1 = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            10,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
-        Variable originalVariable2 = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            5,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable originalVariable1 = Variable.builder().name("VAR_1").type(VariableType.CHARACTER).length(10).build();
+        Variable originalVariable2 = Variable.builder().name("VAR_2").type(VariableType.CHARACTER).length(5).build();
         List<Variable> variablesList = List.of(originalVariable1, originalVariable2);
 
         // Create the sas7bdat variables layout.
@@ -326,20 +320,8 @@ public class Sas7BdatVariablesLayoutTest {
 
     @Test
     void testPhysicalOffsetsIsUnmodifiable() {
-        Variable originalVariable1 = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            10,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
-        Variable originalVariable2 = new Variable(
-            "ORIGINAL",
-            VariableType.CHARACTER,
-            5,
-            "label",
-            Format.UNSPECIFIED,
-            Format.UNSPECIFIED);
+        Variable originalVariable1 = Variable.builder().name("VAR_1").type(VariableType.CHARACTER).length(10).build();
+        Variable originalVariable2 = Variable.builder().name("VAR_2").type(VariableType.CHARACTER).length(5).build();
         List<Variable> variablesList = List.of(originalVariable1, originalVariable2);
 
         // Create the sas7bdat variables layout.

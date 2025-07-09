@@ -37,45 +37,46 @@ public class Sas7bdatExporterTest {
                 datasetLabel(datasetLabel).
                 variables(
                     List.of(
-                        new Variable(
-                            "TEXT",
-                            VariableType.CHARACTER,
-                            20,
-                            "Some simple text",
-                            Format.UNSPECIFIED,
-                            new Format("$", 10)),
+                        Variable.builder().
+                            name("TEXT").
+                            type(VariableType.CHARACTER).
+                            length(20).
+                            label("Some simple text").
+                            inputFormat(new Format("$", 10)).
+                            build(),
 
-                        new Variable(
-                            "AVERYLONG_0123456789_123456789VR",
-                            VariableType.CHARACTER,
-                            20,
-                            "A second text variable with a long name",
-                            new Format("$CHAR", 200),
-                            Format.UNSPECIFIED),
+                        Variable.builder().
+                            name("AVERYLONG_0123456789_123456789VR").
+                            type(VariableType.CHARACTER).
+                            length(20).
+                            label("A second text variable with a long name").
+                            outputFormat(new Format("$CHAR", 200)).
+                            build(),
 
-                        new Variable(
-                            "TEXT3",
-                            VariableType.CHARACTER,
-                            5,
-                            "", // no label
-                            new Format("$UPCASE", 10),
-                            Format.UNSPECIFIED),
+                        Variable.builder().
+                            name("TEXT3").
+                            type(VariableType.CHARACTER).
+                            length(5).
+                            label(""). // no label
+                            outputFormat(new Format("$UPCASE", 10)).
+                            build(),
 
-                        new Variable(
-                            "Letter",
-                            VariableType.CHARACTER,
-                            1, // len
-                            "A single letter", // label
-                            new Format("$ASCII", 1),
-                            Format.UNSPECIFIED),
+                        Variable.builder().
+                            name("Letter").
+                            type(VariableType.CHARACTER).
+                            length(1).
+                            label("A single letter").
+                            outputFormat(new Format("$ASCII", 1)).
+                            build(),
 
-                        new Variable(
-                            "MY_NUMBER",
-                            VariableType.NUMERIC,
-                            8, // len
-                            "A number", // label
-                            Format.UNSPECIFIED,
-                            new Format("d", 10)))).build();
+                        Variable.builder().
+                            name("MY_NUMBER").
+                            type(VariableType.NUMERIC).
+                            length(8).
+                            label("A number").
+                            inputFormat(new Format("d", 10)).
+                            build()
+                    )).build();
 
             List<List<Object>> observations = new ArrayList<>();
             for (int i = 0; i < 1000; i++) {

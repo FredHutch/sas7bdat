@@ -41,34 +41,36 @@ public class SubheaderCountsSubheaderTest {
     void basicTest() {
         // Create a SubheaderCountsSubheader
         List<Variable> variableList = List.of(
-            new Variable(
-                "VAR1",
-                VariableType.NUMERIC,
-                8,
-                "A label",
-                new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6)),
-            new Variable(
-                "TEXT1",
-                VariableType.CHARACTER,
-                256,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "LONGTEXT2", //
-                VariableType.CHARACTER,
-                101,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED),
-            new Variable(
-                "NUMBER 1", //
-                VariableType.NUMERIC,
-                8,
-                "label",
-                Format.UNSPECIFIED,
-                Format.UNSPECIFIED));
+            Variable.builder().
+                name("VAR1").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("A label").
+                outputFormat(new Format("$OUTPUT", 8, 2)).
+                inputFormat(new Format("$INPUT", 9, 6)).
+                build(),
+
+            Variable.builder().
+                name("TEXT1").
+                type(VariableType.CHARACTER).
+                length(256).
+                label("label").
+                build(),
+
+            Variable.builder().
+                name("LONGTEXT2").
+                type(VariableType.CHARACTER).
+                length(101).
+                label("label").
+                build(),
+
+            Variable.builder().
+                name("NUMBER 1").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("label").
+                build());
+
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
@@ -227,13 +229,14 @@ public class SubheaderCountsSubheaderTest {
     void testNoOtherSubheaders() {
         // Create a SubheaderCountsSubheader
         List<Variable> variableList = List.of(
-            new Variable(
-                "VAR1",
-                VariableType.NUMERIC,
-                8,
-                "A label",
-                new Format("$OUTPUT", 8, 2),
-                new Format("$INPUT", 9, 6)));
+            Variable.builder().
+                name("VAR1").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("A label").
+                outputFormat(new Format("$OUTPUT", 8, 2)).
+                inputFormat(new Format("$INPUT", 9, 6)).
+                build());
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
