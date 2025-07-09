@@ -67,14 +67,14 @@ public final class Format {
             throw new IllegalArgumentException("format width must not be negative");
         }
         if (Short.MAX_VALUE < width) {
-            throw new IllegalArgumentException("format width must not be greater than Short.MAX_VALUE");
+            throw new IllegalArgumentException("format width must not be greater than 32767");
         }
 
         if (numberOfDigits < 0) {
             throw new IllegalArgumentException("format numberOfDigits must not be negative");
         }
         if (Short.MAX_VALUE < numberOfDigits) {
-            throw new IllegalArgumentException("format numberOfDigits must not be greater than Short.MAX_VALUE");
+            throw new IllegalArgumentException("format numberOfDigits must not be greater than 32767");
         }
 
         // TODO: provide an overload with a structured name for standard formats DOLLAR, CHAR, etc.
