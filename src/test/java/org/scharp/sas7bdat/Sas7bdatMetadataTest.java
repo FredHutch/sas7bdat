@@ -511,7 +511,7 @@ public class Sas7bdatMetadataTest {
     }
 
     @Test
-    void buildWithMinimValues() {
+    void buildWithMinimumValues() {
         List<Variable> minVariables = List.of(
             new Variable("V", VariableType.CHARACTER, 1, "", Format.UNSPECIFIED, Format.UNSPECIFIED));
 
