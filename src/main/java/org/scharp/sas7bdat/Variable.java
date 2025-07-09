@@ -9,83 +9,239 @@ import java.nio.charset.StandardCharsets;
  * </p>
  */
 public final class Variable {
+
     private final VariableType type;
     private final String name;
-    private final String label;
     private final int length;
+    private final String label;
     private final Format outputFormat;
     private final Format inputFormat;
 
     /**
+     * A builder class for {@link Variable}.
+     */
+    public static class Builder {
+        private VariableType type;
+        private String name;
+        private int length;
+        private String label;
+        private Format outputFormat;
+        private Format inputFormat;
+
+        /**
+         * Creates a {@code Variable} builder.
+         */
+        private Builder() {
+            this.type = null; // required parameter
+            this.name = null; // required parameter
+            this.length = 0; // required parameter
+
+            this.label = ""; // optional, so default to blank
+            this.outputFormat = Format.UNSPECIFIED; // optional, so default to unspecified
+            this.inputFormat = Format.UNSPECIFIED; // optional and rarely used, so default to unspecified
+        }
+
+        /**
+         * Sets the variable's type (character or numeric).
+         *
+         * @param type
+         *     The variable's new type.
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException
+         *     if {@code type} is {@code null}.
+         */
+        public Builder type(VariableType type) {
+            ArgumentUtil.checkNotNull(type, "type");
+            this.type = type;
+            return this;
+        }
+
+        /**
+         * Sets the variable's name.
+         *
+         * @param name
+         *     The variable's new name.
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException
+         *     if {@code name} is {@code null}.
+         * @throws IllegalArgumentException
+         *     if {@code name} is empty or exceeds 32 bytes in UTF-8.
+         */
+        public Builder name(String name) {
+            ArgumentUtil.checkNotNull(name, "name");
+            if (name.isEmpty()) {
+                throw new IllegalArgumentException("variable names cannot be blank");
+            }
+            ArgumentUtil.checkMaximumLength(name, StandardCharsets.UTF_8, 32, "variable names");
+
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * Sets the variable's length (the number of bytes used to store the variable's value).
+         *
+         * @param length
+         *     The length of the new variable.
+         *
+         * @return this builder
+         *
+         * @throws IllegalArgumentException
+         *     if {@code length} is less than 1 or greater than 32,767.
+         */
+        public Builder length(int length) {
+            // Some of the restrictions on length depend on the type.  However, we can't enforce those
+            // restrictions without requiring that the type be set before the length, which would violate
+            // the principle of least surprise.
+            if (length <= 0) {
+                throw new IllegalArgumentException("variable length must be positive");
+            }
+            if (Short.MAX_VALUE < length) {
+                throw new IllegalArgumentException("variable length cannot be greater than " + Short.MAX_VALUE);
+            }
+
+            this.length = length;
+            return this;
+        }
+
+        /**
+         * Sets the variable's label.
+         *
+         * @param label
+         *     The variable's new label.
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException
+         *     if {@code label} is {@code null}.
+         * @throws IllegalArgumentException
+         *     if {@code label} exceeds 256 bytes in UTF-8.
+         */
+        public Builder label(String label) {
+            ArgumentUtil.checkNotNull(label, "label");
+            ArgumentUtil.checkMaximumLength(label, StandardCharsets.UTF_8, 256, "variable labels");
+
+            this.label = label;
+            return this;
+        }
+
+        /**
+         * Sets the variable's default output format, which is the format SAS will use when displaying the variable's
+         * values.  SAS refers to this as "FORMAT".
+         *
+         * @param outputFormat
+         *     The variable's new output format. This cannot be {@code null}, but it can be {@code Format.UNSPECIFIED}.
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException
+         *     if {@code outputFormat} is {@code null}.
+         */
+        public Builder outputFormat(Format outputFormat) {
+            ArgumentUtil.checkNotNull(outputFormat, "outputFormat");
+
+            this.outputFormat = outputFormat;
+            return this;
+        }
+
+        /**
+         * Sets the variable's default input format, which is the format SAS will use when reading the variable's values
+         * from a text file.  SAS refers to this as "INFORMAT".
+         * <p>
+         * This is usually not set.
+         * </p>
+         *
+         * @param inputFormat
+         *     The variable's new input format. This cannot be {@code null}, but it can be {@code Format.UNSPECIFIED}.
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException
+         *     if {@code inputFormat} is {@code null}.
+         */
+        public Builder inputFormat(Format inputFormat) {
+            ArgumentUtil.checkNotNull(inputFormat, "inputFormat");
+
+            this.inputFormat = inputFormat;
+            return this;
+        }
+
+        /**
+         * Builds an immutable {@code Variable} with the configured options.
+         *
+         * @return a {@code Variable}
+         *
+         * @throws IllegalStateException
+         *     if the type, length, or name haven't been set explicitly, or if type is NUMERIC and length is not 8.
+         */
+        public Variable build() {
+            // There is no meaningful default type, length, or name; it's an error if the caller hasn't set them.
+            if (type == null) {
+                throw new IllegalStateException("type must be set");
+            }
+            if (length == 0) {
+                throw new IllegalStateException("length must be set");
+            }
+            if (name == null) {
+                throw new IllegalStateException("name must be set");
+            }
+
+            // The SAS documentation says:
+            // """
+            // For numeric variables, 2 to 8 bytes or 3 to 8 bytes, depending on your operating environment.
+            // For character variables, 1 to 32767 bytes under all operating environments.
+            // """
+            //
+            // The length should already be set to between 1 and 32767, so we don't need to check again
+            // for CHARACTER types.
+            if (type == VariableType.NUMERIC) {
+                // Sas7BdatExporter only supports numeric values of size 8.
+                if (8 != length) {
+                    throw new IllegalStateException("numeric variables must have a length of 8");
+                }
+            }
+
+            // TODO: check if the format legal for type?
+
+            return new Variable(name, type, length, label, outputFormat, inputFormat);
+        }
+    }
+
+    /**
+     * Creates a new Variable builder with a blank label and an unspecified input format and output format.
+     * <p>
+     * You must set the name, type, and length before invoking {@link Builder#build build}.
+     * </p>
+     *
+     * @return A new builder.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Constructs a variable object checking the input according to a strictness.
      *
-     * @param variableName
-     *     The name of the variable. This cannot be {@code null}. To fit into an XPORT, this should be 8 characters or
-     *     fewer and only contain characters from the ASCII character set. SAS variable names must begin with a letter
-     *     or underscore and may only contain letters, underscores, and digits.
      * @param type
      *     The variable's type (character or numeric). This cannot be {@code null}.
      * @param variableLength
      *     The maximum number of bytes that any value can have. For numeric data, this must be in the range from 2 to 8.
-     *     For character data, this must be in the range from 1 to Short.MAX_VALUE. If {@code strictnessMode} is
-     *     {@code StrictnessMode.FDA_SUBMISSION}, then character data must not be longer than 200. All of this
-     *     variable's value are stored with this length. This is different from how many characters are displayed when
-     *     formatting the values.
+     *     For character data, this must be in the range from 1 to Short.MAX_VALUE.
      * @param label
-     *     The variable's label. This cannot be {@code null}. To fit into an XPORT, this should be 40 characters are
-     *     fewer.
-     *     <p>
-     *     If {@code strictnessMode} is {@code StrictnessMode.FDA_SUBMISSION}, then the label must contain only ASCII
-     *     characters.
-     *     </p>
+     *     The variable's label.
      * @param outputFormat
      *     The format to use when displaying this variable's values. This cannot be {@code null}, but it can be
      *     {@code Format.UNSPECIFIED}. SAS refers to this as "FORMAT".
      * @param inputFormat
      *     The format to use when reading this variable's value in. This cannot be null, but it can be
      *     {@code Format.UNSPECIFIED}. SAS refers to this as "INFORMAT".
-     *
-     * @throws NullPointerException
-     *     if {@code variableName}, {@code type}, {@code label}, {@code outputFormat},
-     *     {@code outputFormatJustification}, or {@code inputFormat} are {@code null}.
-     * @throws IllegalArgumentException
-     *     if {@code variableName} is not a well-formed SAS variable name or is too long; if {@code variableLength} is
-     *     out of range for {@code type}; if {@code label} is too long.
      */
     public Variable(String variableName, VariableType type, int variableLength, String label, Format outputFormat,
         Format inputFormat) {
-
-        ArgumentUtil.checkNotNull(type, "type");
-        if (type == VariableType.NUMERIC) {
-            if (variableLength < 2 || 8 < variableLength) {
-                throw new IllegalArgumentException("numeric variables must have a length between 2-8");
-            }
-        } else {
-            if (variableLength <= 0) {
-                throw new IllegalArgumentException("character variables must have a positive length");
-            }
-            if (Short.MAX_VALUE < variableLength) {
-                throw new IllegalArgumentException(
-                    "character variables must not have a length greater than Short.MAX_VALUE");
-            }
-        }
-
-        ArgumentUtil.checkNotNull(variableName, "variableName");
-        if (variableName.isEmpty()) {
-            throw new IllegalArgumentException("variable names cannot be blank");
-        }
-        if (32 < variableName.getBytes(StandardCharsets.UTF_8).length) {
-            throw new IllegalArgumentException("variable names must not be longer than 32 bytes");
-        }
-
-        ArgumentUtil.checkNotNull(label, "label");
-        ArgumentUtil.checkMaximumLength(label, 256, "variable labels");
-
-        ArgumentUtil.checkNotNull(outputFormat, "outputFormat");
-        ArgumentUtil.checkNotNull(inputFormat, "inputFormat");
-
-        // TODO: format legal for type?
-
         this.name = variableName;
         this.type = type;
         this.length = variableLength;
