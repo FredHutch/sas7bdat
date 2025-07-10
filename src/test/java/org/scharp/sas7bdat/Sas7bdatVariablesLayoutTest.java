@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Unit tests for {@link Sas7bdatVariablesLayout}. */
-public class Sas7BdatVariablesLayoutTest {
+public class Sas7bdatVariablesLayoutTest {
 
     @Test
     void testAllCharacterVariables() {
