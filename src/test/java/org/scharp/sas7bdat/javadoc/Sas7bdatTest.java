@@ -1,8 +1,8 @@
 package org.scharp.sas7bdat.javadoc;
 
-import com.epam.parso.CSVDataWriter;
+import com.epam.parso.Column;
+import com.epam.parso.SasFileProperties;
 import com.epam.parso.SasFileReader;
-import com.epam.parso.impl.CSVDataWriterImpl;
 import com.epam.parso.impl.SasFileReaderImpl;
 import org.junit.jupiter.api.Test;
 import org.scharp.sas7bdat.Format;
@@ -13,12 +13,13 @@ import org.scharp.sas7bdat.VariableType;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * A class for executing the sample code that's within the package JavaDoc.
@@ -90,17 +91,72 @@ public class Sas7bdatTest {
             // Read the dataset with parso to confirm that it was written correctly.
             try (InputStream inputStream = Files.newInputStream(targetLocation)) {
                 SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
 
-                System.out.println("Created: " + sasFileReader.getSasFileProperties().getDateCreated());
-                System.out.println("Label: " + sasFileReader.getSasFileProperties().getFileLabel());
-                System.out.println("Type: " + sasFileReader.getSasFileProperties().getFileType());
+                assertEquals("A sample dataset", sasFileProperties.getFileLabel());
 
-                Writer writer = new StringWriter();
-                CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer);
-                csvDataWriter.writeColumnNames(sasFileReader.getColumns());
-                csvDataWriter.writeRowsArray(sasFileReader.getColumns(), sasFileReader.readAll());
+                assertEquals("DATA", sasFileProperties.getFileType());
 
-                System.out.println(writer);
+                // Hard-coded values
+                assertEquals("9.0401M2", sasFileProperties.getSasRelease());
+                assertEquals("UTF-8", sasFileProperties.getEncoding());
+                assertEquals(null, sasFileProperties.getCompressionMethod());
+                assertEquals("x86_64", sasFileProperties.getOsName());
+                assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
+                assertEquals("Linux", sasFileProperties.getServerType());
+                assertEquals(0, sasFileProperties.getDeletedRowCount());
+
+                // Test the columns
+                assertEquals(4, sasFileProperties.getColumnsCount());
+                List<Column> columns = sasFileReader.getColumns();
+                assertEquals("CITY", columns.get(0).getName(), "incorrect variable name");
+                assertEquals(1, columns.get(0).getId(), "incorrect variable number");
+                assertEquals(20, columns.get(0).getLength(), "incorrect variable length");
+                assertEquals(String.class, columns.get(0).getType(), "incorrect variable type");
+                assertEquals("Name of city", columns.get(0).getLabel(), "incorrect variable label");
+                assertEquals("$CHAR", columns.get(0).getFormat().getName(), "incorrect format name");
+                assertEquals(18, columns.get(0).getFormat().getWidth(), "incorrect format width");
+                assertEquals(0, columns.get(0).getFormat().getPrecision(), "incorrect format digits");
+
+                assertEquals("STATE", columns.get(1).getName(), "incorrect variable name");
+                assertEquals(2, columns.get(1).getId(), "incorrect variable number");
+                assertEquals(2, columns.get(1).getLength(), "incorrect variable length");
+                assertEquals(String.class, columns.get(1).getType(), "incorrect variable type");
+                assertEquals("Postal abbreviation of state", columns.get(1).getLabel(), "incorrect variable label");
+                assertEquals("$CHAR", columns.get(1).getFormat().getName(), "incorrect format name");
+                assertEquals(2, columns.get(1).getFormat().getWidth(), "incorrect format width");
+                assertEquals(0, columns.get(1).getFormat().getPrecision(), "incorrect format digits");
+
+                assertEquals("HIGH", columns.get(2).getName(), "incorrect variable name");
+                assertEquals(3, columns.get(2).getId(), "incorrect variable number");
+                assertEquals(8, columns.get(2).getLength(), "incorrect variable length");
+                assertEquals(Number.class, columns.get(2).getType(), "incorrect variable type");
+                assertEquals("Average daily high in F", columns.get(2).getLabel(), "incorrect variable label");
+                assertEquals("", columns.get(2).getFormat().getName(), "incorrect format name");
+                assertEquals(5, columns.get(2).getFormat().getWidth(), "incorrect format width");
+                assertEquals(0, columns.get(2).getFormat().getPrecision(), "incorrect format digits");
+
+                assertEquals("LOW", columns.get(3).getName(), "incorrect variable name");
+                assertEquals(4, columns.get(3).getId(), "incorrect variable number");
+                assertEquals(8, columns.get(3).getLength(), "incorrect variable length");
+                assertEquals(Number.class, columns.get(3).getType(), "incorrect variable type");
+                assertEquals("Average daily low in F", columns.get(3).getLabel(), "incorrect variable label");
+                assertEquals("", columns.get(3).getFormat().getName(), "incorrect format name");
+                assertEquals(5, columns.get(3).getFormat().getWidth(), "incorrect format width");
+                assertEquals(0, columns.get(3).getFormat().getPrecision(), "incorrect format digits");
+
+                // Test the observations
+                assertEquals(8, sasFileProperties.getRowCount());
+                Object[][] rows = sasFileReader.readAll();
+                assertEquals(8, rows.length, "incorrect number of rows");
+                assertArrayEquals(new Object[] { "Atlanta", "GA", 72L, 53L }, rows[0]);
+                assertArrayEquals(new Object[] { "Austin", "TX", 80L, 5L }, rows[1]);
+                assertArrayEquals(new Object[] { "Baltimore", "MD", 65L, 45L }, rows[2]);
+                assertArrayEquals(new Object[] { "Birmingham", "AL", 74L, 53L }, rows[3]);
+                assertArrayEquals(new Object[] { "Boston", "MA", 59L, null }, rows[4]);
+                assertArrayEquals(new Object[] { "Buffalo", "NY", 56L, 40L }, rows[5]);
+                assertArrayEquals(new Object[] { "Virginia Beach", "VA", 68L, 52L }, rows[6]);
+                assertArrayEquals(new Object[] { "Washington", "DC", 68L, 52L }, rows[7]);
             }
 
         } finally {
