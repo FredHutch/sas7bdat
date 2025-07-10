@@ -25,21 +25,23 @@ public class FormatTest {
 
     @Test
     void basicTest() {
+        String longName = "f".repeat(32); // 32 bytes is the longest name possible
+
         // Test the three-argument constructor
         assertFormat(new Format("FORMAT", 1, 2), "FORMAT", 1, 2, "FORMAT1.2");
         assertFormat(new Format("", 5, 2), "", 5, 2, "5.2");
         assertFormat(new Format("$ASCII", 5, 0), "$ASCII", 5, 0, "$ASCII5.");
         assertFormat(new Format("PERCENTN", 32, 31), "PERCENTN", 32, 31, "PERCENTN32.31");
         assertFormat(new Format("dollar", 15, 2), "dollar", 15, 2, "dollar15.2");
-        assertFormat(new Format("MaxedOut", Short.MAX_VALUE, Short.MAX_VALUE), "MaxedOut", Short.MAX_VALUE,
-            Short.MAX_VALUE, "MaxedOut32767.32767");
+        assertFormat(new Format(longName, Short.MAX_VALUE, Short.MAX_VALUE), longName, Short.MAX_VALUE, Short.MAX_VALUE,
+            longName + "32767.32767");
 
         // Test the two-argument constructor
         assertFormat(new Format("FORMAT", 1), "FORMAT", 1, 0, "FORMAT1.");
         assertFormat(new Format("", 1), "", 1, 0, "1.");
         assertFormat(new Format("$UPCASE", 100), "$UPCASE", 100, 0, "$UPCASE100.");
         assertFormat(new Format("PERCENTN", 6), "PERCENTN", 6, 0, "PERCENTN6.");
-        assertFormat(new Format("MaxedOut", Short.MAX_VALUE), "MaxedOut", Short.MAX_VALUE, 0, "MaxedOut32767.");
+        assertFormat(new Format(longName, Short.MAX_VALUE), longName, Short.MAX_VALUE, 0, longName + "32767.");
     }
 
     @Test
@@ -60,13 +62,19 @@ public class FormatTest {
 
     @Test
     void testLongName() {
+        // The longest allowable name is 32 bytes in UTF-8.
+        // Using a name that's 32 characters but 32 bytes in UTF-8 should be an error.
+        final String sigma = "\u03C3"; // GREEK SMALL LETTER SIGMA (two bytes in UTF-8)
+        String longName = sigma + "X".repeat(31);
+        assertEquals(32, longName.length(), "TEST BUG: not testing encoding expansion");
+
         // Test the three argument constructor
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> new Format("TOOLONGXY", 0, 0));
-        assertEquals("format name must not be longer than 8 characters", exception.getMessage());
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> new Format(longName, 0, 0));
+        assertEquals("format name must not be longer than 32 bytes when encoded with UTF-8", exception.getMessage());
 
         // Test the two argument constructor
-        exception = assertThrows(IllegalArgumentException.class, () -> new Format("TOOLONGXY", 0));
-        assertEquals("format name must not be longer than 8 characters", exception.getMessage());
+        exception = assertThrows(IllegalArgumentException.class, () -> new Format(longName, 0));
+        assertEquals("format name must not be longer than 32 bytes when encoded with UTF-8", exception.getMessage());
     }
 
     @Test

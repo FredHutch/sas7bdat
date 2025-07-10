@@ -1,5 +1,6 @@
 package org.scharp.sas7bdat;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -34,7 +35,7 @@ public final class Format {
      *
      * @param name
      *     The name of format applied to a variable. For example "COMMA", "$CHAR", "DOLLAR", or "". This must not be
-     *     {@code null}, must be entirely ASCII characters, and must not be larger than 8 characters.
+     *     {@code null} and must not be larger than 32 bytes in UTF-8.
      * @param width
      *     The maximum width to use. 0 implies the default for the format.
      *     <p>
@@ -60,14 +61,12 @@ public final class Format {
      * @throws NullPointerException
      *     if {@code name} is {@code null}.
      * @throws IllegalArgumentException
-     *     if {@code name} is too long or contains a non-ASCII character, if {@code width} is out of range, or if
-     *     {@code numberOfDigits} is out of range.
+     *     if {@code name} is too long, if {@code width} is out of range, or if {@code numberOfDigits} is out of range.
      */
     public Format(String name, int width, int numberOfDigits) {
         // Validate arguments to maintain class invariant.
         ArgumentUtil.checkNotNull(name, "format name");
-        ArgumentUtil.checkMaximumLength(name, 8, "format name");
-        ArgumentUtil.checkIsAscii(name, "format name");
+        ArgumentUtil.checkMaximumLength(name, StandardCharsets.UTF_8, 32, "format name");
 
         if (width < 0) {
             // This might be too strict.  SAS permits (and ignores) negative lengths.
@@ -90,11 +89,11 @@ public final class Format {
     }
 
     /**
-     * Creates a new Variable Format specification.
+     * Creates a new Format specification.
      *
      * @param name
      *     The name of format applied to a variable. For example "COMMA", "$CHAR", "DOLLAR", or "". This must not be
-     *     {@code null}, must be entirely ASCII characters, and must not be larger than 8 characters.
+     *     {@code null} and must not be larger than 32 bytes in UTF-8.
      * @param width
      *     The maximum width to use. 0 implies the default for the format.
      *     <p>
@@ -109,7 +108,7 @@ public final class Format {
      * @throws NullPointerException
      *     if {@code name} is {@code null}.
      * @throws IllegalArgumentException
-     *     if {@code name} is too long or contains a non-ASCII character, if {@code width} is out of range.
+     *     if {@code name} is too long, if {@code width} is out of range, or if {@code numberOfDigits} is out of range.
      */
     public Format(String name, int width) {
         this(name, width, 0);
