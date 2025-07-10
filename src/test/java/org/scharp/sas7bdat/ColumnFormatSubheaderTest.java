@@ -75,13 +75,13 @@ public class ColumnFormatSubheaderTest {
 
             0, 0, 0, 0, 0, 0, 0, 0, // padding
 
-            0, 0, // input name page
-            8, 0, // input name offset
-            6, 0, // input name size
+            0, 0, // input format name page
+            8, 0, // input format name offset
+            6, 0, // input format name size
 
-            0, 0, // output name page
-            16, 0, // output name offset
-            7, 0, // output name size
+            0, 0, // output format name page
+            16, 0, // output format name offset
+            7, 0, // output format name size
 
             0, 0, // label page
             24, 0, // label offset
@@ -128,13 +128,13 @@ public class ColumnFormatSubheaderTest {
 
             0, 0, 0, 0, 0, 0, 0, 0, // padding
 
-            0, 0, // input name page
-            0, 0, // input name offset
-            0, 0, // input name size
+            0, 0, // input format name page
+            0, 0, // input format name offset
+            0, 0, // input format name size
 
-            0, 0, // output name page
-            0, 0, // output name offset
-            0, 0, // output name size
+            0, 0, // output format name page
+            0, 0, // output format name offset
+            0, 0, // output format name size
 
             0, 0, // label page
             0, 0, // label offset
