@@ -27,10 +27,10 @@ class ColumnFormatSubheader extends Subheader {
         write8(page, subheaderOffset + 8, 0); // unknown, maybe padding
         write8(page, subheaderOffset + 16, 0); // unknown, maybe padding
 
-        write2(page, subheaderOffset + 24, (short) variable.outputFormat().width());
-        write2(page, subheaderOffset + 26, (short) variable.outputFormat().numberOfDigits());
-        write2(page, subheaderOffset + 28, (short) variable.inputFormat().width());
-        write2(page, subheaderOffset + 30, (short) variable.inputFormat().numberOfDigits());
+        write2(page, subheaderOffset + 24, variable.outputFormat().width());
+        write2(page, subheaderOffset + 26, variable.outputFormat().numberOfDigits());
+        write2(page, subheaderOffset + 28, variable.inputFormat().width());
+        write2(page, subheaderOffset + 30, variable.inputFormat().numberOfDigits());
 
         write8(page, subheaderOffset + 32, 0); // unknown, maybe padding
 

@@ -26,8 +26,8 @@ public final class Format {
     public static Format UNSPECIFIED = new Format("", 0, 0);
 
     private final String name;
-    private final int width;
-    private final int numberOfDigits;
+    private final short width;
+    private final short numberOfDigits;
 
     /**
      * Creates a new Format specification.
@@ -85,8 +85,8 @@ public final class Format {
         }
 
         this.name = name;
-        this.width = width;
-        this.numberOfDigits = numberOfDigits;
+        this.width = (short) width;
+        this.numberOfDigits = (short) numberOfDigits;
     }
 
     /**
@@ -125,14 +125,14 @@ public final class Format {
     /**
      * @return The width of this format. If this is zero, then no explicit width is set.
      */
-    public int width() {
+    public short width() {
         return width;
     }
 
     /**
      * @return The number of digits. If this is zero, then no explicit number of digits is set.
      */
-    public int numberOfDigits() {
+    public short numberOfDigits() {
         return numberOfDigits;
     }
 
