@@ -1,10 +1,17 @@
 package org.scharp.sas7bdat;
 
+import java.util.HashMap;
+import java.util.Objects;
+
 /**
  * A simple class for describing a format of a SAS variable.
  *
  * <p>
  * Instances of this class are immutable.
+ * </p>
+ *
+ * <p>
+ * This class supports {@code equals()} and {@code hashCode()} in a way that makes them suitable for use in a HashMap.
  * </p>
  *
  * <p>
@@ -77,7 +84,6 @@ public final class Format {
             throw new IllegalArgumentException("format numberOfDigits must not be greater than 32767");
         }
 
-        // TODO: provide an overload with a structured name for standard formats DOLLAR, CHAR, etc.
         this.name = name;
         this.width = width;
         this.numberOfDigits = numberOfDigits;
@@ -128,6 +134,44 @@ public final class Format {
      */
     public int numberOfDigits() {
         return numberOfDigits;
+    }
+
+    /**
+     * Gets a hash code for this format.
+     * <p>
+     * This method is supported for the benefit of hash tables such as those provided by {@link HashMap}.
+     * </p>
+     *
+     * @return this format's a hash code
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, width, numberOfDigits);
+    }
+
+    /**
+     * Determines if this format is equal to another object.
+     * <p>
+     * Two formats are equal if their format name, width, and numberOfDigits are all equal.
+     * </p>
+     *
+     * @param other
+     *     The object with which to compare this format
+     *
+     * @return {@code true}, if this format is equal to {@code other}.  {@code false}, otherwise.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof Format otherFormat)) {
+            return false;
+        }
+
+        return name.equals(otherFormat.name) &&
+            width == otherFormat.width &&
+            numberOfDigits == otherFormat.numberOfDigits;
     }
 
     // TODO: toString() to format like SAS.
