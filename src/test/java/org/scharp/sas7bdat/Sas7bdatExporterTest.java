@@ -13,10 +13,14 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Tests for {@link Sas7bdatExporter} */
 public class Sas7bdatExporterTest {
@@ -276,6 +280,113 @@ public class Sas7bdatExporterTest {
         } finally {
             // Always clean up
             Files.deleteIfExists(targetLocation);
+        }
+    }
+
+    @Test
+    public void testExportDatasetWithNullTargetFile() {
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+        List<List<Object>> observations = List.of();
+
+        // Invoke the unit-under-test with a null path.
+        Exception exception = assertThrows(
+            NullPointerException.class,
+            () -> Sas7bdatExporter.exportDataset(null, metadata, observations));
+        assertEquals("targetLocation must not be null", exception.getMessage());
+    }
+
+    @Test
+    public void testExportDatasetWithNullMetadata() throws IOException {
+        Path targetPath = Path.of("testExportDatasetWithNullMetadata.sas7bdat");
+        List<List<Object>> observations = List.of();
+
+        try {
+            // Invoke the unit-under-test with a null metadata object.
+            Exception exception = assertThrows(
+                NullPointerException.class,
+                () -> Sas7bdatExporter.exportDataset(targetPath, null, observations));
+            assertEquals("metadata must not be null", exception.getMessage());
+
+            // Confirm that the file was not created.
+            assertFalse(Files.exists(targetPath), "target file unexpectedly created");
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup, just in case
+        }
+    }
+
+    @Test
+    public void testExportDatasetWithNullObservationsList() throws IOException {
+        Path targetPath = Path.of("testExportDatasetWithNullObservationsList.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+
+        try {
+            // Invoke the unit-under-test with a null observations list.
+            Exception exception = assertThrows(
+                NullPointerException.class,
+                () -> Sas7bdatExporter.exportDataset(targetPath, metadata, null));
+            assertEquals("observations must not be null", exception.getMessage());
+
+            // Confirm that the file was not created.
+            assertFalse(Files.exists(targetPath), "target file unexpectedly created");
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup, just in case
+        }
+    }
+
+    @Test
+    public void testExportDatasetWithNullObservationRow() throws IOException {
+        Path targetPath = Path.of("testExportDatasetWithNullObservationRow.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+        List<List<Object>> observations = Arrays.asList(List.of("BEFORE"), null, List.of("AFTER"));
+
+        try {
+            // Invoke the unit-under-test with a null observation.
+            Exception exception = assertThrows(
+                NullPointerException.class,
+                () -> Sas7bdatExporter.exportDataset(targetPath, metadata, observations));
+            assertEquals("observations must not contain a null observation", exception.getMessage());
+
+            // The file should be half-written
+            assertTrue(Files.exists(targetPath), "target file was not created");
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup
+        }
+    }
+
+    @Test
+    public void testConstructWithNullTargetFile() throws IOException {
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+
+        // Invoke the unit-under-test with a null path.
+        Exception exception = assertThrows(
+            NullPointerException.class,
+            () -> new Sas7bdatExporter(null, metadata, 0));
+        assertEquals("targetLocation must not be null", exception.getMessage());
+    }
+
+    @Test
+    public void testConstructWithNullMetadata() throws IOException {
+        Path targetPath = Path.of("testConstructWithNullMetadata.sas7bdat");
+
+        try {
+            // Invoke the unit-under-test with a null metadata object.
+            Exception exception = assertThrows(
+                NullPointerException.class,
+                () -> new Sas7bdatExporter(targetPath, null, 0));
+            assertEquals("metadata must not be null", exception.getMessage());
+
+            // Confirm that the file was not created.
+            assertFalse(Files.exists(targetPath), "target file unexpectedly created");
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup, just in case
         }
     }
 }

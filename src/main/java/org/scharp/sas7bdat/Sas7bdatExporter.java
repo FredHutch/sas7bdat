@@ -605,6 +605,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
     public Sas7bdatExporter(Path targetLocation, Sas7bdatMetadata metadata, int totalObservationsInDataset)
         throws IOException {
+        ArgumentUtil.checkNotNull(targetLocation, "targetLocation");
+        ArgumentUtil.checkNotNull(metadata, "metadata");
 
         outputStream = Files.newOutputStream(targetLocation);
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
@@ -854,13 +856,42 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
     }
 
+    /**
+     * Writes a SAS7BDAT file with the given metadata and observations to the file system.
+     * <p>
+     * If your data set is too large to hold in memory, then you should use {@link Sas7bdatExporter#Sas7bdatExporter}
+     * constructor and stream the observations using {@link Sas7bdatExporter#writeObservation writeObservation}.
+     * </p>
+     *
+     * @param targetLocation
+     *     The location where
+     * @param metadata
+     *     The data set's metadata.
+     * @param observations
+     *     A list of observations. Each element in this list is a list of objects that represents an observation (row).
+     *     The objects in the row must be given in the same order as the variables are given in {@code metadata}.  For
+     *     any variable whose type is {@link VariableType#CHARACTER}, the values must be given as a {@link String}.  For
+     *     any variable whose type is {@link VariableType#NUMERIC}, the values must be given as a {@link Number} or
+     *     {@code null}, which indicates a missing numeric value.
+     *
+     * @throws IOException
+     *     If a file I/O error prevents the dataset from being written.
+     * @throws NullPointerException
+     *     If {@code targetLocation}, {@code metadata}, or {@code observations} is {@code null}.
+     */
     public static void exportDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
         throws IOException {
+        ArgumentUtil.checkNotNull(observations, "observations");
+        ArgumentUtil.checkNotNull(targetLocation, "targetLocation");
+        ArgumentUtil.checkNotNull(metadata, "metadata");
 
         try (Sas7bdatExporter datasetWriter = new Sas7bdatExporter(targetLocation, metadata, observations.size())) {
 
-            // Add observations
+            // Write all observations
             for (List<Object> observation : observations) {
+                if (observation == null) {
+                    throw new NullPointerException("observations must not contain a null observation");
+                }
                 datasetWriter.writeObservation(observation);
             }
             assert datasetWriter.isComplete();
