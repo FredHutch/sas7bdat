@@ -818,7 +818,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         return totalObservationsInDataset == totalObservationsWritten;
     }
 
-    void writePage(Sas7bdatPage page) throws IOException {
+    private void writePage(Sas7bdatPage page) throws IOException {
         // Clear the data on the buffer so that parts of the previous page
         // don't get repeated in this page for the parts that aren't filled in.
         //
