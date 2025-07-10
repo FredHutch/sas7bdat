@@ -20,7 +20,7 @@ public final class Variable {
     /**
      * A builder class for {@link Variable}.
      */
-    public static class Builder {
+    public final static class Builder {
         private VariableType type;
         private String name;
         private int length;

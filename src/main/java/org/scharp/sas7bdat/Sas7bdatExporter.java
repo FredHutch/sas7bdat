@@ -20,7 +20,7 @@ import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 import static org.scharp.sas7bdat.WriteUtil.writeAscii;
 
-public class Sas7bdatExporter implements AutoCloseable {
+public final class Sas7bdatExporter implements AutoCloseable {
 
     // This can be anything, although it might need to be aligned.
     // sas chooses 0x10000 for small datasets and increments by 0x400 when more space is needed.

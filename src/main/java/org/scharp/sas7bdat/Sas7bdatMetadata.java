@@ -14,7 +14,7 @@ import java.util.Set;
  * Instances of this class are immutable.
  * </p>
  */
-public class Sas7bdatMetadata {
+public final class Sas7bdatMetadata {
     private final LocalDateTime creationTime;
     private final String datasetType;
     private final String datasetLabel;
@@ -23,7 +23,7 @@ public class Sas7bdatMetadata {
     /**
      * A builder class for {@link Sas7bdatMetadata}.
      */
-    public static class Builder {
+    public final static class Builder {
         private LocalDateTime creationTime;
         private String datasetType;
         private String datasetLabel;
