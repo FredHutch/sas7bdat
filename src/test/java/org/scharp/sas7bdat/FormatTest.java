@@ -13,34 +13,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FormatTest {
 
     private static void assertFormat(Format format, String expectedName, int expectedWidth,
-        int expectedNumberOfDigits) {
+        int expectedNumberOfDigits, String expectedStringForm) {
+        // Test the accessor methods
         assertEquals(expectedName, format.name(), "incorrect format name");
         assertEquals(expectedWidth, format.width(), "incorrect format width");
         assertEquals(expectedNumberOfDigits, format.numberOfDigits(), "incorrect number of digits");
+
+        // Test toString()
+        assertEquals(expectedStringForm, format.toString(), "toString() returned incorrect value");
     }
 
     @Test
     void basicTest() {
         // Test the three-argument constructor
-        assertFormat(new Format("FORMAT", 1, 2), "FORMAT", 1, 2);
-        assertFormat(new Format("", 5, 2), "", 5, 2);
-        assertFormat(new Format("$ASCII", 5, 0), "$ASCII", 5, 0);
-        assertFormat(new Format("PERCENTN", 32, 31), "PERCENTN", 32, 31);
-        assertFormat(new Format("dollar", 15, 2), "dollar", 15, 2);
+        assertFormat(new Format("FORMAT", 1, 2), "FORMAT", 1, 2, "FORMAT1.2");
+        assertFormat(new Format("", 5, 2), "", 5, 2, "5.2");
+        assertFormat(new Format("$ASCII", 5, 0), "$ASCII", 5, 0, "$ASCII5.");
+        assertFormat(new Format("PERCENTN", 32, 31), "PERCENTN", 32, 31, "PERCENTN32.31");
+        assertFormat(new Format("dollar", 15, 2), "dollar", 15, 2, "dollar15.2");
         assertFormat(new Format("MaxedOut", Short.MAX_VALUE, Short.MAX_VALUE), "MaxedOut", Short.MAX_VALUE,
-            Short.MAX_VALUE);
+            Short.MAX_VALUE, "MaxedOut32767.32767");
 
         // Test the two-argument constructor
-        assertFormat(new Format("FORMAT", 1), "FORMAT", 1, 0);
-        assertFormat(new Format("", 1), "", 1, 0);
-        assertFormat(new Format("$UPCASE", 100), "$UPCASE", 100, 0);
-        assertFormat(new Format("PERCENTN", 6), "PERCENTN", 6, 0);
-        assertFormat(new Format("MaxedOut", Short.MAX_VALUE), "MaxedOut", Short.MAX_VALUE, 0);
+        assertFormat(new Format("FORMAT", 1), "FORMAT", 1, 0, "FORMAT1.");
+        assertFormat(new Format("", 1), "", 1, 0, "1.");
+        assertFormat(new Format("$UPCASE", 100), "$UPCASE", 100, 0, "$UPCASE100.");
+        assertFormat(new Format("PERCENTN", 6), "PERCENTN", 6, 0, "PERCENTN6.");
+        assertFormat(new Format("MaxedOut", Short.MAX_VALUE), "MaxedOut", Short.MAX_VALUE, 0, "MaxedOut32767.");
     }
 
     @Test
     void testUnspecified() {
-        assertFormat(Format.UNSPECIFIED, "", 0, 0);
+        assertFormat(Format.UNSPECIFIED, "", 0, 0, "");
     }
 
     @Test

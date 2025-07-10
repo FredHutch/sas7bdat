@@ -174,5 +174,31 @@ public final class Format {
             numberOfDigits == otherFormat.numberOfDigits;
     }
 
-    // TODO: toString() to format like SAS.
+    /**
+     * Shows this format as a string in the same way that SAS would.
+     *
+     * <p>
+     * For example "$ASCII4." or "BESTD5.2".
+     * </p>
+     *
+     * @return A string representing this format.
+     */
+    @Override
+    public String toString() {
+        if (UNSPECIFIED.equals(this)) {
+            return "";
+        }
+
+        // SAS displays formats in the form: <name> <width> '.' <digits>.
+        // If <width> or <digits> is zero, then the component isn't included in the string.
+        StringBuilder builder = new StringBuilder(name);
+        if (width != 0) {
+            builder.append(width);
+        }
+        builder.append('.');
+        if (numberOfDigits != 0) {
+            builder.append(numberOfDigits);
+        }
+        return builder.toString();
+    }
 }
