@@ -854,7 +854,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
     }
 
-    public static void writeDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
+    public static void exportDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
         throws IOException {
 
         try (Sas7bdatExporter datasetWriter = new Sas7bdatExporter(targetLocation, metadata, observations.size())) {

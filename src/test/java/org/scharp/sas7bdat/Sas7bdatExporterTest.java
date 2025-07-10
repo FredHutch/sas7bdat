@@ -101,7 +101,7 @@ public class Sas7bdatExporterTest {
             }
 
             // Write a data set.
-            Sas7bdatExporter.writeDataset(targetLocation, metadata, observations);
+            Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
 
             // Read the dataset with parso to confirm that it was written correctly.
             try (InputStream inputStream = Files.newInputStream(targetLocation)) {

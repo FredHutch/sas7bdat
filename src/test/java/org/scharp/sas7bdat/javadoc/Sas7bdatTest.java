@@ -77,7 +77,7 @@ public class Sas7bdatTest {
             Arrays.asList("Washington", "DC", 68, 52));
 
         // Export the data set a SAS7BDAT file.
-        Sas7bdatExporter.writeDataset(targetLocation, metadata, observations);
+        Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
     }
 
     @Test
