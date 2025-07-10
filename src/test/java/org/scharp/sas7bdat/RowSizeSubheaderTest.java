@@ -48,8 +48,8 @@ public class RowSizeSubheaderTest {
                 type(VariableType.NUMERIC).
                 length(8).
                 label("A label").
-                outputFormat(new Format("$OUTPUT", 8, 2)).
-                inputFormat(new Format("$INPUT", 9, 6)).
+                outputFormat(new Format("OUTPUT", 8, 2)).
+                inputFormat(new Format("INPUT", 9, 6)).
                 build(),
 
             Variable.builder().

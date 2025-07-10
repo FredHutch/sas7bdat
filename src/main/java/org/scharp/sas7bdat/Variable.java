@@ -170,13 +170,31 @@ public final class Variable {
             return this;
         }
 
+        private void checkIsLegalForType(Format format, String formatDescription) {
+            // Both CHARACTER and NUMERIC types can have an unspecified format.
+            if (Format.UNSPECIFIED.equals(format)) {
+                return;
+            }
+
+            // SAS's documentation states that if a format name starts with a "$" it's for character types,
+            // otherwise it's for numeric types.  It also says that, if you put a character format on a numeric
+            // type, or vice versa, it will try to find an equivalent format for the type.  Rather than encourage
+            // such ill-defined behavior, it's better for the Java programmer to specify the correct format.
+            // This enables a faster fail when the caller makes a mistake.
+            if (type == VariableType.CHARACTER != format.name().startsWith("$")) {
+                throw new IllegalStateException(
+                    formatDescription + " \"" + format + "\" is not legal for " + type + " variables");
+            }
+        }
+
         /**
          * Builds an immutable {@code Variable} with the configured options.
          *
          * @return a {@code Variable}
          *
          * @throws IllegalStateException
-         *     if the type, length, or name haven't been set explicitly, or if type is NUMERIC and length is not 8.
+         *     if the type, length, or name haven't been set explicitly; if type is NUMERIC and length is not 8; or if
+         *     the input/output format is for a variable with a different type
          */
         public Variable build() {
             // There is no meaningful default type, length, or name; it's an error if the caller hasn't set them.
@@ -205,7 +223,9 @@ public final class Variable {
                 }
             }
 
-            // TODO: check if the format legal for type?
+            // Make sure that only character formats are used for character types (and the same for numeric types)
+            checkIsLegalForType(outputFormat, "outputFormat");
+            checkIsLegalForType(inputFormat, "inputFormat");
 
             return new Variable(name, type, length, label, outputFormat, inputFormat);
         }

@@ -16,16 +16,8 @@ public class VariableTest {
         assertEquals(expectedType, variable.type(), "incorrect type");
         assertEquals(expectedLength, variable.length(), "incorrect length");
         assertEquals(expectedLabel, variable.label(), "incorrect label");
-
-        assertEquals(expectedInputFormat.name(), variable.inputFormat().name(), "incorrect input format name");
-        assertEquals(expectedInputFormat.width(), variable.inputFormat().width(), "incorrect input format width");
-        assertEquals(expectedInputFormat.numberOfDigits(), variable.inputFormat().numberOfDigits(),
-            "incorrect input format digits");
-
-        assertEquals(expectedOutputFormat.name(), variable.outputFormat().name(), "incorrect output format name");
-        assertEquals(expectedOutputFormat.width(), variable.outputFormat().width(), "incorrect output format width");
-        assertEquals(expectedOutputFormat.numberOfDigits(), variable.outputFormat().numberOfDigits(),
-            "incorrect output format digits");
+        assertEquals(expectedInputFormat, variable.inputFormat(), "incorrect input format");
+        assertEquals(expectedOutputFormat, variable.outputFormat(), "incorrect output format");
     }
 
     @Test
@@ -249,6 +241,82 @@ public class VariableTest {
         Variable variable = builder.length(8).build();
 
         assertVariable(variable, "NAME", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+    }
+
+    @Test
+    void buildNumericInputFormatForCharacterVariable() {
+        // Create a builder for a character variable and a numeric input format.
+        Format characterFormat = new Format("$", 5);
+        Format numericFormat = new Format("", 10);
+        Builder builder = Variable.builder().name("NAME").length(7).type(VariableType.CHARACTER)
+            .inputFormat(numericFormat);
+
+        // Building a character variable with numeric input format is illegal.
+        Exception exception = assertThrows(IllegalStateException.class, builder::build);
+        assertEquals("inputFormat \"10.\" is not legal for CHARACTER variables", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to fix the error and continue building.
+        Variable variable = builder.inputFormat(characterFormat).build();
+
+        assertVariable(variable, "NAME", VariableType.CHARACTER, 7, "", characterFormat, Format.UNSPECIFIED);
+    }
+
+    @Test
+    void buildCharacterInputFormatForNumericVariable() {
+        // Create a builder for a numeric variable and a character input format.
+        Format characterFormat = new Format("$", 5);
+        Format numericFormat = new Format("BEST", 10);
+        Builder builder = Variable.builder().name("NAME").length(8).type(VariableType.NUMERIC)
+            .inputFormat(characterFormat);
+
+        // Building a numeric variable with character input format is illegal.
+        Exception exception = assertThrows(IllegalStateException.class, builder::build);
+        assertEquals("inputFormat \"$5.\" is not legal for NUMERIC variables", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to fix the error and continue building.
+        Variable variable = builder.inputFormat(numericFormat).build();
+
+        assertVariable(variable, "NAME", VariableType.NUMERIC, 8, "", numericFormat, Format.UNSPECIFIED);
+    }
+
+    @Test
+    void buildNumericOutputFormatForCharacterVariable() {
+        // Create a builder for a character variable and a numeric output format.
+        Format characterFormat = new Format("$ascii", 11);
+        Format numericFormat = new Format("float", 6, 2);
+        Builder builder = Variable.builder().name("NAME").length(8).type(VariableType.CHARACTER)
+            .outputFormat(numericFormat);
+
+        // Building a character variable with numeric input format is illegal.
+        Exception exception = assertThrows(IllegalStateException.class, builder::build);
+        assertEquals("outputFormat \"float6.2\" is not legal for CHARACTER variables", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to fix the error and continue building.
+        Variable variable = builder.outputFormat(characterFormat).build();
+
+        assertVariable(variable, "NAME", VariableType.CHARACTER, 8, "", Format.UNSPECIFIED, characterFormat);
+    }
+
+    @Test
+    void buildCharacterOutputFormatForNumericVariable() {
+        // Create a builder for a numeric variable and a character output format.
+        Format characterFormat = new Format("$CHAR", 200);
+        Format numericFormat = new Format("BESTD", 10, 2);
+        Builder builder = Variable.builder().name("NAME").length(8).type(VariableType.NUMERIC)
+            .outputFormat(characterFormat);
+
+        // Building a numeric variable with character input format is illegal.
+        Exception exception = assertThrows(IllegalStateException.class, builder::build);
+        assertEquals("outputFormat \"$CHAR200.\" is not legal for NUMERIC variables", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to fix the error and continue building.
+        Variable variable = builder.outputFormat(numericFormat).build();
+
+        assertVariable(variable, "NAME", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, numericFormat);
     }
 
     @Test

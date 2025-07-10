@@ -50,7 +50,7 @@ public class ColumnFormatSubheaderTest {
         // A variable with all three strings, format width, and format digits.
         Variable variable = Variable.builder().
             name("MY_VAR").
-            type(VariableType.NUMERIC).
+            type(VariableType.CHARACTER).
             length(8).
             label("A label").
             outputFormat(new Format("$OUTPUT", 8, 2)).

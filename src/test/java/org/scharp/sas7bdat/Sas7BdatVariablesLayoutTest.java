@@ -39,7 +39,7 @@ public class Sas7BdatVariablesLayoutTest {
                 type(VariableType.CHARACTER).
                 length(8).
                 label("label 3").
-                outputFormat(new Format("", 5)).
+                outputFormat(new Format("$", 5)).
                 build());
 
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
@@ -192,7 +192,7 @@ public class Sas7BdatVariablesLayoutTest {
                 type(VariableType.CHARACTER).
                 length(13).
                 label("label 3").
-                outputFormat(new Format("", 5)).
+                outputFormat(new Format("$", 5)).
                 build(),
 
             Variable.builder().
