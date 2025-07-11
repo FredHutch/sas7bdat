@@ -519,7 +519,7 @@ public class Sas7bdatExporterTest {
     }
 
     @Test
-    public void testConstructWriteObservationWithNullList() throws IOException {
+    public void testWriteObservationWithNullList() throws IOException {
         Path targetPath = Path.of("testConstructWriteObservationWithNullList.sas7bdat");
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
