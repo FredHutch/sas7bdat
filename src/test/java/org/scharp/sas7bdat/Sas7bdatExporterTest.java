@@ -5,6 +5,7 @@ import com.epam.parso.ColumnFormat;
 import com.epam.parso.SasFileProperties;
 import com.epam.parso.SasFileReader;
 import com.epam.parso.impl.SasFileReaderImpl;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -304,6 +306,105 @@ public class Sas7bdatExporterTest {
                 }
                 assertEquals(totalObservations, i, "parso didn't return all rows");
             }
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
+        }
+    }
+
+    private static String padToSize(String string, int targetLength) {
+        assertThat("TEST BUG: string is already too long", string.length(), Matchers.lessThanOrEqualTo(targetLength));
+        return string + "x".repeat(targetLength - string.length());
+    }
+
+    @Test
+    public void testMaxSizedMetadata() throws IOException {
+
+        Path targetLocation = Files.createTempFile("sas7bdat-testMaxSizedMetadata-", ".sas7bdat");
+        try {
+            List<Variable> maxSizedVariables = new ArrayList<>(Short.MAX_VALUE);
+            for (int i = 0; i < Short.MAX_VALUE; i++) {
+                Variable variable = Variable.builder()
+                    .name(padToSize("VAR_" + i + "_", 32))
+                    .type(VariableType.CHARACTER)
+                    .length(5) // parso lib limits page size to 10000000
+                    .label(padToSize("Variable #" + i + " label ", 256))
+                    .inputFormat(new Format(padToSize("$FORMAT_", 32), Short.MAX_VALUE))
+                    .outputFormat(new Format(padToSize("$OUT_FORMAT_", 32), Short.MAX_VALUE))
+                    .build();
+                maxSizedVariables.add(variable);
+            }
+
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder()
+                .creationTime(LocalDateTime.of(3000, 12, 31, 23, 59, 59)) // parso's dates aren't correct at 19900 AD
+                .datasetLabel(padToSize("Very long dataset label: ", 256))
+                .datasetType(padToSize("DATATYPE", 8))
+                .variables(maxSizedVariables)
+                .build();
+
+            // Write the dataset with max-sized metadata and no observations.
+            Sas7bdatExporter.exportDataset(targetLocation, metadata, List.of());
+
+            // Read the dataset with parso to confirm that it was written correctly.
+            try (InputStream inputStream = Files.newInputStream(targetLocation)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(Short.MAX_VALUE * 5, sasFileProperties.getRowLength());
+                assertEquals(0, sasFileProperties.getMixPageRowCount()); // observation is too large
+                assertEquals(0x28400, sasFileProperties.getHeaderLength());
+                assertEquals(0x28400, sasFileProperties.getPageLength());
+                assertEquals(94, sasFileProperties.getPageCount());
+
+                // Test the observations
+                assertEquals(0, sasFileProperties.getRowCount());
+                assertEquals(null, sasFileReader.readNext());
+            }
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
+        }
+    }
+
+    @Test
+    public void testMinSizedMetadata() throws IOException {
+
+        Path targetLocation = Files.createTempFile("sas7bdat-testMinSizedMetadata-", ".sas7bdat");
+        try {
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder()
+                .creationTime(LocalDateTime.of(1900, 1, 1, 0, 0, 0)) // parso's dates aren't correct at 1584 AD
+                .datasetType("")
+                .variables(List.of(Variable.builder().name("A").type(VariableType.CHARACTER).length(1).build()))
+                .build();
+
+            // Write the dataset with max-sized metadata and no observations.
+            Sas7bdatExporter.exportDataset(targetLocation, metadata, List.of());
+
+            // Read the dataset with parso to confirm that it was written correctly.
+            try (InputStream inputStream = Files.newInputStream(targetLocation)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(metadata.variables().size(), sasFileProperties.getRowLength());
+                assertEquals(56593, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(1, sasFileProperties.getPageCount());
+
+                // Test the observations
+                assertEquals(0, sasFileProperties.getRowCount());
+                assertEquals(null, sasFileReader.readNext());
+            }
+
         } finally {
             // Always clean up
             Files.deleteIfExists(targetLocation);
