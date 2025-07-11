@@ -26,7 +26,6 @@ class TestRandomSas7Bdat {
     private static final Class Format
 
     private static final Constructor FormatConstructor
-    private static final Constructor VariableConstructor
     private static final Constructor Sas7bdatExporterConstructor
 
     // Make sure the library has been compiled.
@@ -51,14 +50,6 @@ class TestRandomSas7Bdat {
         Format           = Class.forName("org.scharp.sas7bdat.Format")
 
         FormatConstructor = Format.getDeclaredConstructor(String.class, int.class, int.class)
-
-        VariableConstructor = Variable.getDeclaredConstructor(
-            String.class,   // variableName
-            VariableType,   // type
-            int.class,      // variableLength
-            String.class,   // label
-            Format,         // outputFormat
-            Format)         // inputFormat
 
         Sas7bdatExporterConstructor = Sas7bdatExporter.getDeclaredConstructor(
             Path.class,           // targetLocation
@@ -150,7 +141,14 @@ class TestRandomSas7Bdat {
                     inputFormat = FormatConstructor.newInstance(inputFormatName, inputFormatWidth, inputFormatNumberOfDigitsRightOfDecimalPoint)
                 }
 
-                return VariableConstructor.newInstance(name, type, length, label, outputFormat, inputFormat)
+                return Variable.builder().
+                    name(name).
+                    type(type).
+                    length(length).
+                    label(label).
+                    outputFormat(outputFormat).
+                    inputFormat(inputFormat).
+                    build()
             }
 
             def datasetLabel = randomStringGenerator.nextRandomString(256)
@@ -394,13 +392,14 @@ class TestRandomSas7Bdat {
                     checkFieldName(parser, 'inputFormat')
                     def inputFormat = parseFormat()
 
-                    metadata.variables << VariableConstructor.newInstance(
-                        name,
-                        VariableType.valueOf(type),
-                        length,
-                        label,
-                        outputFormat,
-                        inputFormat)
+                    metadata.variables << Variable.builder().
+                        name(name).
+                        type(VariableType.valueOf(type)).
+                        length(length).
+                        label(label).
+                        outputFormat(outputFormat).
+                        inputFormat(inputFormat).
+                        build()
 
                     checkObjectEnd(parser, 'variable')
                 }
@@ -513,14 +512,6 @@ class TestRandomSas7Bdat {
                 |
                 |Constructor FormatConstructor = Format.getDeclaredConstructor(String.class, int.class, int.class)
                 |
-                |Constructor VariableConstructor = Variable.getDeclaredConstructor(
-                |    String.class,   // variableName
-                |    VariableType,   // type
-                |    int.class,      // variableLength
-                |    String.class,   // label
-                |    Format,         // outputFormat
-                |    Format)         // inputFormat
-                |
                 |Constructor Sas7bdatExporterConstructor = Sas7bdatExporter.getDeclaredConstructor(
                 |    Path.class,           // targetLocation
                 |    Sas7bdatMetadata,     // metadata
@@ -534,13 +525,14 @@ class TestRandomSas7Bdat {
 
             def writeVariable = { variable ->
                 writer.writeLine """
-                    |    VariableConstructor.newInstance(
-                    |        ${quoteStringLiteral(variable.name())},
-                    |        VariableType.${variable.type()},
-                    |        ${variable.length()},
-                    |        ${quoteStringLiteral(variable.label())},
-                    |        ${quoteFormat(variable.outputFormat())},
-                    |        ${quoteFormat(variable.inputFormat())}),
+                    |    Variable.builder().
+                    |        name(${quoteStringLiteral(variable.name())}).
+                    |        type(VariableType.${variable.type()}).
+                    |        length(${variable.length()}).
+                    |        label(${quoteStringLiteral(variable.label())}).
+                    |        outputFormat(${quoteFormat(variable.outputFormat())}).
+                    |        inputFormat(${quoteFormat(variable.inputFormat())}).
+                    |        build(),
                     """.trim().stripMargin()
             }
 
