@@ -1,7 +1,7 @@
 {
     "testDescription" : "As little text as possible, so Column Text Subheader isn't the largest subheader",
 
-    "label": "DATASET",
+    "label": "",
     "type": "DATA",
     "creationDate": "2020-01-03T20:12:31",
     "variables": [
