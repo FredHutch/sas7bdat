@@ -10,80 +10,40 @@
             "type": "CHARACTER",
             "label": "",
             "length": 32000,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "V2",
             "type": "CHARACTER",
             "label": "",
             "length": 32000,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "V3",
             "type": "CHARACTER",
             "label": "",
             "length": 32000,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "V4",
             "type": "CHARACTER",
             "label": "",
             "length": 32000,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "V5",
             "type": "CHARACTER",
             "label": "",
             "length": 32000,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         }
     ],
     "observations": []
