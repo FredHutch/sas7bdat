@@ -162,6 +162,23 @@ public class Sas7bdatExporterTest {
         }
     }
 
+    /**
+     * Variations for the streaming interface:
+     * <ul>
+     *   <li>{@link Sas7bdatExporter#Sas7bdatExporter(Path, Sas7bdatMetadata, int)}</li>
+     *   <li>{@link Sas7bdatExporter#writeObservation(List)}</li>
+     *   <li>{@link Sas7bdatExporter#isComplete()}</li>
+     * </ul>
+     *
+     * Includes:
+     * <ul>
+     *   <li>Writing non-ASCII characters</li>
+     *   <li>Writing CHARACTER values exactly as long as the variable</li>
+     *   <li>Writing both CHARACTER and NUMERIC values</li>
+     * </ul>
+     *
+     * @throws IOException
+     */
     @Test
     public void testStreamingInterface() throws IOException {
 
@@ -227,8 +244,11 @@ public class Sas7bdatExporterTest {
             final int totalObservations = 1_000_000;
             try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
                 for (int i = 0; i < totalObservations; i++) {
+                    // The exporter should not be complete until all observations are written.
+                    assertFalse(exporter.isComplete());
                     exporter.writeObservation(List.of("Value #1 for Var #1!", "Value #1 for Var #2$", "Text3", "A", i));
                 }
+                assertTrue(exporter.isComplete());
             }
 
             // Read the dataset with parso to confirm that it was written correctly.
