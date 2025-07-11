@@ -10,96 +10,48 @@
             "type": "CHARACTER",
             "label": "",
             "length": 1,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "B",
             "type": "CHARACTER",
             "label": "",
             "length": 1,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "C",
             "type": "CHARACTER",
             "label": "",
             "length": 1,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "D",
             "type": "CHARACTER",
             "label": "",
             "length": 1,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "E",
             "type": "CHARACTER",
             "label": "",
             "length": 1,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         },
         {
             "name": "F",
             "type": "CHARACTER",
             "label": "",
             "length": 1,
-            "outputFormat": {
-                "name": "",
-                "width": 0,
-                "numberOfDigits": 0
-            },
-            "inputFormat": {
-                "name": "",
-                "width": 1,
-                "numberOfDigits": 0
-            }
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
         }
     ],
     "observations": []
