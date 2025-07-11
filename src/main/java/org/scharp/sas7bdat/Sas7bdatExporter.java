@@ -603,6 +603,30 @@ public final class Sas7bdatExporter implements AutoCloseable {
         return (dividend + divisor - 1) / divisor;
     }
 
+    /**
+     * Creates a {@code Sas7bdatExporter} for streaming a SAS7BDAT to a file.
+     * <p>
+     * After creating the exporter, you must invoke {@link Sas7bdatExporter#writeObservation writeObservation()} to
+     * write each observation.  After you have provided the final observation, you must invoke
+     * {@link Sas7bdatExporter#close()} to flush any buffered data.
+     * </p>
+     *
+     * @param targetLocation
+     *     The path to the file to which the SAS7BDAT should be written.
+     * @param metadata
+     *     The metadata for the SAS7BDAT.
+     * @param totalObservationsInDataset
+     *     The total number of observation that will be written to the dataset.  You must invoke
+     *     {@link Sas7bdatExporter#writeObservation writeObservation} exactly this number of times before invoking
+     *     {@link Sas7bdatExporter#close}, or else the SAS7BDAT may be corrupt.
+     *
+     * @throws IOException
+     *     If an I/O problem prevented the SAS7BDAT from being created.
+     */
+    // The totalObservationsInDataset parameter is a kludge that enables that header and metadata pages to be completely
+    // written by the time this method returns.  It would be a better API if the caller didn't have to provide this
+    // information up-front, but that would require seeking backward and fixing the parts of the metadata that
+    // depend on the observations count.  Perhaps a future implementation will do this.
     public Sas7bdatExporter(Path targetLocation, Sas7bdatMetadata metadata, int totalObservationsInDataset)
         throws IOException {
         ArgumentUtil.checkNotNull(targetLocation, "targetLocation");
@@ -808,6 +832,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *
      * @throws NullPointerException
      *     If {@code observation} is {@code null}.
+     * @throws IllegalStateException
+     *     If writing this observation would exceed the {@code totalObservationsInDataset} argument given in the
+     *     constructor.
      * @throws IOException
      *     If an I/O error prevented the observation from being written.
      */
@@ -835,6 +862,13 @@ public final class Sas7bdatExporter implements AutoCloseable {
         totalObservationsWritten++;
     }
 
+    /**
+     * Determines whether all observations that were promised as the {@code totalObservations} argument to the
+     * constructor have been written.
+     * <p>
+     *
+     * @return {@code true}, if all observations that were promised have been written.  {@code false}, otherwise.
+     */
     public boolean isComplete() {
         return totalObservationsInDataset == totalObservationsWritten;
     }
