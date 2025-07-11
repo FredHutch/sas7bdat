@@ -63,6 +63,7 @@ public class Sas7bdatExporterTest {
         // Hard-coded values
         assertEquals("9.0401M2", sasFileProperties.getSasRelease());
         assertEquals("UTF-8", sasFileProperties.getEncoding());
+        assertEquals(1, sasFileProperties.getEndianness());
         assertEquals(null, sasFileProperties.getCompressionMethod());
         assertEquals("x86_64", sasFileProperties.getOsName());
         assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
@@ -154,8 +155,16 @@ public class Sas7bdatExporterTest {
                 // Test the metadata headers
                 assertMetadata(metadata, sasFileReader);
 
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(240, sasFileProperties.getRowLength()); // 234 rounded up
+                assertEquals(262, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(4, sasFileProperties.getPageCount());
+
                 // Test the observations
-                assertEquals(observations.size(), sasFileReader.getSasFileProperties().getRowCount());
+                assertEquals(observations.size(), sasFileProperties.getRowCount());
                 int i = 0;
                 Object[] row;
                 while (null != (row = sasFileReader.readNext())) {
@@ -272,8 +281,16 @@ public class Sas7bdatExporterTest {
                 // Test the metadata headers
                 assertMetadata(metadata, sasFileReader);
 
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(240, sasFileProperties.getRowLength()); // 234 rounded up
+                assertEquals(262, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(3677, sasFileProperties.getPageCount());
+
                 // Test the observations
-                assertEquals(totalObservations, sasFileReader.getSasFileProperties().getRowCount());
+                assertEquals(totalObservations, sasFileProperties.getRowCount());
                 int i = 0;
                 Object[] row;
                 while (null != (row = sasFileReader.readNext())) {
