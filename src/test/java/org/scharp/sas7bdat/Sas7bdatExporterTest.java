@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -385,6 +386,52 @@ public class Sas7bdatExporterTest {
 
             // Confirm that the file was not created.
             assertFalse(Files.exists(targetPath), "target file unexpectedly created");
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup, just in case
+        }
+    }
+
+    @Test
+    public void testConstructWriteObservationWithNullList() throws IOException {
+        Path targetPath = Path.of("testConstructWriteObservationWithNullList.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+
+        // Create an exporter
+        try {
+            try (Sas7bdatExporter sas7bdatExporter = new Sas7bdatExporter(targetPath, metadata, 2)) {
+
+                sas7bdatExporter.writeObservation(List.of("BEFORE"));
+
+                // Write the null observation.
+                Exception exception = assertThrows(
+                    NullPointerException.class,
+                    () -> sas7bdatExporter.writeObservation(null));
+                assertEquals("observation must not be null", exception.getMessage());
+
+                // The exception should not have corrupted the state of the exporter,
+                // so it should be possible to continue exporting the file.
+                sas7bdatExporter.writeObservation(List.of("AFTER"));
+            }
+
+            // Read the dataset with parso to confirm that the two observations that were successfully written.
+            try (InputStream inputStream = Files.newInputStream(targetPath)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+
+                // Test the columns
+                assertEquals(metadata.variables().size(), sasFileProperties.getColumnsCount());
+                List<Column> columns = sasFileReader.getColumns();
+                assertVariable(metadata.variables().get(0), 1, columns.get(0));
+
+                // Test the observations
+                assertEquals(2, sasFileProperties.getRowCount());
+                assertArrayEquals(new Object[] { "BEFORE" }, sasFileReader.readNext());
+                assertArrayEquals(new Object[] { "AFTER" }, sasFileReader.readNext());
+                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+            }
+
         } finally {
             Files.deleteIfExists(targetPath); // cleanup, just in case
         }

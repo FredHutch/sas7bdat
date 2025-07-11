@@ -793,7 +793,26 @@ public final class Sas7bdatExporter implements AutoCloseable {
         currentPage = pageLayout.currentMetadataPage;
     }
 
+    /**
+     * Appends an observation (row) to the SAS7BDAT that is being exported.
+     * <p>
+     * This must be called exactly once for
+     * </p>
+     *
+     * @param observation
+     *     The observation to write to the SAS7BDAT, given as a list of objects. The objects in the row must be given in
+     *     the same order as the variables were given in the {@code Sas7bdatMetadata} that was given to this exporter's
+     *     constructor.  For any variable whose type is {@link VariableType#CHARACTER}, the values must be given as a
+     *     {@link String}.  For any variable whose type is {@link VariableType#NUMERIC}, the values must be given as a
+     *     {@link Number} or {@code null}, which indicates a missing numeric value.
+     *
+     * @throws NullPointerException
+     *     If {@code observation} is {@code null}.
+     * @throws IOException
+     *     If an I/O error prevented the observation from being written.
+     */
     public void writeObservation(List<Object> observation) throws IOException {
+        ArgumentUtil.checkNotNull(observation, "observation");
         if (totalObservationsInDataset <= totalObservationsWritten) {
             throw new IllegalStateException("wrote more observations than promised in the constructor");
         }
