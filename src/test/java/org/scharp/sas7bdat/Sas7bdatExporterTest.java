@@ -1,6 +1,7 @@
 package org.scharp.sas7bdat;
 
 import com.epam.parso.Column;
+import com.epam.parso.ColumnFormat;
 import com.epam.parso.SasFileProperties;
 import com.epam.parso.SasFileReader;
 import com.epam.parso.impl.SasFileReaderImpl;
@@ -10,8 +11,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,17 +31,51 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Tests for {@link Sas7bdatExporter} */
 public class Sas7bdatExporterTest {
 
-    private static void assertVariable(Variable variable, int variableNumber, Column column) {
-        assertEquals(variable.name(), column.getName(), "incorrect variable name");
-        assertEquals(variableNumber, column.getId(), "incorrect variable number");
-        assertEquals(variable.length(), column.getLength(), "incorrect variable length");
+    private static void assertVariable(Variable variable, int variableNumber, Column column, String description) {
+        assertEquals(variable.name(), column.getName(), description + " has wrong name");
+        assertEquals(variableNumber, column.getId(), description + " has wrong number");
+        assertEquals(variable.length(), column.getLength(), description + " has wrong length");
         assertEquals(variable.type() == VariableType.NUMERIC ? Number.class : String.class, column.getType());
-        assertEquals(variable.label(), column.getLabel(), "incorrect variable label");
+        assertEquals(variable.label(), column.getLabel(), description + " has wrong label");
 
         Format outputFormat = variable.outputFormat();
-        assertEquals(outputFormat.name(), column.getFormat().getName(), "incorrect output format name");
-        assertEquals(outputFormat.width(), column.getFormat().getWidth(), "incorrect output format width");
-        assertEquals(outputFormat.numberOfDigits(), column.getFormat().getPrecision(), "incorrect output format digit");
+        ColumnFormat parsoFormat = column.getFormat();
+        assertEquals(outputFormat.name(), parsoFormat.getName(), description + " has wrong output format name");
+        assertEquals(outputFormat.width(), parsoFormat.getWidth(), description + " has wrong output format width");
+        assertEquals(outputFormat.numberOfDigits(), parsoFormat.getPrecision(), description + " has wrong digits");
+    }
+
+    private static void assertMetadata(Sas7bdatMetadata metadata, SasFileReader sasFileReader) {
+        SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+
+        // I suspect there's a bug the parso library where it returns the "Date" in UTC ignoring daylight
+        // savings time.
+        Instant utcCreationTime = metadata.creationTime().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS);
+        Duration daylightSavingsTimeAdjustment = ZoneId.systemDefault().getRules().getDaylightSavings(utcCreationTime);
+        Date expectedCreationDate = Date.from(utcCreationTime.minus(daylightSavingsTimeAdjustment));
+        assertEquals(expectedCreationDate, sasFileProperties.getDateCreated());
+
+        assertEquals(metadata.datasetLabel(), sasFileProperties.getFileLabel());
+
+        // I suspect it's a bug in the parso library that the type is not returned.
+        assertEquals("DATA", sasFileProperties.getFileType());
+
+        // Hard-coded values
+        assertEquals("9.0401M2", sasFileProperties.getSasRelease());
+        assertEquals("UTF-8", sasFileProperties.getEncoding());
+        assertEquals(null, sasFileProperties.getCompressionMethod());
+        assertEquals("x86_64", sasFileProperties.getOsName());
+        assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
+        assertEquals("Linux", sasFileProperties.getServerType());
+        assertEquals(0, sasFileProperties.getDeletedRowCount());
+
+        // Test the columns
+        assertEquals(metadata.variables().size(), sasFileProperties.getColumnsCount());
+        List<Column> columns = sasFileReader.getColumns();
+        assertEquals(metadata.variables().size(), columns.size());
+        for (int i = 0; i < metadata.variables().size(); i++) {
+            assertVariable(metadata.variables().get(i), i + 1, columns.get(i), "column #" + (i + 1));
+        }
     }
 
     @Test
@@ -111,37 +150,12 @@ public class Sas7bdatExporterTest {
             // Read the dataset with parso to confirm that it was written correctly.
             try (InputStream inputStream = Files.newInputStream(targetLocation)) {
                 SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
-                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
 
-                // I suspect it's a bug in the parso library that it returns the "Date" in UTC.
-                Date expectedCreationDate = Date.from(creationDate.atZone(ZoneOffset.UTC).toInstant());
-                assertEquals(expectedCreationDate, sasFileProperties.getDateCreated());
-
-                assertEquals(datasetLabel, sasFileProperties.getFileLabel());
-
-                // I suspect it's a bug in the parso library that the type is not returned.
-                assertEquals("DATA", sasFileProperties.getFileType());
-
-                // Hard-coded values
-                assertEquals("9.0401M2", sasFileProperties.getSasRelease());
-                assertEquals("UTF-8", sasFileProperties.getEncoding());
-                assertEquals(null, sasFileProperties.getCompressionMethod());
-                assertEquals("x86_64", sasFileProperties.getOsName());
-                assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
-                assertEquals("Linux", sasFileProperties.getServerType());
-                assertEquals(0, sasFileProperties.getDeletedRowCount());
-
-                // Test the columns
-                assertEquals(metadata.variables().size(), sasFileProperties.getColumnsCount());
-                List<Column> columns = sasFileReader.getColumns();
-                assertVariable(variable1, 1, columns.get(0));
-                assertVariable(variable2, 2, columns.get(1));
-                assertVariable(variable3, 3, columns.get(2));
-                assertVariable(variable4, 4, columns.get(3));
-                assertVariable(variable5, 5, columns.get(4));
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
 
                 // Test the observations
-                assertEquals(observations.size(), sasFileProperties.getRowCount());
+                assertEquals(observations.size(), sasFileReader.getSasFileProperties().getRowCount());
                 int i = 0;
                 Object[] row;
                 while (null != (row = sasFileReader.readNext())) {
@@ -254,37 +268,12 @@ public class Sas7bdatExporterTest {
             // Read the dataset with parso to confirm that it was written correctly.
             try (InputStream inputStream = Files.newInputStream(targetLocation)) {
                 SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
-                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
 
-                // I suspect it's a bug in the parso library that it returns the "Date" in UTC.
-                Date expectedCreationDate = Date.from(creationDate.atZone(ZoneOffset.UTC).toInstant());
-                assertEquals(expectedCreationDate, sasFileProperties.getDateCreated());
-
-                assertEquals(datasetLabel, sasFileProperties.getFileLabel());
-
-                // I suspect it's a bug in the parso library that the type is not returned.
-                assertEquals("DATA", sasFileProperties.getFileType());
-
-                // Hard-coded values
-                assertEquals("9.0401M2", sasFileProperties.getSasRelease());
-                assertEquals("UTF-8", sasFileProperties.getEncoding());
-                assertEquals(null, sasFileProperties.getCompressionMethod());
-                assertEquals("x86_64", sasFileProperties.getOsName());
-                assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
-                assertEquals("Linux", sasFileProperties.getServerType());
-                assertEquals(0, sasFileProperties.getDeletedRowCount());
-
-                // Test the columns
-                assertEquals(metadata.variables().size(), sasFileProperties.getColumnsCount());
-                List<Column> columns = sasFileReader.getColumns();
-                assertVariable(variable1, 1, columns.get(0));
-                assertVariable(variable2, 2, columns.get(1));
-                assertVariable(variable3, 3, columns.get(2));
-                assertVariable(variable4, 4, columns.get(3));
-                assertVariable(variable5, 5, columns.get(4));
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
 
                 // Test the observations
-                assertEquals(totalObservations, sasFileProperties.getRowCount());
+                assertEquals(totalObservations, sasFileReader.getSasFileProperties().getRowCount());
                 int i = 0;
                 Object[] row;
                 while (null != (row = sasFileReader.readNext())) {
@@ -438,15 +427,12 @@ public class Sas7bdatExporterTest {
             // Read the dataset with parso to confirm that the two observations that were successfully written.
             try (InputStream inputStream = Files.newInputStream(targetPath)) {
                 SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
-                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
 
-                // Test the columns
-                assertEquals(metadata.variables().size(), sasFileProperties.getColumnsCount());
-                List<Column> columns = sasFileReader.getColumns();
-                assertVariable(metadata.variables().get(0), 1, columns.get(0));
+                // Test the headers
+                assertMetadata(metadata, sasFileReader);
 
                 // Test the observations
-                assertEquals(2, sasFileProperties.getRowCount());
+                assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "BEFORE" }, sasFileReader.readNext());
                 assertArrayEquals(new Object[] { "AFTER" }, sasFileReader.readNext());
                 assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
