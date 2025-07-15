@@ -16,17 +16,18 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
 
 public final class Sas7bdatExporter implements AutoCloseable {
 
-    // This can be anything, although it might need to be aligned.
-    // sas chooses 0x10000 for small datasets and increments by 0x400 when more space is needed.
-    private static final int MINIMUM_PAGE_SIZE = 0x10000;
-
-    private static final int DATA_PAGE_HEADER_SIZE = 40;
-
     /**
      * A page in a sas7bdat dataset that would be generated with a 64-bit UNIX machine. This includes both metadata
      * pages, mixed pages, and data pages.
      */
     static class Sas7bdatPage {
+
+        // This can be anything, although it might need to be aligned.
+        // sas chooses 0x10000 for small datasets and increments by 0x400 when more space is needed.
+        private static final int MINIMUM_PAGE_SIZE = 0x10000;
+
+        private static final int DATA_PAGE_HEADER_SIZE = 40;
+
         static final short PAGE_TYPE_META = 0x0000;
         static final short PAGE_TYPE_DATA = 0x0100;
         static final short PAGE_TYPE_MIX = 0x0200;
@@ -214,6 +215,15 @@ public final class Sas7bdatExporter implements AutoCloseable {
             final int totalBitsPerObservation = 8 * variablesLayout.rowLength() + 1;
             return totalBitsRemaining / totalBitsPerObservation;
         }
+
+        static int calculatePageSize(Sas7bdatVariablesLayout variablesLayout) {
+            // The minimum possible page size is determined by how many bytes it takes to
+            // hold a single observation on a data page.
+            int dataPageSizeForSingleObservation = DATA_PAGE_HEADER_SIZE + variablesLayout.rowLength() + 1; // +1 is for the "is deleted" flag
+
+            // When SAS generates a dataset, it seems to pick page sizes that are multiples of 1KiB (0x400).
+            return WriteUtil.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
+        }
     }
 
     /**
@@ -237,7 +247,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, int pageSize,
             Sas7bdatVariablesLayout variablesLayout) {
-            assert pageSize >= MINIMUM_PAGE_SIZE;
+            assert Sas7bdatPage.calculatePageSize(variablesLayout) <= pageSize;
             this.pageSequenceGenerator = pageSequenceGenerator;
             this.pageSize = pageSize;
             this.variablesLayout = variablesLayout;
@@ -337,9 +347,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         // Create the metadata for this dataset.
         //
 
-        // When SAS generates a dataset, it seems to pick page sizes that are multiples of 1KiB (0x400).
-        int dataPageSizeForSingleObservation = DATA_PAGE_HEADER_SIZE + variablesLayout.rowLength() + 1; // +1 is for the "is deleted" flag
-        pageSize = WriteUtil.align(Math.max(MINIMUM_PAGE_SIZE, dataPageSizeForSingleObservation), 0x400);
+        pageSize = Sas7bdatPage.calculatePageSize(variablesLayout);
         pageBuffer = new byte[pageSize];
 
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
