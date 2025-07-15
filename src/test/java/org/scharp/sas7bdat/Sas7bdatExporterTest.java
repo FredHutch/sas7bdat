@@ -560,4 +560,133 @@ public class Sas7bdatExporterTest {
             Files.deleteIfExists(targetPath); // cleanup, just in case
         }
     }
+
+    @Test
+    public void testWriteObservationWithWrongSizeList() throws IOException {
+        // Create a dataset with variables of each type.
+        Path targetPath = Path.of("testWriteObservationWithWrongSizeList.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(
+                Variable.builder().name("V1").type(VariableType.CHARACTER).length(9).build(),
+                Variable.builder().name("V2").type(VariableType.NUMERIC).length(8).build())).
+            build();
+
+        // Create an exporter
+        try {
+            try (Sas7bdatExporter sas7bdatExporter = new Sas7bdatExporter(targetPath, metadata, 2)) {
+
+                sas7bdatExporter.writeObservation(List.of("BEFORE", 1));
+
+                // Write an observation with no values (obviously too few)
+                Exception exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> sas7bdatExporter.writeObservation(List.of()));
+                assertEquals("observation has too many values, expected 2 but got 0", exception.getMessage());
+
+                // Write an observation with too few values
+                exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> sas7bdatExporter.writeObservation(List.of("bad list")));
+                assertEquals("observation has too many values, expected 2 but got 1", exception.getMessage());
+
+                // Write an observation with too many values, even if the excess variable is null.
+                exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> sas7bdatExporter.writeObservation(Arrays.asList("bad list", 100, null)));
+                assertEquals("observation has too few values, expected 2 but got 3", exception.getMessage());
+
+                // The exceptions should not have corrupted the state of the exporter,
+                // so it should be possible to continue exporting the file.
+                sas7bdatExporter.writeObservation(List.of("AFTER", 2));
+            }
+
+            // Read the dataset with parso to confirm that the two observations that were successfully written.
+            try (InputStream inputStream = Files.newInputStream(targetPath)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Test the observations
+                assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
+                assertArrayEquals(new Object[] { "BEFORE", 1L }, sasFileReader.readNext());
+                assertArrayEquals(new Object[] { "AFTER", 2L }, sasFileReader.readNext());
+                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+            }
+
+        } finally {
+            Files.deleteIfExists(targetPath); // always cleanup
+        }
+    }
+
+    @Test
+    public void testWriteObservationWithBadValueForVariableType() throws IOException {
+        // Create a dataset with variables of each type.
+        Path targetPath = Path.of("testWriteObservationWithBadValueForVariableType.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(
+                Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(9).build(),
+                Variable.builder().name("NUMBER").type(VariableType.NUMERIC).length(8).build())).
+            build();
+
+        // Create an exporter
+        try {
+            try (Sas7bdatExporter sas7bdatExporter = new Sas7bdatExporter(targetPath, metadata, 2)) {
+
+                sas7bdatExporter.writeObservation(List.of("BEFORE", 1));
+
+                // Write a null value to the CHARACTER variable
+                Exception exception = assertThrows(
+                    NullPointerException.class,
+                    () -> sas7bdatExporter.writeObservation(Arrays.asList(null, 100)));
+                assertEquals("null given as a value to TEXT, which has a CHARACTER type", exception.getMessage());
+
+                // Write a value to the CHARACTER variable that is too long.
+                exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> sas7bdatExporter.writeObservation(Arrays.asList("X".repeat(10), 100)));
+                assertEquals("A value of 10 bytes was given to the variable named TEXT, which has a length of 9",
+                    exception.getMessage());
+
+                // Write a value that's not a String to the CHARACTER variable.
+                exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> sas7bdatExporter.writeObservation(Arrays.asList(new StringBuilder("bad"), 100)));
+                assertEquals(
+                    "A java.lang.StringBuilder was given as a value to the variable named TEXT, which has a CHARACTER type "
+                        + "(CHARACTER values must be of type java.lang.String)",
+                    exception.getMessage());
+
+                // Write a value that's not a Numeric to the NUMERIC variable.
+                exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> sas7bdatExporter.writeObservation(List.of("ok", "100")));
+                assertEquals(
+                    "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
+                        "(NUMERIC values must be null or of type java.lang.Number)",
+                    exception.getMessage());
+
+                // The exception should not have corrupted the state of the exporter,
+                // so it should be possible to continue exporting the file.
+                sas7bdatExporter.writeObservation(List.of("AFTER", 2));
+            }
+
+            // Read the dataset with parso to confirm that the two observations that were successfully written.
+            try (InputStream inputStream = Files.newInputStream(targetPath)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Test the observations
+                assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
+                assertArrayEquals(new Object[] { "BEFORE", 1L }, sasFileReader.readNext());
+                assertArrayEquals(new Object[] { "AFTER", 2L }, sasFileReader.readNext());
+                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+            }
+
+        } finally {
+            Files.deleteIfExists(targetPath); // always cleanup
+        }
+    }
 }
