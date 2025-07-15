@@ -820,7 +820,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
     /**
      * Appends an observation (row) to the SAS7BDAT that is being exported.
      * <p>
-     * This must be called exactly once for
+     * This must be called exactly the same number of times as the {@code totalObservationInDataset} argument to this
+     * exporter's constructor.
      * </p>
      *
      * @param observation
