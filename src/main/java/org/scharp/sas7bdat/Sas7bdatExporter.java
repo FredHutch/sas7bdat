@@ -261,7 +261,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         static final short PAGE_TYPE_MASK = 0x0F00;
         static final short PAGE_TYPE_META2 = 0x4000;
 
-        abstract boolean addObservation(List<Object> observation);
+        abstract boolean addObservation(byte[] observation);
 
         abstract void write(byte[] data);
     }
@@ -275,7 +275,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         final int pageSize;
         final long pageSequenceNumber;
         final List<Subheader> subheaders;
-        final List<List<Object>> observations;
+        final List<byte[]> observations;
         final Sas7bdatVariablesLayout variablesLayout;
 
         short pageType;
@@ -348,7 +348,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
 
         @Override
-        boolean addObservation(List<Object> observation) {
+        boolean addObservation(byte[] observation) {
             assert subheaderFinalized : "can't write new observation until subheaders are finalized";
 
             if (maxObservations <= observations.size()) {
@@ -427,9 +427,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
             assert endOfDataSection == subheaderOffset;
 
             // Write the observations.
-            for (List<Object> observation : observations) {
-                variablesLayout.writeObservation(data, offset, observation);
-                offset += variablesLayout.rowLength();
+            for (byte[] observation : observations) {
+                System.arraycopy(observation, 0, data, offset, observation.length);
+                offset += observation.length;
             }
             assert offsetOfNextSubheaderIndexEntry == offset;
 
@@ -450,7 +450,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         final Sas7bdatVariablesLayout variablesLayout;
         final int maxPossibleObservations;
         final long pageSequenceNumber;
-        final List<List<Object>> observations;
+        final List<byte[]> observations;
 
         static int maxObservationsPerPage(int pageSize, Sas7bdatVariablesLayout variablesLayout) {
             // An observation takes up space equal to its size in bytes, plus one bit.
@@ -473,7 +473,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
             observations = new ArrayList<>(maxPossibleObservations);
         }
 
-        boolean addObservation(List<Object> observation) {
+        boolean addObservation(byte[] observation) {
 
             // If there isn't enough space between here and the end of the page, then the page is full.
             if (maxPossibleObservations <= observations.size()) {
@@ -506,9 +506,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
             write2(data, 38, (short) 0); // unknown, possibly padding
 
             int offset = 40;
-            for (List<Object> observation : observations) {
-                variablesLayout.writeObservation(data, offset, observation);
-                offset += variablesLayout.rowLength();
+            for (byte[] observation : observations) {
+                System.arraycopy(observation, 0, data, offset, observation.length);
+                offset += observation.length;
             }
 
             // Immediately before the end of the page are the "is deleted" flags.
@@ -829,6 +829,10 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     constructor.  For any variable whose type is {@link VariableType#CHARACTER}, the values must be given as a
      *     {@link String}.  For any variable whose type is {@link VariableType#NUMERIC}, the values must be given as a
      *     {@link Number} or {@code null}, which indicates a missing numeric value.
+     *     <p>
+     *     The observation and its data are immediately copied, so subsequent modifications to it don't change the
+     *     SAS7BDAT that is exported.
+     *     </p>
      *
      * @throws NullPointerException
      *     If {@code observation} is {@code null}, or if a {@code null} value is given to a variable whose type is
@@ -893,7 +897,12 @@ public final class Sas7bdatExporter implements AutoCloseable {
             i++;
         }
 
-        if (!currentPage.addObservation(observation)) {
+        // Copy the observation to a byte array in case the caller modifies it.
+        // TODO: it would be more efficient to copy it directly to the page's byte array.
+        byte[] serializedObservation = new byte[variablesLayout.rowLength()];
+        variablesLayout.writeObservation(serializedObservation, 0, observation);
+
+        if (!currentPage.addObservation(serializedObservation)) {
             // The page is full.  Start the next one.
 
             // Write the page.
@@ -904,7 +913,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
             currentPage = new Sas7BdatDataPage(pageSequenceGenerator, pageSize, variablesLayout);
 
             // Write the observation to the new page.
-            boolean success = currentPage.addObservation(observation);
+            boolean success = currentPage.addObservation(serializedObservation);
             assert success : "couldn't write to new page";
         }
 

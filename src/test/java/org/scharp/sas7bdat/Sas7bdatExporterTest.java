@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -682,6 +683,60 @@ public class Sas7bdatExporterTest {
                 assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "BEFORE", 1L }, sasFileReader.readNext());
                 assertArrayEquals(new Object[] { "AFTER", 2L }, sasFileReader.readNext());
+                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+            }
+
+        } finally {
+            Files.deleteIfExists(targetPath); // always cleanup
+        }
+    }
+
+    /**
+     * Tests what happens when the observation given to {@link Sas7bdatExporter#writeObservation(List)} is later
+     * modified (for example, if the caller wants to re-use an ArrayList).
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testWriteObservationCopiesObservation() throws IOException {
+        // Create a dataset with variables of each type.
+        Path targetPath = Path.of("testWriteObservationCopiesObservation.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(
+                Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(9).build(),
+                Variable.builder().name("NUMBER").type(VariableType.NUMERIC).length(8).build())).
+            build();
+
+        // Create an exporter
+        try {
+            try (Sas7bdatExporter sas7bdatExporter = new Sas7bdatExporter(targetPath, metadata, 1)) {
+                // Write an observation.
+                List<Object> observation = new ArrayList<>(2);
+                AtomicInteger mutableNumber = new AtomicInteger(1);
+                observation.add("ORIGINAL");
+                observation.add(mutableNumber);
+                sas7bdatExporter.writeObservation(observation);
+
+                // Modify the numeric value.
+                mutableNumber.decrementAndGet();
+
+                // Modify the list's contents
+                observation.set(0, "MODIFIED");
+                observation.set(1, 2L);
+
+                assertTrue(sas7bdatExporter.isComplete(), "TEST BUG: didn't write enough observations");
+            }
+
+            // Read the dataset with parso to confirm that the two observations that were successfully written.
+            try (InputStream inputStream = Files.newInputStream(targetPath)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Test the observations
+                assertEquals(1, sasFileReader.getSasFileProperties().getRowCount());
+                assertArrayEquals(new Object[] { "ORIGINAL", 1L }, sasFileReader.readNext());
                 assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
             }
 
