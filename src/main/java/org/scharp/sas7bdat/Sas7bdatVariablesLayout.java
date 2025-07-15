@@ -134,8 +134,8 @@ class Sas7bdatVariablesLayout {
      */
     List<Integer> physicalOffsets() {
         List<Integer> list = new ArrayList<>(physicalOffsets.length);
-        for (int i = 0; i < physicalOffsets.length; i++) {
-            list.add(physicalOffsets[i]);
+        for (int physicalOffset : physicalOffsets) {
+            list.add(physicalOffset);
         }
         return Collections.unmodifiableList(list);
     }
