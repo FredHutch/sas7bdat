@@ -129,16 +129,21 @@ class TestRandomSas7Bdat {
 
                 // Generate an input format (ignored by SAS for this case)
                 def inputFormat
-                if (type == VariableType.CHARACTER) {
-                    def inputFormatName = randomElement(['', '$CHAR', '$UPCASE', '$ASCII', '$'])
-                    def inputFormatWidth = randomNumberGenerator.nextInt(length) + 1
-                    inputFormat = FormatConstructor.newInstance(inputFormatName, inputFormatWidth, 0)
+                if (randomNumberGenerator.nextInt(100) < 5) {
+                    // A 5% chance of having an unspecified input format.
+                    inputFormat = Format.UNSPECIFIED
                 } else {
-                    def inputFormatName = randomElement(['', 'F', 'D', 'NEGPAREN'])
-                    def inputFormatWidth = randomNumberGenerator.nextInt(10) + 10
-                    def inputFormatNumberOfDigitsRightOfDecimalPoint = randomNumberGenerator.nextInt(Math.max(10, inputFormatWidth))
+                    if (type == VariableType.CHARACTER) {
+                        def inputFormatName = randomElement(['$CHAR', '$UPCASE', '$ASCII', '$'])
+                        def inputFormatWidth = randomNumberGenerator.nextInt(length) + 1
+                        inputFormat = FormatConstructor.newInstance(inputFormatName, inputFormatWidth, 0)
+                    } else {
+                        def inputFormatName = randomElement(['', 'F', 'D', 'NEGPAREN'])
+                        def inputFormatWidth = randomNumberGenerator.nextInt(10) + 10
+                        def inputFormatNumberOfDigitsRightOfDecimalPoint = randomNumberGenerator.nextInt(Math.max(10, inputFormatWidth))
 
-                    inputFormat = FormatConstructor.newInstance(inputFormatName, inputFormatWidth, inputFormatNumberOfDigitsRightOfDecimalPoint)
+                        inputFormat = FormatConstructor.newInstance(inputFormatName, inputFormatWidth, inputFormatNumberOfDigitsRightOfDecimalPoint)
+                    }
                 }
 
                 return Variable.builder().
