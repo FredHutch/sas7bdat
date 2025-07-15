@@ -18,14 +18,13 @@ public class ColumnTextTest {
     @Test
     void smokeTest() {
         // Create a ColumnText
-        final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // Add a long string to the ColumnTextSubheader
-        String string1 = "a".repeat(pageSize / 2 - 100);
+        String string1 = "a".repeat(pageLayout.pageSize / 2 - 100);
         columnText.add(string1);
 
         final byte[] expectedString1Location = {
@@ -45,7 +44,7 @@ public class ColumnTextTest {
         };
 
         // Add a large string, which creates a new ColumnTextSubheader.
-        String string3 = "b".repeat(pageSize / 2 - 120);
+        String string3 = "b".repeat(pageLayout.pageSize / 2 - 120);
         columnText.add(string3);
 
         final byte[] expectedString3Location = {
@@ -133,7 +132,7 @@ public class ColumnTextTest {
         // Create a ColumnText
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // We want to determine how many strings need to be added before the last ColumnTextSubheader on
@@ -161,7 +160,7 @@ public class ColumnTextTest {
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
 
         // Add a subheader to the page such that, when ColumnText adds the first subheader
         // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next

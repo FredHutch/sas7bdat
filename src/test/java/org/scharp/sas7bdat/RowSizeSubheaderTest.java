@@ -19,7 +19,7 @@ public class RowSizeSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
 
@@ -32,7 +32,7 @@ public class RowSizeSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         List<Variable> variableList = List.of();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
 
@@ -74,7 +74,7 @@ public class RowSizeSubheaderTest {
                 build());
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x10000, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0x12456);
 
@@ -272,7 +272,7 @@ public class RowSizeSubheaderTest {
             Variable.builder().name("V").type(VariableType.NUMERIC).length(8).build());
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, 0x20000, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout,
             pageLayout, 0);
 

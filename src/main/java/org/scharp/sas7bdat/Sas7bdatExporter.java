@@ -229,6 +229,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
     /**
      * A helper class for putting subheaders into pages. It also calculates the following:
      * <ol>
+     * <li>determining the page size</li>
      * <li>how many observations fit on the mixed page</li>
      * <li>how many metadata/mixed pages are needed</li>
      * <li>the location of each subheader</li>
@@ -245,11 +246,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         Sas7bdatPage currentMetadataPage;
 
-        Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, int pageSize,
-            Sas7bdatVariablesLayout variablesLayout) {
-            assert Sas7bdatPage.calculatePageSize(variablesLayout) <= pageSize;
+        Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, Sas7bdatVariablesLayout variablesLayout) {
             this.pageSequenceGenerator = pageSequenceGenerator;
-            this.pageSize = pageSize;
+            this.pageSize = Sas7bdatPage.calculatePageSize(variablesLayout);
             this.variablesLayout = variablesLayout;
             this.columnText = new ColumnText(this);
 
@@ -296,7 +295,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
     private final Sas7bdatVariablesLayout variablesLayout;
     private final int totalObservationsInDataset;
     private final PageSequenceGenerator pageSequenceGenerator;
-    private final int pageSize;
     private final byte[] pageBuffer;
 
     int totalObservationsWritten;
@@ -346,11 +344,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
         //
         // Create the metadata for this dataset.
         //
-
-        pageSize = Sas7bdatPage.calculatePageSize(variablesLayout);
-        pageBuffer = new byte[pageSize];
-
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        pageBuffer = new byte[pageLayout.pageSize];
 
         // Add the subheaders in the order in which they should be listed in the subheaders index.
         // Note that this is the reverse order in which they appear on a metadata page.
@@ -478,7 +473,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
         // Calculate how many observations fit on a data page.
-        final int observationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(pageSize,
+        final int observationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
+            pageLayout.pageSize,
             variablesLayout);
         rowSizeSubheader.setMaxObservationsPerDataPage(observationsPerDataPage);
 
@@ -502,8 +498,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
             String datasetName = targetLocation.getFileName().toString().replace(".sas7bdat", "");
             Sas7bdatHeader header = new Sas7bdatHeader(
                 pageSequenceGenerator,
-                pageSize,
-                pageSize,
+                pageLayout.pageSize,
+                pageLayout.pageSize,
                 datasetName,
                 metadata.creationTime(),
                 totalPagesInDataset);
@@ -615,7 +611,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
             // Start a new data page.
             totalPagesAllocated++;
-            currentPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+            currentPage = new Sas7bdatPage(pageSequenceGenerator, currentPage.pageSize, variablesLayout);
             currentPage.finalizeSubheaders(); // a data page has no subheaders
 
             // Write the observation to the new page.
