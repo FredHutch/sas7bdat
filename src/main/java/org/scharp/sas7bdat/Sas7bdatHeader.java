@@ -178,7 +178,7 @@ class Sas7bdatHeader {
         write4(data, 196 + doubleAlignmentOffset, headerSize);
 
         // page size
-        write4(data, 200 + doubleAlignmentOffset, headerSize);
+        write4(data, 200 + doubleAlignmentOffset, pageSize);
 
         // page count (would be write4 for 32-bit sas7bdat)
         write8(data, 200 + doubleAlignmentOffset + intAlignmentOffset, totalPages);

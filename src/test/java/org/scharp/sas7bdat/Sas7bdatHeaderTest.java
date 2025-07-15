@@ -61,7 +61,7 @@ public class Sas7bdatHeaderTest {
                 0, 0, 0, 0, 0, 32, -36, -64,
 
                 0, 1, 0, 0, // header size
-                0, 1, 0, 0, // page size: BUG
+                0, 0, 1, 0, // page size
 
                 100, 0, 0, 0, 0, 0, 0, 0, // total pages
                 0, 0, 0, 0, 0, 0, 0, 0,
