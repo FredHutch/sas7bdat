@@ -61,18 +61,16 @@ class Sas7bdatVariablesLayout {
     }
 
     void writeObservation(byte[] buffer, int offsetOfObservation, List<Object> observation) {
-
-        assert observation.size() == totalVariables(); // TODO: throw an exception on bad input
+        assert observation.size() == totalVariables(); // This should be checked by the caller
 
         for (int i = 0; i < physicalOffsets.length; i++) {
             final Variable variable = variables.get(i);
             final Object value = observation.get(i);
 
-            // TODO: strict type checking for observation
             final byte[] valueBytes;
             if (VariableType.CHARACTER == variable.type()) {
-                // TODO: limit valueBytes to the size of the variable
                 valueBytes = value.toString().getBytes(StandardCharsets.UTF_8);
+                assert valueBytes.length <= variable.length(); // the caller should have checked this
             } else {
                 // NOTE: datasets which SAS generates seem to keep numeric values aligned on byte offsets that
                 // are multiples of 8.  Sometimes it physically re-organizes the integer variables to be
