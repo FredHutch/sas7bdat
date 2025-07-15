@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7BdatMetadataPage;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPage;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 
 import java.nio.charset.StandardCharsets;
@@ -229,7 +229,7 @@ class RowSizeSubheader extends Subheader {
         // the second subheader added to the first page.
         writeRecordLocation(page, subheaderOffset + 512, 1, 2);
 
-        final Sas7BdatMetadataPage finalMetadataPage = pageLayout.currentMetadataPage;
+        final Sas7bdatPage finalMetadataPage = pageLayout.currentMetadataPage;
 
         // Unknown, but could be the location of the last Subheader block, in which case
         // the -1 doesn't include the truncated subheader.

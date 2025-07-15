@@ -252,22 +252,17 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
     }
 
-    /** A page in a sas7bdat dataset that would be generated with a 64-bit UNIX machine */
-    static abstract class Sas7bdatPage {
+    /**
+     * A page in a sas7bdat dataset that would be generated with a 64-bit UNIX machine. This includes both metadata
+     * pages, mixed pages, and data pages.
+     */
+    static class Sas7bdatPage {
         static final short PAGE_TYPE_META = 0x0000;
         static final short PAGE_TYPE_DATA = 0x0100;
         static final short PAGE_TYPE_MIX = 0x0200;
         static final short PAGE_TYPE_AMD = 0x0400;
         static final short PAGE_TYPE_MASK = 0x0F00;
         static final short PAGE_TYPE_META2 = 0x4000;
-
-        abstract boolean addObservation(byte[] observation);
-
-        abstract void write(byte[] data);
-    }
-
-    /** A "metadata" page contains a header and subheaders, and possibly data */
-    static class Sas7BdatMetadataPage extends Sas7bdatPage {
 
         // For 64-bit, these are each 24 bytes long.
         static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
@@ -284,7 +279,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         boolean subheaderFinalized;
         int maxObservations;
 
-        Sas7BdatMetadataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
+        Sas7bdatPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
             Sas7bdatVariablesLayout variablesLayout) {
             this.pageSize = pageSize;
 
@@ -334,9 +329,12 @@ public final class Sas7bdatExporter implements AutoCloseable {
             // that it does.
 
             // Because we were careful to reserve space for this in addSubheader(), it should exist.
+            // This won't add a terminal subheader index if there are no subheaders (that is, this is a data page).
             assert SUBHEADER_OFFSET_SIZE_64BIT <= totalBytesRemaining() : "not enough space to write truncated subheader at end of section";
-            subheaders.add(new TerminalSubheader());
-            offsetOfNextSubheaderIndexEntry += SUBHEADER_OFFSET_SIZE_64BIT;
+            if (!subheaders.isEmpty()) {
+                subheaders.add(new TerminalSubheader());
+                offsetOfNextSubheaderIndexEntry += SUBHEADER_OFFSET_SIZE_64BIT;
+            }
 
             subheaderFinalized = true;
 
@@ -347,7 +345,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
             maxObservations = totalBitsRemaining / totalBitsPerObservation;
         }
 
-        @Override
         boolean addObservation(byte[] observation) {
             assert subheaderFinalized : "can't write new observation until subheaders are finalized";
 
@@ -391,7 +388,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
             return Math.max(0, totalBytesRemaining() - 2 * SUBHEADER_OFFSET_SIZE_64BIT);
         }
 
-        @Override
         void write(byte[] data) {
             assert data.length == pageSize : "data is not sized correctly: " + data.length;
             write8(data, 0, pageSequenceNumber);
@@ -411,7 +407,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
                     divideAndRoundUp(observations.size(), 8)); // observation deleted flags
             write8(data, 24, totalBytesFree);
 
-            write2(data, 32, pageType);
+            write2(data, 32, subheaders.isEmpty() ? PAGE_TYPE_DATA : pageType);
             write2(data, 34, (short) (subheaders.size() + observations.size())); // data block count
             write2(data, 36, (short) subheaders.size()); // number of subheaders on page
             write2(data, 38, (short) 0); // unknown purpose (possibly padding)
@@ -440,83 +436,13 @@ public final class Sas7bdatExporter implements AutoCloseable {
             // Initialize the rest of the page.
             Arrays.fill(data, offset, endOfDataSection, (byte) 0);
         }
-    }
 
-    /** A "data" page is a page that contains both metadata and data */
-    // TODO: combine with metadata page
-    static class Sas7BdatDataPage extends Sas7bdatPage {
-
-        final int pageSize;
-        final Sas7bdatVariablesLayout variablesLayout;
-        final int maxPossibleObservations;
-        final long pageSequenceNumber;
-        final List<byte[]> observations;
-
-        static int maxObservationsPerPage(int pageSize, Sas7bdatVariablesLayout variablesLayout) {
+        static int maxObservationsPerDataPage(int pageSize, Sas7bdatVariablesLayout variablesLayout) {
             // An observation takes up space equal to its size in bytes, plus one bit.
             // The extra bit is for an "is deleted" flag that is added at the end of the observations.
             final int totalBitsRemaining = 8 * (pageSize - DATA_PAGE_HEADER_SIZE);
             final int totalBitsPerObservation = 8 * variablesLayout.rowLength() + 1;
             return totalBitsRemaining / totalBitsPerObservation;
-        }
-
-        Sas7BdatDataPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
-            Sas7bdatVariablesLayout variablesLayout) {
-            this.pageSize = pageSize;
-            this.variablesLayout = variablesLayout;
-
-            pageSequenceGenerator.incrementPageSequence();
-            pageSequenceNumber = pageSequenceGenerator.currentPageSequence();
-
-            maxPossibleObservations = maxObservationsPerPage(pageSize, variablesLayout);
-            assert 0 < maxPossibleObservations : "page size too small to hold an observation";
-            observations = new ArrayList<>(maxPossibleObservations);
-        }
-
-        boolean addObservation(byte[] observation) {
-
-            // If there isn't enough space between here and the end of the page, then the page is full.
-            if (maxPossibleObservations <= observations.size()) {
-                return false;
-            }
-
-            observations.add(observation);
-            return true;
-        }
-
-        @Override
-        void write(byte[] data) {
-            write8(data, 0, pageSequenceNumber);
-            write8(data, 8, 0); // unknown
-            write8(data, 16, 0); // unknown
-
-            // The value at offset 24 is a positive integer in the range from 0 to pageSize.
-            // I suspect it's either the number of unused bytes on the page or an offset to something.
-            // The calculation below doesn't always match what SAS generates for similar datasets.
-            // SAS uses numbers that are 0% - 5% bytes smaller than the ones calculated below.
-            int totalBytesFree = pageSize - (
-                DATA_PAGE_HEADER_SIZE + // standard page header
-                    observations.size() * variablesLayout.rowLength() + // observations
-                    divideAndRoundUp(observations.size(), 8)); // observation deleted flags
-            write8(data, 24, totalBytesFree);
-
-            write2(data, 32, PAGE_TYPE_DATA);
-            write2(data, 34, (short) observations.size()); // data block count
-            write2(data, 36, (short) 0); // number of subheaders
-            write2(data, 38, (short) 0); // unknown, possibly padding
-
-            int offset = 40;
-            for (byte[] observation : observations) {
-                System.arraycopy(observation, 0, data, offset, observation.length);
-                offset += observation.length;
-            }
-
-            // Immediately before the end of the page are the "is deleted" flags.
-            // If the first bit of the first byte were set, it would indicate that observation #1 is deleted.
-            // Since this API doesn't support adding deleted observations, these are all 0.
-
-            // Initialize the rest of the page.
-            Arrays.fill(data, offset, data.length, (byte) 0);
         }
     }
 
@@ -534,10 +460,10 @@ public final class Sas7bdatExporter implements AutoCloseable {
         final Sas7bdatVariablesLayout variablesLayout;
         final ColumnText columnText;
         final List<Subheader> subheaders;
-        final List<Sas7BdatMetadataPage> completeMetadataPages;
+        final List<Sas7bdatPage> completeMetadataPages;
         final Map<Subheader, Integer> subheaderLocations;
 
-        Sas7BdatMetadataPage currentMetadataPage;
+        Sas7bdatPage currentMetadataPage;
 
         Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, int pageSize,
             Sas7bdatVariablesLayout variablesLayout) {
@@ -550,7 +476,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
             subheaders = new ArrayList<>();
             completeMetadataPages = new ArrayList<>();
             subheaderLocations = new IdentityHashMap<>();
-            currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variablesLayout);
+            currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
         }
 
         void finalizeSubheaders() {
@@ -573,7 +499,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
                 // Create a new page.
                 completeMetadataPages.add(currentMetadataPage);
-                currentMetadataPage = new Sas7BdatMetadataPage(pageSequenceGenerator, pageSize, variablesLayout);
+                currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
                 // Add the subheader to the new page.
                 boolean success = currentMetadataPage.addSubheader(subheader);
@@ -774,7 +700,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
         // Calculate how many observations fit on a data page.
-        final int observationsPerDataPage = Sas7BdatDataPage.maxObservationsPerPage(pageSize,
+        final int observationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(pageSize,
             variablesLayout);
         rowSizeSubheader.setMaxObservationsPerDataPage(observationsPerDataPage);
 
@@ -808,7 +734,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
 
         // Write out all complete metadata pages (but not the last one, which can hold observations)
-        for (Sas7BdatMetadataPage currentMetadataPage : pageLayout.completeMetadataPages) {
+        for (Sas7bdatPage currentMetadataPage : pageLayout.completeMetadataPages) {
             writePage(currentMetadataPage);
         }
 
@@ -909,9 +835,10 @@ public final class Sas7bdatExporter implements AutoCloseable {
             // Write the page.
             writePage(currentPage);
 
-            // Start a new page.
+            // Start a new data page.
             totalPagesAllocated++;
-            currentPage = new Sas7BdatDataPage(pageSequenceGenerator, pageSize, variablesLayout);
+            currentPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+            currentPage.finalizeSubheaders(); // a data page has no subheaders
 
             // Write the observation to the new page.
             boolean success = currentPage.addObservation(serializedObservation);

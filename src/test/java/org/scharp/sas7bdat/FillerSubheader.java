@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7BdatMetadataPage;
+import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPage;
 
 /**
  * A mock subheader of a fixed size.  This can be used to reserve space on a metadata page.
@@ -32,7 +32,7 @@ class FillerSubheader extends Subheader {
         return COMPRESSION_UNCOMPRESSED;
     }
 
-    static FillerSubheader fillRestOfPage(Sas7BdatMetadataPage page) {
+    static FillerSubheader fillRestOfPage(Sas7bdatPage page) {
         return new FillerSubheader(page.totalBytesRemainingForNewSubheader());
     }
 }
