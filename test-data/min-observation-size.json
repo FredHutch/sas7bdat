@@ -17,7 +17,7 @@
             },
             "inputFormat": {
                 "name": "",
-                "width": 1,
+                "width": 0,
                 "numberOfDigits": 0
             }
         }
