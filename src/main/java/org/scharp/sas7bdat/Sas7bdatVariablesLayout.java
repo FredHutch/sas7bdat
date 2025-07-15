@@ -81,7 +81,7 @@ class Sas7bdatVariablesLayout {
                 if (value instanceof Number) {
                     long valueBits = Double.doubleToRawLongBits(((Number) value).doubleValue());
                     valueBytes = new byte[] { //
-                        (byte) (valueBits >> 0), //
+                        (byte) (valueBits), //
                         (byte) (valueBits >> 8), //
                         (byte) (valueBits >> 16), //
                         (byte) (valueBits >> 24), //
