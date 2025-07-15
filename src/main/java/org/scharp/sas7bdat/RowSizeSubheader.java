@@ -40,7 +40,7 @@ class RowSizeSubheader extends Subheader {
         this.pageLayout = pageLayout; // this is filled in later by the caller
         this.initialPageSequenceNumber = pageSequenceGenerator.initialPageSequence();
 
-        // Calculate some properties of a data row.
+        // Calculate some properties from the variables layout.
         int totalVariableNameLength = 0;
         int maxVariableNameLength = 0;
         int maxVariableLabelLength = 0;
