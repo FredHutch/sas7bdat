@@ -490,7 +490,7 @@ public class Sas7bdatExporterTest {
     }
 
     @Test
-    public void testConstructWithNullTargetFile() throws IOException {
+    public void testConstructWithNullTargetFile() {
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
             build();
