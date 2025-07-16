@@ -60,24 +60,64 @@ class Sas7bdatVariablesLayout {
         rowLength = rowOffset;
     }
 
+    /**
+     * Serializes an observation (list of variable values) to a buffer.
+     *
+     * @param buffer
+     *     The buffer to which the values should be serialized
+     * @param offsetOfObservation
+     *     The offset within {@code buffer} where the observation should be written.
+     * @param observation
+     *     A list of values which correspond to the variables that were given in the constructor.
+     *
+     * @throws NullPointerException
+     *     If {@code observation} has a {@code null} value is given to a variable whose type is
+     *     {@code VariableType.CHARACTER}.
+     * @throws IllegalArgumentException
+     *     if {@code observation} doesn't contain values that conform to the {@code variables} that was given to this
+     *     object's constructor.
+     */
     void writeObservation(byte[] buffer, int offsetOfObservation, List<Object> observation) {
-        assert observation.size() == totalVariables(); // This should be checked by the caller
 
-        for (int i = 0; i < physicalOffsets.length; i++) {
-            final Variable variable = variables.get(i);
-            final Object value = observation.get(i);
+        // Check that the observation has as many values as there are variables.
+        if (totalVariables() != observation.size()) {
+            throw new IllegalArgumentException(
+                "observation has too " +
+                    (totalVariables() < observation.size() ? "few" : "many") +
+                    " values, expected " + totalVariables() + " but got " + observation.size());
+        }
+
+        // Use an iterator in case the given List doesn't have O(1) random access.
+        int i = 0;
+        for (Object value : observation) {
+            Variable variable = variables.get(i);
 
             final byte[] valueBytes;
             if (VariableType.CHARACTER == variable.type()) {
-                valueBytes = value.toString().getBytes(StandardCharsets.UTF_8);
-                assert valueBytes.length <= variable.length(); // the caller should have checked this
-            } else {
-                // NOTE: datasets which SAS generates seem to keep numeric values aligned on byte offsets that
-                // are multiples of 8.  Sometimes it physically re-organizes the integer variables to be
-                // consecutive.  Sometimes, it adds padding between the observations.
+                // CHARACTER types only accept String objects (not even null).
+                if (value == null) {
+                    throw new NullPointerException(
+                        "null given as a value to " + variable.name() + ", which has a CHARACTER type");
+                }
+                if (!(value instanceof String stringValue)) {
+                    throw new IllegalArgumentException(
+                        "A " + value.getClass().getTypeName() + " was given as a value to the variable named " +
+                            variable.name() + ", which has a CHARACTER type (CHARACTER values must be of type java.lang.String)");
+                }
 
-                if (value instanceof Number) {
-                    long valueBits = Double.doubleToRawLongBits(((Number) value).doubleValue());
+                // Check that the value's length fits into the data without truncation.
+                valueBytes = stringValue.getBytes(StandardCharsets.UTF_8);
+                if (variable.length() < valueBytes.length) {
+                    throw new IllegalArgumentException(
+                        "A value of " + valueBytes.length + " bytes was given to the variable named " +
+                            variable.name() + ", which has a length of " + variable.length());
+                }
+            } else {
+                // NUMERIC types accept null and Number objects.
+                if (value == null) {
+                    valueBytes = MISSING_NUMERIC;
+                } else if (value instanceof Number numberValue) {
+                    long valueBits = Double.doubleToRawLongBits(numberValue.doubleValue());
                     valueBytes = new byte[] { //
                         (byte) (valueBits), //
                         (byte) (valueBits >> 8), //
@@ -89,7 +129,10 @@ class Sas7bdatVariablesLayout {
                         (byte) (valueBits >> 56), //
                     };
                 } else {
-                    valueBytes = MISSING_NUMERIC;
+                    throw new IllegalArgumentException(
+                        "A " + value.getClass().getTypeName() + " was given as a value to the variable named " +
+                            variable.name() + ", which has a NUMERIC type " +
+                            "(NUMERIC values must be null or of type java.lang.Number)");
                 }
             }
 
@@ -102,6 +145,8 @@ class Sas7bdatVariablesLayout {
 
             // Pad the data
             Arrays.fill(buffer, offsetOfValue + valueBytes.length, offsetOfValue + variable.length(), (byte) ' ');
+
+            i++;
         }
     }
 

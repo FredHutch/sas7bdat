@@ -553,51 +553,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
             throw new IllegalStateException("wrote more observations than promised in the constructor");
         }
 
-        // Check that the observation is well-formed for the metadata.
-        if (variablesLayout.totalVariables() != observation.size()) {
-            throw new IllegalArgumentException(
-                "observation has too " +
-                    (variablesLayout.totalVariables() < observation.size() ? "few" : "many") + " values, expected " +
-                    variablesLayout.totalVariables() + " but got " + observation.size());
-        }
-        // Use an iterator in case the given list doesn't have O(1) random access.
-        // TODO: this could serialize to a byte array at the same time.
-        int i = 0;
-        for (Object value : observation) {
-            Variable variable = variablesLayout.variables().get(i);
-            if (variable.type() == VariableType.CHARACTER) {
-                // CHARACTER types only accept String objects (not even null).
-                if (value == null) {
-                    throw new NullPointerException(
-                        "null given as a value to " + variable.name() + ", which has a CHARACTER type");
-                }
-                if (!(value instanceof String stringValue)) {
-                    throw new IllegalArgumentException(
-                        "A " + value.getClass().getTypeName() + " was given as a value to the variable named " +
-                            variable.name() + ", which has a CHARACTER type (CHARACTER values must be of type java.lang.String)");
-                }
-
-                // Check that the value's length fits into the data without truncation.
-                int valueLength = stringValue.getBytes(StandardCharsets.UTF_8).length;
-                if (variable.length() < valueLength) {
-                    throw new IllegalArgumentException(
-                        "A value of " + valueLength + " bytes was given to the variable named " +
-                            variable.name() + ", which has a length of " + variable.length());
-                }
-            } else {
-                // NUMERIC types accept null and Number objects.
-                if (value != null) {
-                    if (!(value instanceof Number)) {
-                        throw new IllegalArgumentException(
-                            "A " + value.getClass().getTypeName() + " was given as a value to the variable named " +
-                                variable.name() + ", which has a NUMERIC type " +
-                                "(NUMERIC values must be null or of type java.lang.Number)");
-                    }
-                }
-            }
-            i++;
-        }
-
         // Copy the observation to a byte array in case the caller modifies it.
         // TODO: it would be more efficient to copy it directly to the page's byte array.
         byte[] serializedObservation = new byte[variablesLayout.rowLength()];

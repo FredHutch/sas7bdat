@@ -2,6 +2,7 @@ package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -352,6 +353,98 @@ public class Sas7bdatVariablesLayoutTest {
             new byte[] {
                 'O', 'r', 'i', 'g', 'i', 'n', 'a', 'l', ' ', ' ',// originalVariable1 ("Original")
                 'V', 'a', 'l', 'u', 'e', // originalVariable2 ("Value")
+            },
+            actualData);
+    }
+
+    @Test
+    public void testWriteObservationWithWrongSizeList() throws IOException {
+        // Create a variables layout with two variables.
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(9).build(),
+            Variable.builder().name("NUMBER").type(VariableType.NUMERIC).length(8).build()));
+
+        byte[] actualData = new byte[variablesLayout.rowLength()];
+
+        // Write an observation with no values (obviously too few)
+        Exception exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of()));
+        assertEquals("observation has too many values, expected 2 but got 0", exception.getMessage());
+
+        // Write an observation with too few values
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of("bad list")));
+        assertEquals("observation has too many values, expected 2 but got 1", exception.getMessage());
+
+        // Write an observation with too many values, even if the excess variable is null.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, Arrays.asList("bad list", 100, null)));
+        assertEquals("observation has too few values, expected 2 but got 3", exception.getMessage());
+
+        // The exception should not have corrupted the state of the variables layout,
+        // so it should be possible to continue.
+        variablesLayout.writeObservation(actualData, 0, List.of("GOOD", 1));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, 0, -16, 63, // variable 2 ("NUMBER")
+                'G', 'O', 'O', 'D', ' ', ' ', ' ', ' ', ' ', // variable 1 ("TEXT")
+                0, 0, 0, 0, 0, 0, 0, // padding
+            },
+            actualData);
+    }
+
+    @Test
+    public void testWriteObservationWithBadValueForVariableType() throws IOException {
+
+        // Create a variables layout with two variables.
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(9).build(),
+            Variable.builder().name("NUMBER").type(VariableType.NUMERIC).length(8).build()));
+
+        byte[] actualData = new byte[variablesLayout.rowLength()];
+
+        // Write a null value to the CHARACTER variable
+        Exception exception = assertThrows(
+            NullPointerException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, Arrays.asList(null, 100)));
+        assertEquals("null given as a value to TEXT, which has a CHARACTER type", exception.getMessage());
+
+        // Write a value to the CHARACTER variable that is too long.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, Arrays.asList("X".repeat(10), 100)));
+        assertEquals("A value of 10 bytes was given to the variable named TEXT, which has a length of 9",
+            exception.getMessage());
+
+        // Write a value that's not a String to the CHARACTER variable.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, Arrays.asList(new StringBuilder("bad"), 100)));
+        assertEquals(
+            "A java.lang.StringBuilder was given as a value to the variable named TEXT, which has a CHARACTER type "
+                + "(CHARACTER values must be of type java.lang.String)",
+            exception.getMessage());
+
+        // Write a value that's not a Numeric to the NUMERIC variable.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of("ok", "100")));
+        assertEquals(
+            "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
+                "(NUMERIC values must be null or of type java.lang.Number)",
+            exception.getMessage());
+
+        // The exception should not have corrupted the state of the variables layout,
+        // so it should be possible to continue.
+        variablesLayout.writeObservation(actualData, 0, List.of("GOOD", 1));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, 0, -16, 63, // variable 2 ("NUMBER")
+                'G', 'O', 'O', 'D', ' ', ' ', ' ', ' ', ' ', // variable 1 ("TEXT")
+                0, 0, 0, 0, 0, 0, 0, // padding
             },
             actualData);
     }
