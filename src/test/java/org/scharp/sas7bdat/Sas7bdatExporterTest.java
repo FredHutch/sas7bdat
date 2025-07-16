@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -86,7 +88,8 @@ public class Sas7bdatExporterTest {
     @Test
     public void smokeTest() throws IOException {
 
-        Path targetLocation = Files.createTempFile("sas7bdat-smokeTest-", ".sas7bdat");
+        Path targetDirectory = Files.createTempDirectory("sas7bdat-smokeTest");
+        Path targetFile = targetDirectory.resolve("dataset.sas7bdat");
         try {
             // Set a known "creation date" to make it easier to diff output from multiple runs.
             LocalDateTime creationDate = LocalDateTime.parse("2020-11-20T06:53:07");
@@ -150,10 +153,10 @@ public class Sas7bdatExporterTest {
             }
 
             // Write a data set.
-            Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
+            Sas7bdatExporter.exportDataset(targetFile, metadata, observations);
 
             // Read the dataset with parso to confirm that it was written correctly.
-            try (InputStream inputStream = Files.newInputStream(targetLocation)) {
+            try (InputStream inputStream = Files.newInputStream(targetFile)) {
                 SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
 
                 // Test the metadata headers
@@ -185,7 +188,61 @@ public class Sas7bdatExporterTest {
 
         } finally {
             // Always clean up
-            Files.deleteIfExists(targetLocation);
+            Files.deleteIfExists(targetFile);
+            Files.deleteIfExists(targetDirectory);
+        }
+    }
+
+    @Test
+    public void testExportDatasetToExistingFile() throws IOException {
+
+        Path targetDirectory = Files.createTempDirectory("sas7bdat-testExportDatasetToExistingFile");
+        Path targetFile = targetDirectory.resolve("dataset.sas7bdat");
+        try {
+            // Write some garbage information to the file.
+            try (Writer writer = Files.newBufferedWriter(targetFile)) {
+                for (int i = 0; i < 1_000_000; i++) {
+                    writer.write("This is garbage " + i);
+                }
+            }
+            long originalFileSize = Files.size(targetFile);
+
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder()
+                .variables(List.of(Variable.builder().name("A").type(VariableType.CHARACTER).length(1).build()))
+                .build();
+
+            // Write the dataset to a file that already has data.
+            Sas7bdatExporter.exportDataset(targetFile, metadata, List.of(List.of("1"), List.of("2")));
+
+            // Confirm that this reduced the file size (the file was opened for truncation).
+            assertThat(Files.size(targetFile), Matchers.lessThan(originalFileSize));
+
+            // Read the dataset with parso to confirm that it was written correctly.
+            try (InputStream inputStream = Files.newInputStream(targetFile)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(metadata.variables().size(), sasFileProperties.getRowLength());
+                assertEquals(56593, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(1, sasFileProperties.getPageCount());
+
+                // Test the observations
+                assertEquals(2, sasFileProperties.getRowCount());
+                assertArrayEquals(new Object[] { "1" }, sasFileReader.readNext());
+                assertArrayEquals(new Object[] { "2" }, sasFileReader.readNext());
+                assertEquals(null, sasFileReader.readNext());
+            }
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetFile);
+            Files.deleteIfExists(targetDirectory);
         }
     }
 
@@ -842,6 +899,33 @@ public class Sas7bdatExporterTest {
                 assertEquals(0, sasFileProperties.getRowCount());
                 assertEquals(null, sasFileReader.readNext());
             }
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
+        }
+    }
+
+    @Test
+    public void testExportDatasetToDirectory() throws IOException {
+
+        Path targetLocation = Files.createTempDirectory("sas7bdat-testExportDatasetToDirectory");
+        try {
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder()
+                .variables(List.of(Variable.builder().name("A").type(VariableType.CHARACTER).length(1).build()))
+                .build();
+
+            // Write the dataset to directory location.
+            Exception exception = assertThrows(
+                FileSystemException.class,
+                () -> Sas7bdatExporter.exportDataset(targetLocation, metadata, List.of()));
+            assertEquals(targetLocation + ": Is a directory", exception.getMessage());
+
+            // Try again with the constructor
+            exception = assertThrows(
+                FileSystemException.class,
+                () -> new Sas7bdatExporter(targetLocation, metadata, 0));
+            assertEquals(targetLocation + ": Is a directory", exception.getMessage());
 
         } finally {
             // Always clean up
