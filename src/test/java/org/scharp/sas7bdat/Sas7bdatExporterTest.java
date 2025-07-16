@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -738,6 +739,71 @@ public class Sas7bdatExporterTest {
                 assertEquals(1, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "ORIGINAL", 1L }, sasFileReader.readNext());
                 assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+            }
+
+        } finally {
+            Files.deleteIfExists(targetPath); // always cleanup
+        }
+    }
+
+    @Test
+    public void testClose() throws IOException {
+        Path targetPath = Path.of("testClose.sas7bdat");
+        try {
+            // Create an exporter
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+                variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+                build();
+            try (Sas7bdatExporter sas7bdatExporter = new Sas7bdatExporter(targetPath, metadata, 2)) {
+
+                // Write the observations
+                sas7bdatExporter.writeObservation(List.of("ROW1"));
+                sas7bdatExporter.writeObservation(List.of("ROW2"));
+
+                // Close the exporter.
+                // At this point the file should be valid.
+                sas7bdatExporter.close();
+
+                // Read the dataset with parso to confirm that the two observations that were successfully written.
+                try (InputStream inputStream = Files.newInputStream(targetPath)) {
+                    SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                    // Test the headers
+                    assertMetadata(metadata, sasFileReader);
+
+                    // Test the observations
+                    assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
+                    assertArrayEquals(new Object[] { "ROW1" }, sasFileReader.readNext());
+                    assertArrayEquals(new Object[] { "ROW2" }, sasFileReader.readNext());
+                    assertNull(sasFileReader.readNext(), "more rows were read than expected");
+                }
+
+                // It's not legal to check if a dataset is complete after it's been closed.
+                Exception exception = assertThrows(IllegalStateException.class, () -> sas7bdatExporter.isComplete());
+                assertEquals("Cannot invoke isComplete on closed exporter", exception.getMessage());
+
+                // It's not legal to write a new observation after the exporter has been closed.
+                exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> sas7bdatExporter.writeObservation(List.of("ROW3")));
+                assertEquals("Cannot invoke writeObservation on closed exporter", exception.getMessage());
+
+                // Close the exporter again.  This does not throw an exception for conformance to AutoCloseable.
+                sas7bdatExporter.close();
+
+                // Nothing done above should have modified the contents of the file.
+                try (InputStream inputStream = Files.newInputStream(targetPath)) {
+                    SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                    // Test the headers
+                    assertMetadata(metadata, sasFileReader);
+
+                    // Test the observations
+                    assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
+                    assertArrayEquals(new Object[] { "ROW1" }, sasFileReader.readNext());
+                    assertArrayEquals(new Object[] { "ROW2" }, sasFileReader.readNext());
+                    assertNull(sasFileReader.readNext(), "more rows were read than expected");
+                }
             }
 
         } finally {

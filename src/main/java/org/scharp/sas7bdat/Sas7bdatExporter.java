@@ -539,7 +539,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     {@code VariableType.CHARACTER}.
      * @throws IllegalStateException
      *     If writing this observation would exceed the {@code totalObservationsInDataset} argument given in the
-     *     constructor.
+     *     constructor or if this exporter has already been closed.
      * @throws IllegalArgumentException
      *     if {@code observation} doesn't contain values that conform to the {@code Sas7bdatMetadata} that was given to
      *     this exporter's constructor.
@@ -548,6 +548,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
      */
     public void writeObservation(List<Object> observation) throws IOException {
         ArgumentUtil.checkNotNull(observation, "observation");
+        if (isClosed()) {
+            throw new IllegalStateException("Cannot invoke writeObservation on closed exporter");
+        }
         if (totalObservationsInDataset <= totalObservationsWritten) {
             throw new IllegalStateException("wrote more observations than promised in the constructor");
         }
@@ -582,8 +585,14 @@ public final class Sas7bdatExporter implements AutoCloseable {
      * <p>
      *
      * @return {@code true}, if all observations that were promised have been written.  {@code false}, otherwise.
+     *
+     * @throws IllegalStateException
+     *     if this exporter has already been closed.
      */
     public boolean isComplete() {
+        if (isClosed()) {
+            throw new IllegalStateException("Cannot invoke isComplete on closed exporter");
+        }
         return totalObservationsInDataset == totalObservationsWritten;
     }
 
@@ -603,9 +612,18 @@ public final class Sas7bdatExporter implements AutoCloseable {
         outputStream.write(pageBuffer);
     }
 
+    /**
+     * Gets whether {@link #close()} has been invoked on this exporter.
+     *
+     * @return {@code true}, if this exporter is closed; {@code false}, otherwise.
+     */
+    private boolean isClosed() {
+        return currentPage == null;
+    }
+
     public void close() throws IOException {
 
-        if (currentPage != null) {
+        if (!isClosed()) {
             // It'd be nice to throw an exception if fewer observation were written than were promised in the
             // constructor, since it means that the header was written incorrectly, but since close() may be
             // invoked as a result of an exception when writing, doing so would
