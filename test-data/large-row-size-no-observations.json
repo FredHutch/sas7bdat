@@ -1,6 +1,7 @@
 {
     "testDescription" : "An observation row size that is larger than the default page with no observations",
 
+    "name" : "large-row-size-no-observations",
     "label": "DATASET",
     "type": "DATA",
     "creationDate": "2020-01-03T20:12:31",

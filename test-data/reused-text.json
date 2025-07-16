@@ -1,6 +1,7 @@
 {
     "testDescription" : "All labels and formats are the same string to test string reuse",
 
+    "name": "$ASCII",
     "label": "$ASCII",
     "type": "$ASCII",
     "creationDate": "2020-01-03T20:12:31",

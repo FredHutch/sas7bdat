@@ -1,6 +1,7 @@
 {
     "testDescription" : "The smallest possible row length with more than a full data page",
 
+    "name": "min-observation-size",
     "label": "DATASET",
     "type": "DATA",
     "creationDate": "2020-01-03T20:12:31",

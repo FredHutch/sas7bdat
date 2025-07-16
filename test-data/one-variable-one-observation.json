@@ -1,6 +1,7 @@
 {
     "testDescription" : "The smallest possible dataset with an observation",
 
+    "name": "",
     "label": "",
     "type": "",
     "creationDate": "1960-01-01T00:00:00",
