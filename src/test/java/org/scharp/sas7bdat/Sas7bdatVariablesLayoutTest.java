@@ -2,7 +2,6 @@ package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -358,7 +357,7 @@ public class Sas7bdatVariablesLayoutTest {
     }
 
     @Test
-    public void testWriteObservationWithWrongSizeList() throws IOException {
+    public void testWriteObservationWithWrongSizeList() {
         // Create a variables layout with two variables.
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(9).build(),
@@ -397,7 +396,7 @@ public class Sas7bdatVariablesLayoutTest {
     }
 
     @Test
-    public void testWriteObservationWithBadValueForVariableType() throws IOException {
+    public void testWriteObservationWithBadValueForVariableType() {
 
         // Create a variables layout with two variables.
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
