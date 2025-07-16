@@ -157,7 +157,6 @@ public class ColumnTextTest {
         // Therefore, we want a ColumnTextSubheader to be filled.
 
         // Create a ColumnText
-        final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
