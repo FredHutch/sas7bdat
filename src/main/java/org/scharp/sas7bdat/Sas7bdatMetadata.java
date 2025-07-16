@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public final class Sas7bdatMetadata {
     private final LocalDateTime creationTime;
+    private final String datasetName;
     private final String datasetType;
     private final String datasetLabel;
     private final List<Variable> variables;
@@ -25,18 +26,21 @@ public final class Sas7bdatMetadata {
      */
     public final static class Builder {
         private LocalDateTime creationTime;
+        private String datasetName;
         private String datasetType;
         private String datasetLabel;
         private List<Variable> variables;
 
         /**
-         * Creates a {@code Sas7bdatMetadata} builder.
+         * Creates a {@code Sas7bdatMetadata} builder initialized with the current time as the creation time, a dataset
+         * type of "DATA", a blank name, a blank label, and no variables.
          */
-        private Builder(LocalDateTime creationTime, String datasetType, String datasetLabel, List<Variable> variables) {
-            this.creationTime = creationTime;
-            this.datasetType = datasetType;
-            this.datasetLabel = datasetLabel;
-            this.variables = variables;
+        private Builder() {
+            this.creationTime = LocalDateTime.now();
+            this.datasetName = "";
+            this.datasetType = "DATA";
+            this.datasetLabel = "";
+            this.variables = List.of();
         }
 
         /**
@@ -67,6 +71,34 @@ public final class Sas7bdatMetadata {
             }
 
             this.creationTime = creationTime;
+            return this;
+        }
+
+        /**
+         * Sets the SAS7BDAT's dataset name.
+         * <p>
+         * The dataset name is usually set to be the same as the SAS7BDAT's filename without the extension so that if
+         * the dataset is loaded with LIBNAME on the directory, the dataset name matches the file name.  It's not clear
+         * if this matters.
+         * </p>
+         *
+         * @param datasetName
+         *     The SAS7BDAT's dataset name.
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException
+         *     if {@code datasetName} is {@code null}.
+         * @throws IllegalArgumentException
+         *     if {@code datasetName} is longer than 32 bytes when encoded in UTF-8.
+         */
+        public Builder datasetName(String datasetName) {
+            ArgumentUtil.checkNotNull(datasetName, "datasetName");
+
+            // dataset names can't be longer than 32 bytes.
+            ArgumentUtil.checkMaximumLength(datasetName, StandardCharsets.UTF_8, 32, "datasetName");
+
+            this.datasetName = datasetName;
             return this;
         }
 
@@ -177,13 +209,13 @@ public final class Sas7bdatMetadata {
             if (variables.isEmpty()) {
                 throw new IllegalStateException("variables must be set");
             }
-            return new Sas7bdatMetadata(creationTime, datasetType, datasetLabel, variables);
+            return new Sas7bdatMetadata(creationTime, datasetName, datasetType, datasetLabel, variables);
         }
     }
 
     /**
      * Creates a new Sas7bdatMetadata builder initialized with the current time as the creation time, a dataset type of
-     * "DATA", no label, and no variables.
+     * "DATA", no name, no label, and no variables.
      * <p>
      * The variables must be set before invoking {@link Builder#build build}
      * </p>
@@ -191,7 +223,7 @@ public final class Sas7bdatMetadata {
      * @return A new builder.
      */
     public static Builder builder() {
-        return new Builder(LocalDateTime.now(), "DATA", "", List.of());
+        return new Builder();
     }
 
     /**
@@ -199,14 +231,19 @@ public final class Sas7bdatMetadata {
      *
      * @param creationTime
      *     The creation time
+     * @param datasetName
+     *     the name of the dataset
      * @param datasetType
      *     The dataset type
+     * @param datasetLabel
+     *     The dataset's label
      * @param variables
      *     A list of variables.  Builder ensures that the client has no references to it.
      */
-    private Sas7bdatMetadata(LocalDateTime creationTime, String datasetType, String datasetLabel,
+    private Sas7bdatMetadata(LocalDateTime creationTime, String datasetName, String datasetType, String datasetLabel,
         List<Variable> variables) {
         this.creationTime = creationTime;
+        this.datasetName = datasetName;
         this.datasetType = datasetType;
         this.datasetLabel = datasetLabel;
         this.variables = variables; // Builder ensures that the library client does not have a reference.
@@ -219,6 +256,18 @@ public final class Sas7bdatMetadata {
      */
     public LocalDateTime creationTime() {
         return creationTime;
+    }
+
+    /**
+     * Gets the name of the dataset.
+     * <p>
+     * This usually matches the SAS7BDAT's base file name (without the path and without the file extension).
+     * </p>
+     *
+     * @return the dataset name.  This is never {@code null}.
+     */
+    public String datasetName() {
+        return datasetName;
     }
 
     /**

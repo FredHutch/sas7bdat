@@ -16,9 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class Sas7bdatMetadataTest {
 
     private static void assertSas7bdatMetadata(Sas7bdatMetadata metadata, LocalDateTime expectedCreationTime,
-        String expectedDatasetType, String expectedDatasetLabel, List<Variable> expectedVariables) {
+        String expectedDatasetName, String expectedDatasetType, String expectedDatasetLabel,
+        List<Variable> expectedVariables) {
 
         assertEquals(expectedCreationTime, metadata.creationTime(), "incorrect creationTime");
+        assertEquals(expectedDatasetName, metadata.datasetName(), "incorrect datasetName");
         assertEquals(expectedDatasetType, metadata.datasetType(), "incorrect datasetType");
         assertEquals(expectedDatasetLabel, metadata.datasetLabel(), "incorrect datasetLabel");
 
@@ -43,7 +45,7 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertSas7bdatMetadata(metadata, goodCreationTime, "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, goodCreationTime, "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -61,7 +63,7 @@ public class Sas7bdatMetadataTest {
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
-        assertSas7bdatMetadata(metadata, goodCreationTime, "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, goodCreationTime, "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -78,7 +80,44 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
+    }
+
+    @Test
+    void setLongDatasetName() {
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
+        LocalDateTime beforeBuilder = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().datasetName("name").variables(List.of(variable));
+
+        // Setting the dataset name to a value that's 32 characters but 33 bytes in UTF-8 should be an error.
+        final String sigma = "\u03C3"; // GREEK SMALL LETTER SIGMA (two bytes in UTF-8)
+        String badDatasetName = sigma + "x".repeat(31);
+        assertEquals(32, badDatasetName.length(), "TEST BUG: not testing encoding expansion");
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.datasetName(badDatasetName));
+        assertEquals("datasetName must not be longer than 32 bytes when encoded with UTF-8", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "name", "DATA", "", List.of(variable));
+    }
+
+    @Test
+    void setNullDatasetName() {
+        Variable variable = Variable.builder().name("VAR").type(VariableType.NUMERIC).length(8).label("label").build();
+        LocalDateTime beforeBuilder = LocalDateTime.now();
+        Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().variables(List.of(variable));
+
+        // Setting the dataset name to null should throw an exception.
+        Exception exception = assertThrows(NullPointerException.class, () -> builder.datasetName(null));
+        assertEquals("datasetName must not be null", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Sas7bdatMetadata metadata = builder.build();
+        assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -98,7 +137,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -115,7 +154,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -136,7 +175,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "before", variables);
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "before", variables);
     }
 
     @Test
@@ -153,7 +192,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -170,7 +209,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -192,7 +231,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable2));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable2));
     }
 
     @Test
@@ -209,7 +248,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -238,7 +277,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", legalVariables);
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", legalVariables);
     }
 
     @Test
@@ -277,7 +316,7 @@ public class Sas7bdatMetadataTest {
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
         Sas7bdatMetadata metadata = builder.build();
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable1));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable1));
     }
 
     @Test
@@ -313,7 +352,7 @@ public class Sas7bdatMetadataTest {
         Sas7bdatMetadata metadata = builder.build();
 
         // Confirm that the metadata reflects the variables that were given to the builder, not what they became.
-        assertSas7bdatMetadata(metadata, creationTime, "DATA", "", List.of(originalVariable));
+        assertSas7bdatMetadata(metadata, creationTime, "", "DATA", "", List.of(originalVariable));
     }
 
     /** Test that the return value of {@link Sas7bdatMetadata#variables()} doesn't support modification operations. */
@@ -343,7 +382,7 @@ public class Sas7bdatMetadataTest {
         assertThrows(UnsupportedOperationException.class, () -> returnedVariables.add(originalVariable));
 
         // Confirm that the metadata still reflects the variables that were given to the builder.
-        assertSas7bdatMetadata(metadata, creationTime, "DATA", "", List.of(originalVariable));
+        assertSas7bdatMetadata(metadata, creationTime, "", "DATA", "", List.of(originalVariable));
     }
 
     @Test
@@ -361,7 +400,7 @@ public class Sas7bdatMetadataTest {
         Sas7bdatMetadata metadata = builder.variables(List.of(variable)).build();
 
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -372,7 +411,7 @@ public class Sas7bdatMetadataTest {
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().variables(List.of(variable)).build();
 
         assertThat(metadata.creationTime(), greaterThanOrEqualTo(beforeBuilder));
-        assertSas7bdatMetadata(metadata, metadata.creationTime(), "DATA", "", List.of(variable));
+        assertSas7bdatMetadata(metadata, metadata.creationTime(), "", "DATA", "", List.of(variable));
     }
 
     @Test
@@ -396,12 +435,14 @@ public class Sas7bdatMetadataTest {
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder()
             // Set all values to something
             .creationTime(finalCreationTime.plusYears(100))
+            .datasetName("DISCARD")
             .datasetType("DISCARD")
             .datasetLabel("DISCARD")
             .variables(List.of(variable1))
 
             // set all values to something else
             .creationTime(finalCreationTime)
+            .datasetName("Name")
             .datasetType("NEW_TYPE")
             .datasetLabel("Updated Label")
             .variables(List.of(variable2))
@@ -409,7 +450,7 @@ public class Sas7bdatMetadataTest {
             // build
             .build();
 
-        assertSas7bdatMetadata(metadata, finalCreationTime, "NEW_TYPE", "Updated Label", List.of(variable2));
+        assertSas7bdatMetadata(metadata, finalCreationTime, "Name", "NEW_TYPE", "Updated Label", List.of(variable2));
     }
 
     @Test
@@ -433,12 +474,13 @@ public class Sas7bdatMetadataTest {
 
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             creationTime(creationTime).
+            datasetName("MyName").
             datasetType("MY_TYPE").
             datasetLabel("My Label").
             variables(List.of(variable1, variable2)).
             build();
 
-        assertSas7bdatMetadata(metadata, creationTime, "MY_TYPE", "My Label", List.of(variable1, variable2));
+        assertSas7bdatMetadata(metadata, creationTime, "MyName", "MY_TYPE", "My Label", List.of(variable1, variable2));
     }
 
     @Test
@@ -450,12 +492,13 @@ public class Sas7bdatMetadataTest {
 
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             creationTime(minCreationTime).
+            datasetName("").
             datasetType("").
             datasetLabel("").
             variables(minVariables).
             build();
 
-        assertSas7bdatMetadata(metadata, minCreationTime, "", "", minVariables);
+        assertSas7bdatMetadata(metadata, minCreationTime, "", "", "", minVariables);
     }
 
     @Test
@@ -470,6 +513,9 @@ public class Sas7bdatMetadataTest {
 
         final LocalDateTime maxCreationTime = LocalDateTime.of(19_900, 12, 31, 23, 59, 59);
 
+        // The maximum length of a dataset name is 32 bytes.
+        final String maxName = "n".repeat(32);
+
         // The maximum length of a dataset type is 8 bytes.
         final String maxType = "DATATYPE";
 
@@ -478,12 +524,13 @@ public class Sas7bdatMetadataTest {
 
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             creationTime(maxCreationTime).
+            datasetName(maxName).
             datasetType(maxType).
             datasetLabel(maxLabel).
             variables(maxVariables).
             build();
 
-        assertSas7bdatMetadata(metadata, maxCreationTime, maxType, maxLabel, maxVariables);
+        assertSas7bdatMetadata(metadata, maxCreationTime, maxName, maxType, maxLabel, maxVariables);
     }
 
     /** Tests that {@link Sas7bdatMetadata.Builder#build} can be invoked multiple times.  This is weird but legal */
@@ -508,25 +555,26 @@ public class Sas7bdatMetadataTest {
         LocalDateTime creationTime = LocalDateTime.now();
         Sas7bdatMetadata.Builder metadataBuilder = Sas7bdatMetadata.builder().
             creationTime(creationTime).
+            datasetName("NAME").
             datasetType("TYPE").
             datasetLabel("Dataset Label").
             variables(List.of(variable1));
 
         // Build a metadata object
         Sas7bdatMetadata metadata = metadataBuilder.build();
-        assertSas7bdatMetadata(metadata, creationTime, "TYPE", "Dataset Label", List.of(variable1));
+        assertSas7bdatMetadata(metadata, creationTime, "NAME", "TYPE", "Dataset Label", List.of(variable1));
 
         // Build an identical metadata object
         metadata = metadataBuilder.build();
-        assertSas7bdatMetadata(metadata, creationTime, "TYPE", "Dataset Label", List.of(variable1));
+        assertSas7bdatMetadata(metadata, creationTime, "NAME", "TYPE", "Dataset Label", List.of(variable1));
 
         // Change some fields and build a metadata object.
         LocalDateTime newCreationTime = LocalDateTime.parse("2020-01-13T12:34:56");
         metadata = metadataBuilder.creationTime(newCreationTime).variables(List.of(variable2)).build();
-        assertSas7bdatMetadata(metadata, newCreationTime, "TYPE", "Dataset Label", List.of(variable2));
+        assertSas7bdatMetadata(metadata, newCreationTime, "NAME", "TYPE", "Dataset Label", List.of(variable2));
 
         // Change the rest of the fields and build a metadata object.
-        metadata = metadataBuilder.datasetLabel("new label").datasetType("new type").build();
-        assertSas7bdatMetadata(metadata, newCreationTime, "new type", "new label", List.of(variable2));
+        metadata = metadataBuilder.datasetLabel("new label").datasetName("new name").datasetType("new type").build();
+        assertSas7bdatMetadata(metadata, newCreationTime, "new name", "new type", "new label", List.of(variable2));
     }
 }

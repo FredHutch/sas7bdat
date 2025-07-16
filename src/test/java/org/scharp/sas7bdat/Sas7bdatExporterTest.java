@@ -58,6 +58,7 @@ public class Sas7bdatExporterTest {
         Date expectedCreationDate = Date.from(utcCreationTime.minus(daylightSavingsTimeAdjustment));
         assertEquals(expectedCreationDate, sasFileProperties.getDateCreated());
 
+        assertEquals(metadata.datasetName(), sasFileProperties.getName());
         assertEquals(metadata.datasetLabel(), sasFileProperties.getFileLabel());
 
         // I suspect it's a bug in the parso library that the type is not returned.
@@ -742,6 +743,44 @@ public class Sas7bdatExporterTest {
 
         } finally {
             Files.deleteIfExists(targetPath); // always cleanup
+        }
+    }
+
+    @Test
+    public void testExportDatasetToLongFilename() throws IOException {
+
+        Path targetLocation = Files.createTempFile("sas7bdat-testLongFilename-" + "x".repeat(100), ".sas7bdat");
+        try {
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder()
+                .variables(List.of(Variable.builder().name("A").type(VariableType.CHARACTER).length(1).build()))
+                .build();
+
+            // Write the dataset to a file with a long name.
+            Sas7bdatExporter.exportDataset(targetLocation, metadata, List.of());
+
+            // Read the dataset with parso to confirm that it was written correctly.
+            try (InputStream inputStream = Files.newInputStream(targetLocation)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(metadata.variables().size(), sasFileProperties.getRowLength());
+                assertEquals(56593, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(1, sasFileProperties.getPageCount());
+
+                // Test the observations
+                assertEquals(0, sasFileProperties.getRowCount());
+                assertEquals(null, sasFileReader.readNext());
+            }
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
         }
     }
 }

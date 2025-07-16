@@ -29,7 +29,8 @@ public class Sas7bdatTest {
     private static void exportDataset(Path targetLocation) throws IOException {
 
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
-            datasetLabel("A sample dataset").
+            datasetName("WEATHER").
+            datasetLabel("Daily temperatures in cities across the U.S.A.").
             variables(
                 List.of(
                     Variable.builder().
@@ -93,7 +94,8 @@ public class Sas7bdatTest {
                 SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
                 SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
 
-                assertEquals("A sample dataset", sasFileProperties.getFileLabel());
+                assertEquals("WEATHER", sasFileProperties.getName());
+                assertEquals("Daily temperatures in cities across the U.S.A.", sasFileProperties.getFileLabel());
 
                 assertEquals("DATA", sasFileProperties.getFileType());
 

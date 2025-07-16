@@ -495,12 +495,11 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         // Write the file header.
         {
-            String datasetName = targetLocation.getFileName().toString().replace(".sas7bdat", "");
             Sas7bdatHeader header = new Sas7bdatHeader(
                 pageSequenceGenerator,
                 pageLayout.pageSize,
                 pageLayout.pageSize,
-                datasetName,
+                metadata.datasetName(),
                 metadata.creationTime(),
                 totalPagesInDataset);
             header.write(pageBuffer);

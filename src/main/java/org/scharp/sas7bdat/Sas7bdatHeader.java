@@ -156,7 +156,6 @@ class Sas7bdatHeader {
 
         // dataset name or file label (64 bytes)
         // This should match the file's base name.
-        assert datasetName.length() <= 64;
         writeAscii(data, 92, datasetName, 64);
 
         // file type
