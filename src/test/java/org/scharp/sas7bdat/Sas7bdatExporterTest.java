@@ -51,8 +51,7 @@ public class Sas7bdatExporterTest {
     private static void assertMetadata(Sas7bdatMetadata metadata, SasFileReader sasFileReader) {
         SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
 
-        // I suspect there's a bug the parso library where it returns the "Date" in UTC ignoring daylight
-        // savings time.
+        // I suspect there's a bug the parso library where it returns the "Date" in UTC ignoring daylight saving time.
         Instant utcCreationTime = metadata.creationTime().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS);
         Duration daylightSavingsTimeAdjustment = ZoneId.systemDefault().getRules().getDaylightSavings(utcCreationTime);
         Date expectedCreationDate = Date.from(utcCreationTime.minus(daylightSavingsTimeAdjustment));
