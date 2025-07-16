@@ -542,7 +542,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     If writing this observation would exceed the {@code totalObservationsInDataset} argument given in the
      *     constructor.
      * @throws IllegalArgumentException
-     *     if {@code observation} doesn't contain values that confirm to the {@code Sas7bdatMetadata} that was given to
+     *     if {@code observation} doesn't contain values that conform to the {@code Sas7bdatMetadata} that was given to
      *     this exporter's constructor.
      * @throws IOException
      *     If an I/O error prevented the observation from being written.
