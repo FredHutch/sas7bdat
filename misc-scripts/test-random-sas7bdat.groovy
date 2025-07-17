@@ -1133,6 +1133,8 @@ class TestRandomSas7Bdat {
 
         cli.h(longOpt: 'help', 'Shows the usage information for this tool.')
 
+        cli.selftest('Tests the functionality of this script.')
+
         cli.s(
             longOpt  : 'seed',
             args     : 1,
@@ -1169,6 +1171,10 @@ class TestRandomSas7Bdat {
                 }
             }
 
+            if (options.selftest) {
+                println "ERROR: A test case data file cannot be given in selftest mode"
+                System.exit(1)
+            }
             if (options.seed) {
                 println "ERROR: A seed cannot be given with a test case data file"
                 System.exit(1)
@@ -1229,6 +1235,46 @@ class TestRandomSas7Bdat {
 
                 // Test the dataset.
                 testDataset(randomDatasetFile)
+
+                if (options.selftest) {
+                    // In self-test mode, we check that the generated random.groovy can produce the
+                    // exact same dataset that this script generated.
+                    def randomGroovy = Path.of("random.groovy")
+                    def sas7BdatPath = Path.of("random.sas7bdat")
+                    def savedSas7BdatPath = Path.of("random-selftest.sas7bdat")
+                    Files.move(sas7BdatPath, savedSas7BdatPath, StandardCopyOption.REPLACE_EXISTING)
+
+                    // If the randomly generated dataset is too large, then no random.groovy is generated.
+                    if (!Files.exists(randomGroovy)) {
+                        println "ERROR: random.groovy doesn't exist.  Test is inconclusive"
+                        System.exit(1)
+                    }
+
+                    // Execute random.groovy, collecting it output for display on error.
+                    def process = [randomGroovy.toAbsolutePath()].execute()
+                    StringBuilder stdErr = new StringBuilder()
+                    StringBuilder stdOut = new StringBuilder()
+                    process.consumeProcessOutput(stdOut, stdErr)
+                    if (process.waitFor() != 0) {
+                        println "ERROR: random.groovy failed:"
+                        if (!stdOut.isEmpty()) {
+                            println stdOut
+                        }
+                        if (!stdErr.isEmpty()) {
+                            println stdErr
+                            System.exit(1)
+                        }
+                    }
+
+                    // Confirm that random.groovy generated the same file as this script.
+                    if (Files.readAllBytes(sas7BdatPath) != Files.readAllBytes(savedSas7BdatPath)) {
+                        println "ERROR: random.groovy generated a different file than this script"
+                        System.exit(1)
+                    }
+
+                    // Cleanup the extra sas7bdat file.
+                    Files.delete(savedSas7BdatPath)
+                }
             }
         }
     }
