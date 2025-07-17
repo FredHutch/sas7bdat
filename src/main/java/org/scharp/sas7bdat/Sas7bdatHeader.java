@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 import static org.scharp.sas7bdat.WriteUtil.writeAscii;
+import static org.scharp.sas7bdat.WriteUtil.writeUtf8;
 
 class Sas7bdatHeader {
 
@@ -156,7 +157,7 @@ class Sas7bdatHeader {
 
         // dataset name or file label (64 bytes)
         // This should match the file's base name.
-        writeAscii(data, 92, datasetName, 64);
+        writeUtf8(data, 92, datasetName, 64, (byte) ' ');
 
         // file type
         writeAscii(data, 156, "DATA", 8);
