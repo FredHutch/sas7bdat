@@ -7,6 +7,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -361,15 +362,17 @@ public class VariableTest {
 
     @Test
     void buildWithAllFieldsSet() {
-        Variable variable = Variable.builder()
-            .name("NAME")
-            .length(8)
-            .type(VariableType.NUMERIC)
-            .label("LABEL")
-            .inputFormat(new Format("IN", 1))
-            .outputFormat(new Format("OUT", 2))
-            .build();
+        Variable.Builder variableBuilder = Variable.builder();
 
+        // Test that each of the mutator methods returns the same builder instance.
+        assertSame(variableBuilder, variableBuilder.name("NAME"));
+        assertSame(variableBuilder, variableBuilder.length(8));
+        assertSame(variableBuilder, variableBuilder.type(VariableType.NUMERIC));
+        assertSame(variableBuilder, variableBuilder.label("LABEL"));
+        assertSame(variableBuilder, variableBuilder.inputFormat(new Format("IN", 1)));
+        assertSame(variableBuilder, variableBuilder.outputFormat(new Format("OUT", 2)));
+
+        Variable variable = variableBuilder.build();
         assertVariable(variable, "NAME", VariableType.NUMERIC, 8, "LABEL", new Format("IN", 1), new Format("OUT", 2));
     }
 

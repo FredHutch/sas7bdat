@@ -10,6 +10,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Unit tests for {@link Sas7bdatMetadata}. */
@@ -454,7 +455,7 @@ public class Sas7bdatMetadataTest {
     }
 
     @Test
-    void buildWithAllValueSet() {
+    void buildWithAllFieldsSet() {
 
         Variable variable1 = Variable.builder().
             name("V1").
@@ -472,14 +473,15 @@ public class Sas7bdatMetadataTest {
 
         final LocalDateTime creationTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0, 1);
 
-        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
-            creationTime(creationTime).
-            datasetName("MyName").
-            datasetType("MY_TYPE").
-            datasetLabel("My Label").
-            variables(List.of(variable1, variable2)).
-            build();
+        // Test that each of the mutator methods returns the same builder instance.
+        Sas7bdatMetadata.Builder metadataBuilder = Sas7bdatMetadata.builder();
+        assertSame(metadataBuilder, metadataBuilder.creationTime(creationTime));
+        assertSame(metadataBuilder, metadataBuilder.datasetName("MyName"));
+        assertSame(metadataBuilder, metadataBuilder.datasetType("MY_TYPE"));
+        assertSame(metadataBuilder, metadataBuilder.datasetLabel("My Label"));
+        assertSame(metadataBuilder, metadataBuilder.variables(List.of(variable1, variable2)));
 
+        Sas7bdatMetadata metadata = metadataBuilder.build();
         assertSas7bdatMetadata(metadata, creationTime, "MyName", "MY_TYPE", "My Label", List.of(variable1, variable2));
     }
 
