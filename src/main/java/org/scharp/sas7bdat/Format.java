@@ -141,7 +141,7 @@ public final class Format {
      * This method is supported for the benefit of hash tables such as those provided by {@link HashMap}.
      * </p>
      *
-     * @return this format's a hash code
+     * @return this format's hash code
      */
     @Override
     public int hashCode() {
