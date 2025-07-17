@@ -491,7 +491,7 @@ class TestRandomSas7Bdat {
         groovyScript.withWriter('UTF-8') { writer ->
 
             writer.writeLine """
-                |#!/scharp/xapps/s/smartenv.pl JAVA_OPTS=-ea JAVA_HOME=/scharp/xapps/s/jdk-17.0.9_9 /scharp/xapps/s/groovy-3.0.10
+                |#!/usr/bin/env groovy
                 |///////////////////////////////////////////////////////////////////////////////
                 |// A Groovy script that can be used to generate random.sas7bdat.
                 |//
