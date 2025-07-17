@@ -3,8 +3,12 @@ package org.scharp.sas7bdat;
 import org.junit.jupiter.api.Test;
 import org.scharp.sas7bdat.Variable.Builder;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Unit tests for {@link Variable}. */
 public class VariableTest {
@@ -417,5 +421,235 @@ public class VariableTest {
         Format outputFormat = new Format("$UPCASE", 1);
         variable = builder.name("VAR2").label("label 2").outputFormat(outputFormat).build();
         assertVariable(variable, "VAR2", VariableType.CHARACTER, 1, "label 2", Format.UNSPECIFIED, outputFormat);
+    }
+
+    static private String copy(String string) {
+        return new String(string);
+    }
+
+    /**
+     * Tests {@link Variable#hashCode()}.
+     */
+    @Test
+    public void testHashCode() {
+        // Create a variable with all fields set to distinct values.
+        Variable variable = Variable.builder().
+            name("MY_VARIABLE").
+            type(VariableType.CHARACTER).
+            length(200).
+            label("My Label").
+            outputFormat(new Format("$UPCASE", 5)).
+            inputFormat(new Format("$ASCII", 4)).
+            build();
+
+        // Create a copy that has the same strings but from different references.
+        Variable variableCopy = Variable.builder().
+            name(copy("MY_VARIABLE")).
+            type(VariableType.CHARACTER).
+            length(200).
+            label(copy("My Label")).
+            outputFormat(new Format(copy("$UPCASE"), 5)).
+            inputFormat(new Format(copy("$ASCII"), 4)).
+            build();
+
+        // The copy must hash to the same value as the original.
+        assertEquals(variable.hashCode(), variableCopy.hashCode());
+
+        // Create a pair of equal variables that are as minimally set as possible.
+        Variable minimalVariable = Variable.builder().name("a").type(VariableType.NUMERIC).length(8).build();
+        Variable minimalVariableCopy = Variable.builder().name(copy("a")).type(VariableType.NUMERIC).length(8).build();
+
+        // The copy must hash to the same value as the original.
+        assertEquals(minimalVariable.hashCode(), minimalVariableCopy.hashCode());
+    }
+
+    /**
+     * Tests {@link Variable#equals(Object)}.
+     */
+    @SuppressWarnings({ "unlikely-arg-type", "EqualsBetweenInconvertibleTypes" })
+    @Test
+    public void testEquals() {
+        // Create a variable with all fields set to distinct values.
+        Variable variable = Variable.builder().
+            name("MY_VARIABLE").
+            type(VariableType.CHARACTER).
+            length(8).
+            label("My Label").
+            outputFormat(new Format("$UPCASE", 5)).
+            inputFormat(new Format("$ASCII", 4)).
+            build();
+
+        // Create a copy that has the same strings but from different references.
+        Variable variableCopy = Variable.builder().
+            name(copy("MY_VARIABLE")).
+            type(VariableType.CHARACTER).
+            length(8).
+            label(copy("My Label")).
+            outputFormat(new Format(copy("$UPCASE"), 5)).
+            inputFormat(new Format(copy("$ASCII"), 4)).
+            build();
+
+        // Create a pair of equal numeric variables (to test variations in numeric formats)
+        Variable numericVariable = Variable.builder().
+            name("MY_VARIABLE").
+            type(VariableType.NUMERIC).
+            length(8).
+            label("My Label").
+            outputFormat(new Format("f", 5, 2)).
+            inputFormat(new Format("d", 4, 1)).
+            build();
+
+        // Create a copy that has the same strings but from different references.
+        Variable numericVariableCopy = Variable.builder().
+            name(copy("MY_VARIABLE")).
+            type(VariableType.NUMERIC).
+            length(8).
+            label(copy("My Label")).
+            outputFormat(new Format(copy("f"), 5, 2)).
+            inputFormat(new Format(copy("d"), 4, 1)).
+            build();
+
+        // Create formats that only differ in exactly one field (and only by case for strings).
+        Variable differentName = Variable.builder().
+            name("My_VARIABLE").
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(variable.outputFormat()).
+            inputFormat(variable.inputFormat()).
+            build();
+        Variable differentLength = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length() + 1).
+            label(variable.label()).
+            outputFormat(variable.outputFormat()).
+            inputFormat(variable.inputFormat()).
+            build();
+        Variable differentLabel = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label("My label").
+            outputFormat(variable.outputFormat()).
+            inputFormat(variable.inputFormat()).
+            build();
+        Variable differentOutputFormatName = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(new Format("$upcase", 5)).
+            inputFormat(variable.inputFormat()).
+            build();
+        Variable differentOutputFormatWidth = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(new Format(variableCopy.outputFormat().name(), variableCopy.outputFormat().width() + 1)).
+            inputFormat(variable.inputFormat()).
+            build();
+        Variable differentOutputFormatDigits = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(new Format(variableCopy.outputFormat().name(), variableCopy.outputFormat().width(), 1)).
+            inputFormat(variable.inputFormat()).
+            build();
+        Variable differentInputFormatName = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(variable.outputFormat()).
+            inputFormat(new Format("$ascii", 4)).
+            build();
+        Variable differentInputFormatWidth = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(variable.outputFormat()).
+            inputFormat(new Format(variable.inputFormat().name(), variable.inputFormat().width() + 1)).
+            build();
+        Variable differentInputFormatDigits = Variable.builder().
+            name(variable.name()).
+            type(variable.type()).
+            length(variable.length()).
+            label(variable.label()).
+            outputFormat(variable.outputFormat()).
+            inputFormat(new Format(variable.inputFormat().name(), variable.inputFormat().width(), 2)).
+            build();
+
+        // Create a pair of equal variables that are as minimally set as possible.
+        Variable minimalVariable = Variable.builder().name("a").type(VariableType.CHARACTER).length(8).build();
+        Variable minimalVariableCopy = Variable.builder().name("a").type(VariableType.CHARACTER).length(8).build();
+
+        // Create a variable that differs from minimalVariable only by type.
+        // Because character formats can't be used by numeric variables, this is the only way we can test that
+        // a variable's type in considered by equals().
+        Variable minimalVariableWithDifferentType = Variable.builder().
+            name(minimalVariable.name()).
+            type(VariableType.NUMERIC).
+            length(minimalVariable.length())
+            .build();
+
+        List<Variable> allVariables = List.of(
+            variable,
+            variableCopy,
+
+            numericVariable,
+            numericVariableCopy,
+
+            differentName,
+            differentLength,
+            differentLabel,
+            differentOutputFormatName,
+            differentOutputFormatWidth,
+            differentOutputFormatDigits,
+            differentInputFormatName,
+            differentInputFormatWidth,
+            differentInputFormatDigits,
+
+            minimalVariable,
+            minimalVariableCopy);
+
+        // Equals is reflexive (special case)
+        for (Variable currentVariable : allVariables) {
+            assertTrue(currentVariable.equals(currentVariable));
+        }
+
+        // Equivalent variables are equal.
+        assertTrue(variable.equals(variableCopy));
+        assertTrue(minimalVariable.equals(minimalVariableCopy));
+
+        // Different variables are not equal.
+        assertFalse(variable.equals(numericVariable));
+        assertFalse(variable.equals(differentName));
+        assertFalse(variable.equals(differentLength));
+        assertFalse(variable.equals(differentLabel));
+        assertFalse(variable.equals(differentOutputFormatName));
+        assertFalse(variable.equals(differentOutputFormatWidth));
+        assertFalse(variable.equals(differentOutputFormatDigits));
+        assertFalse(variable.equals(differentInputFormatName));
+        assertFalse(variable.equals(differentInputFormatWidth));
+        assertFalse(variable.equals(differentInputFormatDigits));
+        assertFalse(variable.equals(minimalVariable));
+        assertFalse(minimalVariable.equals(minimalVariableWithDifferentType));
+
+        // Equality is symmetric.
+        assertTrue(variableCopy.equals(variable));
+        assertTrue(numericVariableCopy.equals(numericVariable));
+        assertTrue(minimalVariableCopy.equals(minimalVariable));
+
+        // Nothing is equal to null.
+        for (Variable currentVariable : allVariables) {
+            assertFalse(currentVariable.equals(null));
+        }
+
+        // Test comparing against something that isn't a Variable
+        assertFalse(variable.equals(variable.name()));
     }
 }

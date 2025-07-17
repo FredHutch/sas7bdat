@@ -1,11 +1,16 @@
 package org.scharp.sas7bdat;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * A variable or column in a SAS7BDAT file.
  * <p>
  * Instances of this class are immutable.
+ * </p>
+ * <p>
+ * This class supports {@code equals()} and {@code hashCode()} in a way that makes them suitable for use in a HashMap.
  * </p>
  */
 public final class Variable {
@@ -311,5 +316,47 @@ public final class Variable {
      */
     public Format inputFormat() {
         return inputFormat;
+    }
+
+    /**
+     * Gets a hash code for this variable.
+     * <p>
+     * This method is supported for the benefit of hash tables such as those provided by {@link HashMap}.
+     * </p>
+     *
+     * @return this variable's hash code
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, length, label, outputFormat, inputFormat);
+    }
+
+    /**
+     * Determines if this variable is equal to another object.
+     * <p>
+     * Two variables are equal if and only if their name, type, length, label, outputFormat, and inputFormat fields are
+     * all equal.
+     * </p>
+     *
+     * @param other
+     *     The object with which to compare this variable.
+     *
+     * @return {@code true}, if this variable is equal to {@code other}.  {@code false}, otherwise.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof Variable otherVariable)) {
+            return false;
+        }
+
+        return name.equals(otherVariable.name) &&
+            type == otherVariable.type &&
+            length == otherVariable.length &&
+            label.equals(otherVariable.label) &&
+            outputFormat().equals(otherVariable.outputFormat) &&
+            inputFormat().equals(otherVariable.inputFormat);
     }
 }
