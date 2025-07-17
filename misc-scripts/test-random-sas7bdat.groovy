@@ -477,7 +477,22 @@ class TestRandomSas7Bdat {
 
     static def writeGroovyScriptToGenerateDataset(Path testCaseFile, File groovyScript) {
 
-        var quoteStringLiteral = { String string -> '"' + string.replace('"', '\\"').replace('$', '\\$') + '"' }
+        var quoteStringLiteral = { String input ->
+            "'" + input.collectReplacements { Character ch ->
+                switch (ch) {
+                    case '\\': return '\\\\'
+                    case '"':  return '\\"'
+                    case '\n': return '\\n'
+                    case '\r': return '\\r'
+                    case '\t': return '\\t'
+                    case '\b': return '\\b'
+                    case '\f': return '\\f'
+                    default:
+                        // Use a Unicode escape sequence for non-ASCII
+                        return (ch < 32 || ch > 126) ? String.format('\\u%04x', (int) ch) : null
+                }
+            } + "'"
+        }
         var quoteFormat = { format -> "FormatConstructor.newInstance(${quoteStringLiteral(format.name())}, ${format.width()}, ${format.numberOfDigits()})" }
 
         // Groovy has a limit of 64KB of byte code per method.  If we try to create a list literal
@@ -615,7 +630,7 @@ class TestRandomSas7Bdat {
                 writer.append "datasetExporter.writeObservation([" // start of observation
                 observation.eachWithIndex { value, i ->
                     // quote character values
-                    writer.append metadata.variables[i].type() == VariableType.CHARACTER ? "'$value'" : "$value"
+                    writer.append metadata.variables[i].type() == VariableType.CHARACTER ? quoteStringLiteral(value) : "$value"
 
                     // comma-separate values in an observation
                     if (i != observation.size() - 1) {
