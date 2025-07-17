@@ -840,22 +840,20 @@ class TestRandomSas7Bdat {
         File sasLogFile = new File(logFileName)
         sasLogFile.delete()
 
-        def process
         try {
             def commandLine = ['sas_u8', sasProgram]
             commandLine.addAll(arguments) // add optional -sysparm arguments
-            process = commandLine.execute()
+            def process = commandLine.execute()
+            process.waitFor()
+            def output = process.text
+            if (output) {
+                // SAS only prints to stdout/stderr if something is very wrong.
+                println "ERROR: \"sas_u8 $sasProgram\" printed the following output:"
+                println output
+                System.exit(1)
+            }
         } catch (IOException exception) {
             println "ERROR: $exception.message"
-            System.exit(1)
-        }
-
-        process.waitFor()
-        def output = process.text
-        if (output) {
-            // SAS only prints to stdout/stderr if something is very wrong.
-            println "ERROR: \"sas_u8 $sasProgram\" printed the following output:"
-            println output
             System.exit(1)
         }
 
