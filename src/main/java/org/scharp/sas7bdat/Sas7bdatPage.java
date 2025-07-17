@@ -113,6 +113,7 @@ class Sas7bdatPage {
 
     boolean addObservation(byte[] observation) {
         assert subheaderFinalized : "can't write new observation until subheaders are finalized";
+        assert observation.length == variablesLayout.rowLength();
 
         if (maxObservations <= observations.size()) {
             // There isn't enough space between the end of the subheaders and the last subheader written
