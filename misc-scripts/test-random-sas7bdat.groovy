@@ -38,7 +38,7 @@ class TestRandomSas7Bdat {
             targetDir.eachFileMatch(~/^sas7bdat-\d+\.\d+\.\d+\.jar$/) { jarFile = it }
         }
         if (jarFile == null) {
-            println "ERROR: sas-transport jar does not exist.  Run 'mvn package -DskipTests' to build it"
+            println "ERROR: sas7bdat jar does not exist.  Run 'mvn package -DskipTests' to build it"
             System.exit(1)
         }
 
@@ -510,7 +510,7 @@ class TestRandomSas7Bdat {
                 |    targetDir.eachFileMatch(~/^sas7bdat-\\d+\\.\\d+\\.\\d+\\.jar\$/) { jarFile = it }
                 |}
                 |if (jarFile == null) {
-                |    println "ERROR: sas-transport jar does not exist.  Run 'mvn package -DskipTests' to build it"
+                |    println "ERROR: sas7bdat jar does not exist.  Run 'mvn package -DskipTests' to build it"
                 |    System.exit(1)
                 |}
                 |
@@ -1093,7 +1093,7 @@ class TestRandomSas7Bdat {
 
 
         //
-        // Use sas-transport to write out the dataset as a SAS7BDAT.
+        // Use the sas7bdat library to write out the dataset as a SAS7BDAT.
         //
         def datasetExporter = Sas7bdatExporterConstructor.newInstance(
             sas7BdatPath,
