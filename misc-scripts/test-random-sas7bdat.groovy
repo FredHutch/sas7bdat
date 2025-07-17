@@ -310,7 +310,7 @@ class TestRandomSas7Bdat {
 
         private static JsonToken checkObjectEnd(JsonParser parser, String locationDescription) {
             def token = parser.nextToken()
-            if (token != JsonToken.END_OBJECT) {
+            if (!token.isStructEnd()) {
                 println "ERROR: unexpected fields in $locationDescription"
                 System.exit(1)
             }
