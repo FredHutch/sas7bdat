@@ -123,20 +123,20 @@ public class FormatTest {
         // Create a format.
         Format format = new Format("MyFormat", 10, 2);
 
-        // Create a copy that has the same string but from different reference.
+        // Create a copy that has the same name but from a different String reference.
         Format formCopy = new Format(copy("MyFormat"), 10, 2);
 
         // The copy must hash to the same value as the original.
         assertEquals(format.hashCode(), formCopy.hashCode());
 
-        // Create a pair of equal formats that from different constructors
+        // Create a pair of equal formats from different constructors.
         Format ascii10 = new Format("$ASCII", 10);
         Format ascii10Copy = new Format("$ASCII", 10, 0);
 
         // The copy must hash to the same value as the original.
         assertEquals(ascii10.hashCode(), ascii10Copy.hashCode());
 
-        // Create a pair of formats that has empty strings.
+        // Create a pair of formats that have empty strings.
         Format emptyFormat = new Format("", 0, 0);
         Format emptyFormatCopy = new Format(copy(""), 0);
 
@@ -153,22 +153,22 @@ public class FormatTest {
         // Create a format.
         Format format = new Format("MyFormat", 10, 2);
 
-        // Create a copy that has the same string but from different reference.
+        // Create a copy that has the same name but from a different String reference.
         Format formatCopy = new Format(copy("MyFormat"), 10, 2);
 
         // Create another pair for different values (differs in case)
         Format format2 = new Format("myFormat", 10, 2);
         Format format2Copy = new Format(copy("myFormat"), 10, 2);
 
-        // Create a pair of equal formats that from different constructors
+        // Create a pair of equal formats from different constructors.
         Format ascii10 = new Format("$ASCII", 10);
         Format ascii10Copy = new Format("$ASCII", 10, 0);
 
-        // Create a pair of formats that has empty strings.
+        // Create a pair of formats that have empty strings.
         Format emptyFormat = new Format("", 0, 0);
         Format emptyFormatCopy = new Format(copy(""), 0);
 
-        // Create formats that only differs in exactly one field (and only by case for strings).
+        // Create formats that only differ in exactly one field (and only by case for strings).
         Format differentName = new Format("myFormat", 10, 2);
         Format differentWidth = new Format("MyFormat", 9, 2);
         Format differentNumberOfDigits = new Format("MyFormat", 10, 1);
@@ -211,7 +211,7 @@ public class FormatTest {
         assertFalse(differentWidth.equals(format));
         assertFalse(differentNumberOfDigits.equals(differentName));
 
-        // Equality is symmetric
+        // Equality is symmetric.
         assertTrue(formatCopy.equals(format));
         assertTrue(format2Copy.equals(format2));
         assertTrue(ascii10Copy.equals(ascii10));
