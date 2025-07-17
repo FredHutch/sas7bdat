@@ -1,6 +1,5 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPage;
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 
 import java.nio.charset.StandardCharsets;

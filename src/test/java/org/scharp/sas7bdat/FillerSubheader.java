@@ -1,6 +1,6 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPage;
+import java.util.Arrays;
 
 /**
  * A mock subheader of a fixed size.  This can be used to reserve space on a metadata page.
@@ -8,9 +8,15 @@ import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPage;
 class FillerSubheader extends Subheader {
 
     private final int size;
+    private final byte fillByte;
+
+    FillerSubheader(int size, byte fillByte) {
+        this.size = size;
+        this.fillByte = fillByte;
+    }
 
     FillerSubheader(int size) {
-        this.size = size;
+        this(size, (byte) 0);
     }
 
     @Override
@@ -20,6 +26,8 @@ class FillerSubheader extends Subheader {
 
     @Override
     void writeSubheader(byte[] page, int subheaderOffset) {
+        // Write a solid block of the fill byte.
+        Arrays.fill(page, subheaderOffset, subheaderOffset + size, fillByte);
     }
 
     @Override
