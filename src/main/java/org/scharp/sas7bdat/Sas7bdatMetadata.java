@@ -90,13 +90,13 @@ public final class Sas7bdatMetadata {
          * @throws NullPointerException
          *     if {@code datasetName} is {@code null}.
          * @throws IllegalArgumentException
-         *     if {@code datasetName} is longer than 32 bytes when encoded in UTF-8.
+         *     if {@code datasetName} is longer than 64 bytes when encoded in UTF-8.
          */
         public Builder datasetName(String datasetName) {
             ArgumentUtil.checkNotNull(datasetName, "datasetName");
 
             // dataset names can't be longer than 32 bytes.
-            ArgumentUtil.checkMaximumLength(datasetName, StandardCharsets.UTF_8, 32, "datasetName");
+            ArgumentUtil.checkMaximumLength(datasetName, StandardCharsets.UTF_8, 64, "datasetName");
 
             this.datasetName = datasetName;
             return this;
@@ -264,7 +264,7 @@ public final class Sas7bdatMetadata {
      * This usually matches the SAS7BDAT's base file name (without the path and without the file extension).
      * </p>
      *
-     * @return the dataset name.  This is never {@code null}.
+     * @return the dataset name. This is at most 64 bytes when encoded in UTF-8. This is never {@code null}.
      */
     public String datasetName() {
         return datasetName;

@@ -90,12 +90,12 @@ public class Sas7bdatMetadataTest {
         LocalDateTime beforeBuilder = LocalDateTime.now();
         Sas7bdatMetadata.Builder builder = Sas7bdatMetadata.builder().datasetName("name").variables(List.of(variable));
 
-        // Setting the dataset name to a value that's 32 characters but 33 bytes in UTF-8 should be an error.
+        // Setting the dataset name to a value that's 64 characters but 65 bytes in UTF-8 should be an error.
         final String sigma = "\u03C3"; // GREEK SMALL LETTER SIGMA (two bytes in UTF-8)
-        String badDatasetName = sigma + "x".repeat(31);
-        assertEquals(32, badDatasetName.length(), "TEST BUG: not testing encoding expansion");
+        String badDatasetName = sigma + "x".repeat(63);
+        assertEquals(64, badDatasetName.length(), "TEST BUG: not testing encoding expansion");
         Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.datasetName(badDatasetName));
-        assertEquals("datasetName must not be longer than 32 bytes when encoded with UTF-8", exception.getMessage());
+        assertEquals("datasetName must not be longer than 64 bytes when encoded with UTF-8", exception.getMessage());
 
         // The exception shouldn't corrupt the state of the builder.
         // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
@@ -515,8 +515,8 @@ public class Sas7bdatMetadataTest {
 
         final LocalDateTime maxCreationTime = LocalDateTime.of(19_900, 12, 31, 23, 59, 59);
 
-        // The maximum length of a dataset name is 32 bytes.
-        final String maxName = "n".repeat(32);
+        // The maximum length of a dataset name is 64 bytes.
+        final String maxName = "n".repeat(64);
 
         // The maximum length of a dataset type is 8 bytes.
         final String maxType = "DATATYPE";
