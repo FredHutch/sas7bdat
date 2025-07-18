@@ -7,24 +7,33 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Unit tests for {@link Sas7bdatPage}. */
 public class Sas7bdatPageTest {
 
+    /**
+     * Tests creating a pure metadata page (no observations).  Also tests when new subheaders/observations can't be
+     * added because they're too large.
+     */
     @Test
     void testPureMetadataPage() {
+        // Create variables whose row length is chosen to be just slightly too large to fit
+        // on the page once the subheaders have been added.
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(5124).build()));
+
         // Create a sas7bdat page
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         final int pageSize = 0x10000;
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Add some subheaders
-        Subheader subheader1 = new FillerSubheader(100, (byte) 1);
+        Subheader subheader1 = new FillerSubheader(60000, (byte) 1);
         Subheader subheader2 = new FillerSubheader(300, (byte) 2);
 
         assertTrue(page.addSubheader(subheader1));
@@ -37,8 +46,22 @@ public class Sas7bdatPageTest {
             pageSize - 40 - 24 * 4 - subheader1.size() - subheader2.size(),
             page.totalBytesRemainingForNewSubheader());
 
+        // Try to add a header that can't fit.
+        Subheader largeSubheader = new FillerSubheader(page.totalBytesRemainingForNewSubheader() + 1);
+        assertFalse(page.addSubheader(largeSubheader));
+
         // Finalize
         page.finalizeSubheaders();
+
+        // Try to add an observation that can't fit.
+        // This shouldn't change the page type into a mixed page.
+        byte[] observation = new byte[variablesLayout.rowLength()];
+        Arrays.fill(observation, (byte) 0xFF);
+        assertFalse(page.addObservation(observation));
+        assertEquals(
+            page.totalBytesRemainingForNewSubheader() + 2 * 24,
+            observation.length,
+            "TEST BUG: didn't calculate the observation length to be one byte too large");
 
         // Write the page.
         byte[] actualData = new byte[pageSize];
@@ -47,7 +70,7 @@ public class Sas7bdatPageTest {
         // Confirm that the expected data was written.
         byte[] expectedData = new byte[pageSize];
         WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
-        WriteUtil.write4(expectedData, 24, (pageSize - 40 - 24 * 3 - 100 - 300)); // total bytes free
+        WriteUtil.write4(expectedData, 24, (pageSize - 40 - 24 * 3 - 60000 - 300)); // total bytes free
         WriteUtil.write2(expectedData, 32, (short) 0); // type=META
         WriteUtil.write2(expectedData, 34, (short) 3); // total blocks
         WriteUtil.write2(expectedData, 36, (short) 3); // total subheaders
@@ -67,8 +90,8 @@ public class Sas7bdatPageTest {
         WriteUtil.write2(expectedData, 104, Subheader.COMPRESSION_TRUNCATED); // subheader #3 compression
         WriteUtil.write2(expectedData, 106, Subheader.SUBHEADER_TYPE_A); // subheader #3 type
 
-        Arrays.fill(expectedData, pageSize - 100 - 300, pageSize - 100, (byte) 2); // subheader #2
-        Arrays.fill(expectedData, pageSize - 100, pageSize, (byte) 1); // subheader #1
+        Arrays.fill(expectedData, pageSize - 60000 - 300, pageSize - 60000, (byte) 2); // subheader #2
+        Arrays.fill(expectedData, pageSize - 60000, pageSize, (byte) 1); // subheader #1
 
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
@@ -145,6 +168,10 @@ public class Sas7bdatPageTest {
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
+
+        // Try to add a header that can't fit.  This shouldn't change the page into a mixed page.
+        Subheader largeSubheader = new FillerSubheader(page.totalBytesRemainingForNewSubheader() + 1);
+        assertFalse(page.addSubheader(largeSubheader));
 
         // Finalize subheaders without adding one.
         page.finalizeSubheaders();
