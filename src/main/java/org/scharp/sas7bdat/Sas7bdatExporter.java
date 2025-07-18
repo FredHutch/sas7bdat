@@ -177,8 +177,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
         pageLayout.columnText.add(" ".repeat(8)); // unknown
 
         // Add the dataset type, padded with spaces.
-        // We duplicateIfExists=true because if the datasetType is the empty string, we still
-        // want to reserve the space for it, even though we added the same eight spaces above.
         String paddedDatasetType = metadata.datasetType() +
             " ".repeat(8 - metadata.datasetType().getBytes(StandardCharsets.UTF_8).length);
         pageLayout.columnText.add(paddedDatasetType);
