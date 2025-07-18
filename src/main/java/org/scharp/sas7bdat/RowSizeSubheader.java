@@ -251,7 +251,7 @@ class RowSizeSubheader extends Subheader {
         // Unknown, but could be the location of the last Subheader block, in which case
         // the -1 doesn't include the truncated subheader.
         writeRecordLocation(page, subheaderOffset + 528, totalMetadataPages,
-            finalMetadataPage.subheaders.size() - 1);
+            finalMetadataPage.subheaders().size() - 1);
 
         // The location of the first data record.
         if (totalObservationsInDataset == 0) {
@@ -266,7 +266,7 @@ class RowSizeSubheader extends Subheader {
             } else {
                 // There is a mixed page.
                 pageOfFirstDataRecord = totalMetadataPages;
-                blockOfFirstDataRecord = finalMetadataPage.subheaders.size() + 1;
+                blockOfFirstDataRecord = finalMetadataPage.subheaders().size() + 1;
             }
             writeRecordLocation(page, subheaderOffset + 544, pageOfFirstDataRecord, blockOfFirstDataRecord);
         }
@@ -282,7 +282,7 @@ class RowSizeSubheader extends Subheader {
             final int lastRecordIndex;
             if (totalObservationsInDataset == totalObservationsOnMixedPage) {
                 // There are no data pages, so the last data record is the last index on the mixed page.
-                lastRecordIndex = finalMetadataPage.subheaders.size() + totalObservationsOnMixedPage;
+                lastRecordIndex = finalMetadataPage.subheaders().size() + totalObservationsOnMixedPage;
             } else {
                 // The last index on the last page is however many are left over after removing all
                 // the whole pages.

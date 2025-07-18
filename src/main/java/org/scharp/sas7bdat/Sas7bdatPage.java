@@ -2,6 +2,7 @@ package org.scharp.sas7bdat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
@@ -31,7 +32,7 @@ class Sas7bdatPage {
 
     final int pageSize;
     private final long pageSequenceNumber;
-    final List<Subheader> subheaders;
+    private final List<Subheader> subheaders;
     private final List<byte[]> observations;
     private final Sas7bdatVariablesLayout variablesLayout;
 
@@ -63,6 +64,15 @@ class Sas7bdatPage {
 
     private boolean subheadersAreFinalized() {
         return 0 <= maxObservations;
+    }
+
+    /**
+     * Gets an unmodifiable view of this page's subheaders.
+     *
+     * @return An unmodifiable list of this page's subheaders.
+     */
+    List<Subheader> subheaders() {
+        return Collections.unmodifiableList(subheaders);
     }
 
     /**

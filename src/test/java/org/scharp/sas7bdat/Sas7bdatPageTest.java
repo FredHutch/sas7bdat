@@ -8,7 +8,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Unit tests for {@link Sas7bdatPage}. */
@@ -36,15 +39,26 @@ public class Sas7bdatPageTest {
         Subheader subheader1 = new FillerSubheader(60000, (byte) 1);
         Subheader subheader2 = new FillerSubheader(300, (byte) 2);
 
+        // Add subheader #1
         assertTrue(page.addSubheader(subheader1));
+
+        // Confirm all side effects for adding subheader #1
         assertEquals(
             pageSize - 40 - 24 * 3 - subheader1.size(),
             page.totalBytesRemainingForNewSubheader());
+        assertEquals(1, page.subheaders().size());
+        assertSame(subheader1, page.subheaders().get(0));
 
+        // Add subheader #2
         assertTrue(page.addSubheader(subheader2));
+
+        // Confirm all side effects for adding subheader #1
         assertEquals(
             pageSize - 40 - 24 * 4 - subheader1.size() - subheader2.size(),
             page.totalBytesRemainingForNewSubheader());
+        assertEquals(2, page.subheaders().size());
+        assertSame(subheader1, page.subheaders().get(0));
+        assertSame(subheader2, page.subheaders().get(1));
 
         // Try to add a header that can't fit.
         Subheader largeSubheader = new FillerSubheader(page.totalBytesRemainingForNewSubheader() + 1);
@@ -52,6 +66,12 @@ public class Sas7bdatPageTest {
 
         // Finalize
         page.finalizeSubheaders();
+
+        // Confirm all side effects for finalizing the subheader.
+        assertEquals(3, page.subheaders().size());
+        assertSame(subheader1, page.subheaders().get(0));
+        assertSame(subheader2, page.subheaders().get(1));
+        assertInstanceOf(TerminalSubheader.class, page.subheaders().get(2));
 
         // Try to add an observation that can't fit.
         // This shouldn't change the page type into a mixed page.
@@ -256,5 +276,34 @@ public class Sas7bdatPageTest {
 
         // The page sequence should have been incremented.
         assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+    }
+
+    @Test
+    void testSubheaders() {
+        // Create a sas7bdat page
+        final int pageSize = 0x10000;
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
+        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+
+        // The subheaders should be empty.
+        List<Subheader> subheaders = page.subheaders();
+        assertEquals(0, subheaders.size());
+
+        // The return value of page.subheaders() should not be modifiable.
+        Subheader newSubheader = new FillerSubheader(400, (byte) 1);
+        assertThrows(UnsupportedOperationException.class, subheaders::clear);
+        assertThrows(UnsupportedOperationException.class, () -> subheaders.add(newSubheader));
+
+        // The subheaders should not have changed.
+        assertEquals(0, subheaders.size());
+
+        // A subheader can be added by the page.
+        page.addSubheader(newSubheader);
+
+        // The list should now show that subheader.  (That is, it's a view, not a copy).
+        assertEquals(1, subheaders.size());
+        assertEquals(newSubheader, subheaders.get(0));
     }
 }
