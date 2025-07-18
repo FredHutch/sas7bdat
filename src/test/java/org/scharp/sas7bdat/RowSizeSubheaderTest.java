@@ -200,9 +200,9 @@ public class RowSizeSubheaderTest {
             16, 0, // offset of dataset label
             13, 0, // length of dataset type label
 
-            0, 0, // column text subheader index of dataset type name
-            8, 0, // offset of dataset type name
-            8, 0, // length of dataset type name
+            0, 0, // column text subheader index of dataset type
+            8, 0, // offset of dataset type
+            8, 0, // length of dataset type
 
             0, 0, // unknown
             0, 0, // unknown
