@@ -134,4 +134,42 @@ public class Sas7bdatPageTest {
         // The page sequence should have been incremented.
         assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
     }
+
+    @Test
+    void testDataPage() {
+        // Create a sas7bdat page
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(11).build()));
+        final int pageSize = 0x10000;
+        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+
+        assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
+
+        // Finalize subheaders without adding one.
+        page.finalizeSubheaders();
+
+        // Add an observation
+        byte[] observation1 = new byte[] { 'o', 'b', 's', 'e', 'r', 'v', 'a', 't', 'i', 'o', 'n' };
+        assertTrue(page.addObservation(observation1));
+
+        // Write the page.
+        byte[] actualData = new byte[pageSize];
+        page.write(actualData);
+
+        // Confirm that the expected data was written.
+        byte[] expectedData = new byte[pageSize];
+        WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
+        WriteUtil.write4(expectedData, 24, (pageSize - 40 - 11 - 1)); // total bytes free
+        WriteUtil.write2(expectedData, 32, (short) 0x100); // type=DATA
+        WriteUtil.write2(expectedData, 34, (short) 1); // total blocks (0 subheaders + 1 observation)
+        WriteUtil.write2(expectedData, 36, (short) 0); // total subheaders
+
+        WriteUtil.writeUtf8(expectedData, 40, "observation", 11, (byte) 0); // observation #1
+
+        assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
+
+        // The page sequence should have been incremented.
+        assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+    }
 }
