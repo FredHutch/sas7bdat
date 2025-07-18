@@ -68,7 +68,7 @@ class Sas7bdatPage {
     /**
      * Gets the maximum number of observations that can fit on this page.
      *
-     * @return
+     * @return the maximum number of observations that can fit on this page.
      */
     int maxObservations() {
         assert subheadersAreFinalized() : "can't determine the maximum observations until subheaders are finalized";
