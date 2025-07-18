@@ -38,8 +38,7 @@ class Sas7bdatPage {
     private short pageType;
     private int offsetOfNextSubheaderIndexEntry; // also the index of the last observation written.
     private int endOfDataSection;
-    private boolean subheaderFinalized;
-    int maxObservations;
+    private int maxObservations; // also a flag to indicate if subheaders are finalized
 
     Sas7bdatPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
         Sas7bdatVariablesLayout variablesLayout) {
@@ -55,15 +54,29 @@ class Sas7bdatPage {
         pageType = PAGE_TYPE_META;
         offsetOfNextSubheaderIndexEntry = DATA_PAGE_HEADER_SIZE;
         endOfDataSection = pageSize;
-        subheaderFinalized = false;
+        maxObservations = -1;
     }
 
     private static int divideAndRoundUp(int dividend, int divisor) {
         return (dividend + divisor - 1) / divisor;
     }
 
+    private boolean subheadersAreFinalized() {
+        return 0 <= maxObservations;
+    }
+
+    /**
+     * Gets the maximum number of observations that can fit on this page.
+     *
+     * @return
+     */
+    int maxObservations() {
+        assert subheadersAreFinalized() : "can't determine the maximum observations until subheaders are finalized";
+        return maxObservations;
+    }
+
     boolean addSubheader(Subheader subheader) {
-        assert !subheaderFinalized : "cannot add any more subheaders after they have been finalized";
+        assert !subheadersAreFinalized() : "cannot add subheaders after they have been finalized";
         assert !(subheader instanceof TerminalSubheader) : "terminal subheaders should only be added by finalize";
         assert observations.isEmpty() : "adding a subheader after data is written";
 
@@ -88,7 +101,7 @@ class Sas7bdatPage {
     }
 
     void finalizeSubheaders() {
-        assert !subheaderFinalized : "cannot finalize subheaders multiple times";
+        assert !subheadersAreFinalized() : "cannot finalize subheaders multiple times";
 
         // Add a zero-length, deleted subheader to the end of the index, as SAS does, to
         // indicate the end of the index.  I don't know SAS needs this or if it's just something
@@ -102,8 +115,6 @@ class Sas7bdatPage {
             offsetOfNextSubheaderIndexEntry += SUBHEADER_OFFSET_SIZE_64BIT;
         }
 
-        subheaderFinalized = true;
-
         // An observation takes up space equal to its size in bytes, plus one bit.
         // The extra bit is for an "is deleted" flag that is added at the end of the observations.
         final int totalBitsRemaining = 8 * totalBytesRemaining();
@@ -112,7 +123,7 @@ class Sas7bdatPage {
     }
 
     boolean addObservation(byte[] observation) {
-        assert subheaderFinalized : "can't write new observation until subheaders are finalized";
+        assert subheadersAreFinalized() : "can't add an observation until subheaders are finalized";
         assert observation.length == variablesLayout.rowLength();
 
         if (maxObservations <= observations.size()) {

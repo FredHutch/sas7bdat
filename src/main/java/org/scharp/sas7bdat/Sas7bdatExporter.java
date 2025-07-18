@@ -253,8 +253,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
         // This is what SAS does.  I don't know if this is necessary.
         pageLayout.currentMetadataPage.setIsLastMetadataPage();
 
-        final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations;
-        rowSizeSubheader.setTotalPossibleObservationOnMixedPage(pageLayout.currentMetadataPage.maxObservations);
+        final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations();
+        rowSizeSubheader.setTotalPossibleObservationOnMixedPage(pageLayout.currentMetadataPage.maxObservations());
 
         final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size() + 1;
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
