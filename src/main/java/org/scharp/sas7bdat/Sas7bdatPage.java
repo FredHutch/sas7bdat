@@ -119,7 +119,7 @@ class Sas7bdatPage {
 
         // Because we were careful to reserve space for this in addSubheader(), it should exist.
         // This won't add a terminal subheader index if there are no subheaders (that is, this is a data page).
-        assert SUBHEADER_OFFSET_SIZE_64BIT <= totalBytesRemaining() : "not enough space to write truncated subheader at end of section";
+        assert SUBHEADER_OFFSET_SIZE_64BIT <= totalBytesRemaining() : "not enough space to write terminal subheader at end of section";
         if (!subheaders.isEmpty()) {
             subheaders.add(new TerminalSubheader());
             offsetOfNextSubheaderIndexEntry += SUBHEADER_OFFSET_SIZE_64BIT;
@@ -166,8 +166,8 @@ class Sas7bdatPage {
 
     /**
      * Calculates the maximum size of a subheader that can be added to this page, accounting for the space required by
-     * the subheader, the index to the subheader, and space for the "truncated subheader" that is added to the index
-     * when the subheaders are finalized.
+     * the subheader, the index to the subheader, and the "terminal subheader" that is added to the index when the
+     * subheaders are finalized.
      *
      * @return the maximum size of a subheader that can be added.
      */

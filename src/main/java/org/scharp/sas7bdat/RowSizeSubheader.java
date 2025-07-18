@@ -249,7 +249,7 @@ class RowSizeSubheader extends Subheader {
         final Sas7bdatPage finalMetadataPage = pageLayout.currentMetadataPage;
 
         // Unknown, but could be the location of the last Subheader block, in which case
-        // the -1 doesn't include the truncated subheader.
+        // the -1 doesn't include the terminal subheader.
         writeRecordLocation(page, subheaderOffset + 528, totalMetadataPages,
             finalMetadataPage.subheaders().size() - 1);
 
@@ -305,7 +305,7 @@ class RowSizeSubheader extends Subheader {
         // SAS may not be able to process the dataset if this is incorrect.
         //
         // Since ColumnFormatSubheader are always last in the metadata, it is sufficient to count
-        // the number of subheaders that aren't ColumnFormatSubheader (or the truncated subheader)
+        // the number of subheaders that aren't ColumnFormatSubheader (or the terminal subheader)
         // on the first page that has a ColumnFormatSubheader.  All of those subheaders are necessarily
         // before the ColumnFormatSubheader.
         int blockOfFirstColumnFormatSubheader = 1;

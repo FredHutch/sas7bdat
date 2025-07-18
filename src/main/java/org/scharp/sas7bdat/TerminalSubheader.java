@@ -1,7 +1,7 @@
 package org.scharp.sas7bdat;
 
 /**
- * A zero-sized (truncated) subheader that is used to indicate there are no more subheaders on a page.
+ * A zero-sized subheader that is used to indicate there are no more subheaders on a page.
  */
 class TerminalSubheader extends Subheader {
 

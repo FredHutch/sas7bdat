@@ -48,12 +48,12 @@ public final class Sas7bdatExporter implements AutoCloseable {
         void finalizeSubheaders() {
             currentMetadataPage.finalizeSubheaders();
 
-            // finalizeSubheaders() inserts a truncated subheader.  We must therefore update the
-            // allSubheaders list to include this truncated subheader.
-            Subheader truncatedSubheader = currentMetadataPage.subheaders().get(
+            // finalizeSubheaders() inserts a terminal subheader.  We must therefore update the
+            // allSubheaders list to include this terminal subheader.
+            Subheader terminalSubheader = currentMetadataPage.subheaders().get(
                 currentMetadataPage.subheaders().size() - 1);
-            subheaders.add(truncatedSubheader);
-            subheaderLocations.put(truncatedSubheader, completeMetadataPages.size() + 1);
+            subheaders.add(terminalSubheader);
+            subheaderLocations.put(terminalSubheader, completeMetadataPages.size() + 1);
         }
 
         void addSubheader(Subheader subheader) {
