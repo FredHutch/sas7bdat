@@ -251,7 +251,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         // Mark the final metadata page as a "mixed" page, even if it doesn't contain data.
         // This is what SAS does.  I don't know if this is necessary.
-        pageLayout.currentMetadataPage.setIsLastMetadataPage();
+        pageLayout.currentMetadataPage.setIsFinalMetadataPage();
 
         final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations();
         rowSizeSubheader.setTotalPossibleObservationOnMixedPage(pageLayout.currentMetadataPage.maxObservations());

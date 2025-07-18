@@ -204,7 +204,7 @@ public class Sas7bdatPageTest {
      * Tests that a mixed page can be created without any observations.  SAS does this.
      */
     @Test
-    void testSetIsLastMetadataPage() {
+    void testSetIsFinalMetadataPage() {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
@@ -226,7 +226,7 @@ public class Sas7bdatPageTest {
         page.finalizeSubheaders();
 
         // Without adding any observation, mark that this is a mixed page.
-        page.setIsLastMetadataPage();
+        page.setIsFinalMetadataPage();
 
         // Write the page.
         byte[] actualData = new byte[pageSize];

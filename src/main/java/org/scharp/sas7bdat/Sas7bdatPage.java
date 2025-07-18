@@ -144,7 +144,7 @@ class Sas7bdatPage {
         return true;
     }
 
-    void setIsLastMetadataPage() {
+    void setIsFinalMetadataPage() {
         // SAS always marks the final metadata page as a mixed page, even if it has no data.
         pageType = PAGE_TYPE_MIX;
     }
