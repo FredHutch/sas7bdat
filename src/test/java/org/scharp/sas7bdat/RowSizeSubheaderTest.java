@@ -73,7 +73,7 @@ public class RowSizeSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE    ", "dataset label",
             variablesLayout, pageLayout, 0x12456);
 
         pageLayout.columnText.add("TYPE    ");
@@ -274,8 +274,6 @@ public class RowSizeSubheaderTest {
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout,
             pageLayout, 0);
 
-        pageLayout.columnText.add("        "); // must add the dataset type.
-
         final byte[] expectedSubheaderData = new byte[] {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature
 
@@ -384,9 +382,9 @@ public class RowSizeSubheaderTest {
             0, 0, // offset of dataset label
             0, 0, // length of dataset type label
 
-            0, 0, // column text subheader index of dataset type name
-            8, 0, // offset of dataset type name
-            8, 0, // length of dataset type name
+            0, 0, // column text subheader index of dataset type
+            0, 0, // offset of dataset type
+            0, 0, // length of dataset type
 
             0, 0, // unknown
             0, 0, // unknown

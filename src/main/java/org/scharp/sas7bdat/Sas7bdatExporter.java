@@ -134,11 +134,15 @@ public final class Sas7bdatExporter implements AutoCloseable {
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         pageBuffer = new byte[pageLayout.pageSize];
 
+        // SAS always pads the dataset type with spaces so that it's 8 bytes.
+        String paddedDatasetType = metadata.datasetType() + " ".repeat(
+            8 - metadata.datasetType().getBytes(StandardCharsets.UTF_8).length);
+
         // Add the subheaders in the order in which they should be listed in the subheaders index.
         // Note that this is the reverse order in which they appear on a metadata page.
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(
             pageSequenceGenerator,
-            metadata.datasetType(),
+            paddedDatasetType,
             metadata.datasetLabel(),
             variablesLayout,
             pageLayout,
@@ -175,12 +179,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         pageLayout.columnText.add("\0\0\0\0");
 
         pageLayout.columnText.add(" ".repeat(8)); // unknown
-
-        // Add the dataset type, padded with spaces.
-        String paddedDatasetType = metadata.datasetType() +
-            " ".repeat(8 - metadata.datasetType().getBytes(StandardCharsets.UTF_8).length);
-        pageLayout.columnText.add(paddedDatasetType);
-
+        pageLayout.columnText.add(paddedDatasetType); // Add the dataset type, padded with spaces.
         pageLayout.columnText.add("DATASTEP"); // add the PROC step which created the dataset
         pageLayout.columnText.add(metadata.datasetLabel()); // add the dataset label
 

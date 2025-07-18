@@ -2,7 +2,6 @@ package org.scharp.sas7bdat;
 
 import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
@@ -31,6 +30,25 @@ class RowSizeSubheader extends Subheader {
     private int totalMetadataPages;
     private int totalPagesInDataset;
 
+    /**
+     * Creates a Row Size Subheader
+     *
+     * @param pageSequenceGenerator
+     *     The page sequence generator.  This is not incremented; it is used for the initial page sequence.
+     * @param datasetType
+     *     The dataset type.  This string must be added to {@code pageLayout}'s ColumnText before this subheader is
+     *     written.
+     * @param datasetLabel
+     *     The dataset label.  This string must be added to {@code pageLayout}'s ColumnText before this subheader is
+     *     written.
+     * @param variablesLayout
+     *     Information about the variables, including the computed row length.
+     * @param pageLayout
+     *     Information about how the subheaders are laid out on the page.  This must be populated before this subheader
+     *     is written.
+     * @param totalObservationsInDataset
+     *     The total number of observations in the dataset.
+     */
     RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
         Sas7bdatVariablesLayout variablesLayout, Sas7bdatPageLayout pageLayout, int totalObservationsInDataset) {
         this.datasetType = datasetType;
@@ -323,10 +341,7 @@ class RowSizeSubheader extends Subheader {
         pageLayout.columnText.writeTextLocation(page, subheaderOffset + 678, datasetLabel);
 
         // The reference to the dataset type string in the column text.
-        // We pad with spaces to match what ColumnText does.
-        String paddedDatasetType = datasetType +
-            " ".repeat(8 - datasetType.getBytes(StandardCharsets.UTF_8).length);
-        pageLayout.columnText.writeTextLocation(page, subheaderOffset + 684, paddedDatasetType);
+        pageLayout.columnText.writeTextLocation(page, subheaderOffset + 684, datasetType);
 
         // Unknown
         write2(page, subheaderOffset + 690, (short) 0x00);
