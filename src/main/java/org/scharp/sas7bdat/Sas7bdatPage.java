@@ -19,26 +19,26 @@ class Sas7bdatPage {
 
     private static final int DATA_PAGE_HEADER_SIZE = 40;
 
-    static final short PAGE_TYPE_META = 0x0000;
-    static final short PAGE_TYPE_DATA = 0x0100;
-    static final short PAGE_TYPE_MIX = 0x0200;
-    static final short PAGE_TYPE_AMD = 0x0400;
-    static final short PAGE_TYPE_MASK = 0x0F00;
-    static final short PAGE_TYPE_META2 = 0x4000;
+    private static final short PAGE_TYPE_META = 0x0000;
+    private static final short PAGE_TYPE_DATA = 0x0100;
+    private static final short PAGE_TYPE_MIX = 0x0200;
+    private static final short PAGE_TYPE_AMD = 0x0400;
+    private static final short PAGE_TYPE_MASK = 0x0F00;
+    private static final short PAGE_TYPE_META2 = 0x4000;
 
     // For 64-bit, these are each 24 bytes long.
-    static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
+    private static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
 
     final int pageSize;
-    final long pageSequenceNumber;
+    private final long pageSequenceNumber;
     final List<Subheader> subheaders;
-    final List<byte[]> observations;
-    final Sas7bdatVariablesLayout variablesLayout;
+    private final List<byte[]> observations;
+    private final Sas7bdatVariablesLayout variablesLayout;
 
-    short pageType;
-    int offsetOfNextSubheaderIndexEntry; // also the index of the last observation written.
-    int endOfDataSection;
-    boolean subheaderFinalized;
+    private short pageType;
+    private int offsetOfNextSubheaderIndexEntry; // also the index of the last observation written.
+    private int endOfDataSection;
+    private boolean subheaderFinalized;
     int maxObservations;
 
     Sas7bdatPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
