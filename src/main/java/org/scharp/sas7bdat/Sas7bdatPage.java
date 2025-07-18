@@ -23,9 +23,6 @@ class Sas7bdatPage {
     private static final short PAGE_TYPE_META = 0x0000;
     private static final short PAGE_TYPE_DATA = 0x0100;
     private static final short PAGE_TYPE_MIX = 0x0200;
-    private static final short PAGE_TYPE_AMD = 0x0400;
-    private static final short PAGE_TYPE_MASK = 0x0F00;
-    private static final short PAGE_TYPE_META2 = 0x4000;
 
     // For 64-bit, these are each 24 bytes long.
     private static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
