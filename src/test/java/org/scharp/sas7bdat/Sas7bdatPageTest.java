@@ -199,4 +199,62 @@ public class Sas7bdatPageTest {
         // The page sequence should have been incremented.
         assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
     }
+
+    /**
+     * Tests that a mixed page can be created without any observations.  SAS does this.
+     */
+    @Test
+    void testSetIsLastMetadataPage() {
+        // Create a sas7bdat page
+        final int pageSize = 0x10000;
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
+        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+
+        assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
+
+        // Add a subheader
+        Subheader subheader = new FillerSubheader(400, (byte) 1);
+
+        assertTrue(page.addSubheader(subheader));
+        assertEquals(
+            pageSize - 40 - 24 * 3 - subheader.size(),
+            page.totalBytesRemainingForNewSubheader());
+
+        // Finalize
+        page.finalizeSubheaders();
+
+        // Without adding any observation, mark that this is a mixed page.
+        page.setIsLastMetadataPage();
+
+        // Write the page.
+        byte[] actualData = new byte[pageSize];
+        page.write(actualData);
+
+        // Confirm that the expected data was written.
+        byte[] expectedData = new byte[pageSize];
+        WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
+        WriteUtil.write4(expectedData, 24, (pageSize - 40 - 24 * 2 - subheader.size())); // total bytes free
+        WriteUtil.write2(expectedData, 32, (short) 0x200); // type=MIXED
+        WriteUtil.write2(expectedData, 34, (short) 2); // total blocks (2 subheaders + 0 observations)
+        WriteUtil.write2(expectedData, 36, (short) 2); // total subheaders
+
+        WriteUtil.write8(expectedData, 40, pageSize - subheader.size()); // subheader #1 location
+        WriteUtil.write8(expectedData, 48, subheader.size()); // subheader #1 size
+        WriteUtil.write2(expectedData, 50, subheader.compressionCode()); // subheader #1 compression
+        WriteUtil.write2(expectedData, 52, subheader.typeCode()); // subheader #1 type
+
+        WriteUtil.write8(expectedData, 64, pageSize - subheader.size()); // subheader #2 location
+        WriteUtil.write8(expectedData, 72, 0); // subheader #2 size
+        WriteUtil.write2(expectedData, 80, Subheader.COMPRESSION_TRUNCATED); // subheader #2 compression
+        WriteUtil.write2(expectedData, 82, Subheader.SUBHEADER_TYPE_A); // subheader #2 type
+
+        Arrays.fill(expectedData, pageSize - 400, pageSize, (byte) 1); // subheader #1
+
+        assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
+
+        // The page sequence should have been incremented.
+        assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+    }
 }
