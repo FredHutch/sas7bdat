@@ -1,0 +1,60 @@
+package org.scharp.sas7bdat;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+/** Unit tests for {@link Sas7bdatPageLayout}. */
+public class Sas7bdatPageLayoutTest {
+
+    @Test
+    void smokeTest() {
+        // Create a Sas7bdatPageLayout
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+
+        assertEquals(0x10000, pageLayout.pageSize);
+
+        // Add a large subheader
+        Subheader subheader1 = new FillerSubheader(Short.MAX_VALUE);
+        pageLayout.addSubheader(subheader1);
+
+        // Add a subheader that it too large to fit into the remaining space on the first page.
+        Subheader subheader2 = new FillerSubheader(Short.MAX_VALUE);
+        pageLayout.addSubheader(subheader2);
+
+        // Add a subheader that can fit onto the second page.
+        Subheader subheader3 = new FillerSubheader(40);
+        pageLayout.addSubheader(subheader3);
+
+        // Add a subheader that is too large to it on the second page.
+        Subheader subheader4 = new FillerSubheader(Short.MAX_VALUE);
+        pageLayout.addSubheader(subheader4);
+
+        pageLayout.finalizeSubheadersOnCurrentMetadataPage();
+
+        // Confirm that the subheaders were added.
+        assertThat(pageLayout.subheaders, Matchers.hasSize(7));
+        assertSame(subheader1, pageLayout.subheaders.get(0));
+        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(1));
+        assertSame(subheader2, pageLayout.subheaders.get(2));
+        assertSame(subheader3, pageLayout.subheaders.get(3));
+        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(4));
+        assertSame(subheader4, pageLayout.subheaders.get(5));
+        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(6));
+
+        // Confirm that the subheaders were added to the expected pages.
+        assertEquals(1, pageLayout.subheaderLocations.get(subheader1));
+        assertEquals(2, pageLayout.subheaderLocations.get(subheader2));
+        assertEquals(2, pageLayout.subheaderLocations.get(subheader3));
+        assertEquals(3, pageLayout.subheaderLocations.get(subheader4));
+    }
+}

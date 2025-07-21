@@ -1,7 +1,5 @@
 package org.scharp.sas7bdat;
 
-import org.scharp.sas7bdat.Sas7bdatExporter.Sas7bdatPageLayout;
-
 import java.util.Collection;
 
 import static org.scharp.sas7bdat.WriteUtil.write8;
