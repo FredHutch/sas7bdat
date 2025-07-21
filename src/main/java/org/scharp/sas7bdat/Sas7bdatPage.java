@@ -236,7 +236,13 @@ class Sas7bdatPage {
         // The extra bit is for an "is deleted" flag that is added at the end of the observations.
         final int totalBitsRemaining = 8 * (pageSize - DATA_PAGE_HEADER_SIZE);
         final int totalBitsPerObservation = 8 * variablesLayout.rowLength() + 1;
-        return totalBitsRemaining / totalBitsPerObservation;
+        int maxObservationsPerDataPage = totalBitsRemaining / totalBitsPerObservation;
+
+        // sanity-check the calculation
+        assert 0 <= maxObservationsPerDataPage : "maxObservationsPerDataPage is negative: " + maxObservationsPerDataPage;
+        assert maxObservationsPerDataPage < 0x10000 : "maxObservationsPerDataPage is too large: " + maxObservationsPerDataPage;
+
+        return maxObservationsPerDataPage;
     }
 
     static int calculatePageSize(Sas7bdatVariablesLayout variablesLayout) {

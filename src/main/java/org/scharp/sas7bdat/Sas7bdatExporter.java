@@ -183,12 +183,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
         final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
-        // Calculate how many observations fit on a data page.
-        final int observationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
-            pageLayout.pageSize,
-            variablesLayout);
-        rowSizeSubheader.setMaxObservationsPerDataPage(observationsPerDataPage);
-
         // Calculate how many pages will be needed in the dataset.
         {
             final int maxObservationsOnMixedPage = mixedPage.maxObservations();
@@ -198,8 +192,12 @@ public final class Sas7bdatExporter implements AutoCloseable {
                 totalNumberOfDataPages = 0;
             } else {
                 int observationsOnAllDataPages = totalObservationsInDataset - maxObservationsOnMixedPage;
+                final int maxObservationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
+                    pageLayout.pageSize,
+                    variablesLayout);
+
                 // observationsOnAllDataPages / observationsPerDataPage rounded up
-                totalNumberOfDataPages = divideAndRoundUp(observationsOnAllDataPages, observationsPerDataPage);
+                totalNumberOfDataPages = divideAndRoundUp(observationsOnAllDataPages, maxObservationsPerDataPage);
             }
             totalPagesInDataset = totalNumberOfMetadataPages + totalNumberOfDataPages;
         }

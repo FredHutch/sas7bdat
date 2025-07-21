@@ -349,7 +349,6 @@ public class Sas7bdatPageTest {
         assertEquals(654, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout100));
         assertEquals(65, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout1000));
 
-        assertEquals(116472, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout1));
         assertEquals(1308, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout100));
         assertEquals(131, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout1000));
     }

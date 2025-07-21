@@ -20,7 +20,8 @@ class RowSizeSubheader extends Subheader {
     private final int maxVariableNameLength;
     private final int maxVariableLabelLength;
 
-    private int maxObservationsPerDataPage;
+    private final int maxObservationsPerDataPage;
+
     private int totalMetadataPages;
     private int totalPagesInDataset;
 
@@ -70,18 +71,14 @@ class RowSizeSubheader extends Subheader {
         this.totalVariableNameLength = totalVariableNameLength;
         this.maxVariableNameLength = maxVariableNameLength;
         this.maxVariableLabelLength = maxVariableLabelLength;
+        this.maxObservationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
+            pageLayout.pageSize,
+            variablesLayout);
     }
 
     private void writeRecordLocation(byte[] page, int offset, long pageIndex, long recordIndex) {
         write8(page, offset, pageIndex);
         write8(page, offset + 8, recordIndex);
-    }
-
-    void setMaxObservationsPerDataPage(int maxObservationsPerDataPage) {
-        assert 0 <= maxObservationsPerDataPage : "maxObservationsPerDataPage is negative: " + maxObservationsPerDataPage;
-        assert maxObservationsPerDataPage < 0x10000 : "maxObservationsPerDataPage is too large: " + maxObservationsPerDataPage;
-
-        this.maxObservationsPerDataPage = maxObservationsPerDataPage;
     }
 
     void setTotalMetadataPages(int totalMetadataPages) {

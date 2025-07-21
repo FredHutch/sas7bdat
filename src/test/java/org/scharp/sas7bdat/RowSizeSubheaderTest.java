@@ -16,7 +16,8 @@ public class RowSizeSubheaderTest {
     void testTypeCode() {
         // Create a RowSizeSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
@@ -28,7 +29,8 @@ public class RowSizeSubheaderTest {
     void testCompressionCode() {
         // Create a RowSizeSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
@@ -87,7 +89,6 @@ public class RowSizeSubheaderTest {
         pageLayout.finalizeMetadata();
 
         // Set some values that appear in the row size subheader.
-        rowSizeSubheader.setMaxObservationsPerDataPage(121);
         rowSizeSubheader.setTotalMetadataPages(122);
         rowSizeSubheader.setTotalPagesInDataset(123);
 
@@ -175,7 +176,7 @@ public class RowSizeSubheaderTest {
             4, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
 
             123, 0, 0, 0, 0, 0, 0, 0, // page of last observation
-            8, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
+            19, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
@@ -231,7 +232,7 @@ public class RowSizeSubheaderTest {
             0, 0, 0, 0, 0, 0, // unknown/padding
 
             0, 0, 0, 0, 0, 0, // unknown
-            121, 0, // max observations per data page
+            -82, 0, // max observations per data page
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             86, 36, 1, 0, 0, 0, 0, 0, // observations in dataset
@@ -416,7 +417,7 @@ public class RowSizeSubheaderTest {
             0, 0, 0, 0, 0, 0, // unknown/padding
 
             0, 0, 0, 0, 0, 0, // unknown
-            0, 0, // max observations per data page
+            125, 31, // max observations per data page
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // observations in dataset
