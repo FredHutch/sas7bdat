@@ -75,16 +75,22 @@ class SubheaderCountsSubheader extends Subheader {
         // This may be a performance hint for how large a buffer to allocate when reading
         // the data.  However, setting this to small or negative value doesn't prevent SAS
         // from reading the dataset, so its value may be ignored.
-        int maxSubheaderPayloadSize = 0;
-        for (Subheader subheader : pageLayout.subheaders) {
-            if (subheader instanceof ColumnTextSubheader columnTextSubheader) {
-                maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnTextSubheader.sizeOfData());
+        var maximumPayloadSizeCalculator = new Sas7bdatPageLayout.NextSubheader() {
+            int maxSubheaderPayloadSize = 0;
 
-            } else if (subheader instanceof ColumnAttributesSubheader columnAttributesSubheader) {
-                maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnAttributesSubheader.sizeOfData());
+            @Override
+            public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
+
+                if (subheader instanceof ColumnTextSubheader columnTextSubheader) {
+                    maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnTextSubheader.sizeOfData());
+
+                } else if (subheader instanceof ColumnAttributesSubheader columnAttributesSubheader) {
+                    maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnAttributesSubheader.sizeOfData());
+                }
             }
-        }
-        write8(page, subheaderOffset + 8, maxSubheaderPayloadSize);
+        };
+        pageLayout.forEachSubheader(maximumPayloadSizeCalculator);
+        write8(page, subheaderOffset + 8, maximumPayloadSizeCalculator.maxSubheaderPayloadSize);
 
         final int magicNumber = variables.size() == 1 ? 3 : 4;
         //final int magicNumber = variables.size() - 1;
