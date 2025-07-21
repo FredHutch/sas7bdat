@@ -109,17 +109,17 @@ public class ColumnTextTest {
 
         // The first ColumnTextSubheader should be in the metadata.
         assertEquals(List.of(), pageLayout.completeMetadataPages);
-        assertEquals(1, pageLayout.subheaders.size());
-        assertInstanceOf(ColumnTextSubheader.class, pageLayout.subheaders.get(0));
+        assertEquals(1, pageLayout.currentMetadataPage.subheaders().size());
+        assertInstanceOf(ColumnTextSubheader.class, pageLayout.currentMetadataPage.subheaders().get(0));
 
         // Declare that there's no more text.
         columnText.noMoreText();
 
         // Confirm that the half-written ColumnTextSubheader has been "flushed".
         assertEquals(List.of(), pageLayout.completeMetadataPages);
-        assertEquals(2, pageLayout.subheaders.size());
-        assertInstanceOf(ColumnTextSubheader.class, pageLayout.subheaders.get(0));
-        assertInstanceOf(ColumnTextSubheader.class, pageLayout.subheaders.get(1));
+        assertEquals(2, pageLayout.currentMetadataPage.subheaders().size());
+        assertInstanceOf(ColumnTextSubheader.class, pageLayout.currentMetadataPage.subheaders().get(0));
+        assertInstanceOf(ColumnTextSubheader.class, pageLayout.currentMetadataPage.subheaders().get(1));
     }
 
     /**
@@ -138,12 +138,12 @@ public class ColumnTextTest {
         // the first page is created.
         // Keep adding UUIDs (small strings) until the first page is full.
         int totalNumberUuidsAdded = 0;
-        while (pageLayout.subheaders.isEmpty()) {
+        while (pageLayout.currentMetadataPage.subheaders().isEmpty()) {
             columnText.add(UUID.randomUUID().toString());
             totalNumberUuidsAdded++;
         }
 
-        // The last UUID added was added to a new ColumnTextSubheader, so subtract 1.
+        // The last UUID was added to a new ColumnTextSubheader, so subtract 1.
         return totalNumberUuidsAdded - 1;
     }
 
@@ -153,7 +153,7 @@ public class ColumnTextTest {
         // there is enough space on the page for a ColumnTextSubheader but not for a ColumnTextSubheader
         // that contains the string that is being added.
         //
-        // Therefore, we want a ColumnTextSubheader to be filled.
+        // Therefore, we want a ColumnTextSubheader to be filled before adding the string.
 
         // Create a ColumnText
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
@@ -162,7 +162,7 @@ public class ColumnTextTest {
 
         // Add a subheader to the page such that, when ColumnText adds the first subheader
         // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next
-        // subheader.
+        // subheader.  This is enough space for a ColumnTextSubheader but not one that contains a long string.
         int totalBytesRemaining = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
         pageLayout.addSubheader(new FillerSubheader(totalBytesRemaining - ColumnTextSubheader.MAX_SIZE - 100));
 
@@ -172,25 +172,51 @@ public class ColumnTextTest {
         for (int i = 0; i < uuidsToAdd; i++) {
             columnText.add(UUID.randomUUID().toString());
         }
-
-        assertEquals(1, pageLayout.subheaders.size(), "TEST BUG: overflowed first ColumnTextSubheader");
+        assertEquals(1, pageLayout.currentMetadataPage.subheaders().size(),
+            "TEST BUG: overflowed first ColumnTextSubheader");
 
         // Add a long string.  Even though an empty ColumnTextSubheader can still
         // fit on the page, a ColumnTextSubheader with this string can't.
         String lastStringAdded = "a".repeat(255);
         columnText.add(lastStringAdded);
 
-        assertEquals(2, pageLayout.subheaders.size(), "TEST BUG: lastAddedString didn't overflow ColumnTextSubheader");
+        assertEquals(2, pageLayout.currentMetadataPage.subheaders().size(),
+            "TEST BUG: lastAddedString didn't overflow ColumnTextSubheader");
 
         // Flush the subheader.
         columnText.noMoreText();
-        assertEquals(4, pageLayout.subheaders.size());
-        assertInstanceOf(FillerSubheader.class, pageLayout.subheaders.get(0));
-        assertInstanceOf(ColumnTextSubheader.class, pageLayout.subheaders.get(1)); // filled with UUIDs
-        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(2));
-        assertInstanceOf(ColumnTextSubheader.class, pageLayout.subheaders.get(3)); // with only lastStringAdded
 
-        // If everything is as expected, the new string should be the first string in the second ColumnTextSubheader.
+        // The first page should be complete, and it should hold the first ColumnTextSubheader.
+        int[] finalInvocationIndex = { 0 };
+        pageLayout.forEachSubheader((Subheader subheader, short pageIndex, short subheaderPosition) -> {
+            switch (finalInvocationIndex[0]) {
+            case 0:
+                assertInstanceOf(FillerSubheader.class, subheader);
+                assertEquals(1, pageIndex);
+                assertEquals(1, subheaderPosition);
+                break;
+
+            case 1: // filled with UUIDs
+                assertInstanceOf(ColumnTextSubheader.class, subheader);
+                assertEquals(1, pageIndex);
+                assertEquals(2, subheaderPosition);
+                break;
+
+            case 2:
+                assertInstanceOf(TerminalSubheader.class, subheader);
+                assertEquals(1, pageIndex);
+                assertEquals(3, subheaderPosition);
+                break;
+            }
+
+            finalInvocationIndex[0]++;
+        });
+
+        // The ColumnTextSubheader with only lastStringAdded is on its own page.
+        assertEquals(1, pageLayout.currentMetadataPage.subheaders().size());
+        assertInstanceOf(ColumnTextSubheader.class, pageLayout.currentMetadataPage.subheaders().get(0));
+
+        // If everything is as expected, lastStringAdded should be the first string in the second ColumnTextSubheader.
         final byte[] expectedStringLocation = {
             1, 0, // page index
             8, 0, // offset in ColumnTextSubheader

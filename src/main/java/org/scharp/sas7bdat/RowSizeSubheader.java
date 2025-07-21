@@ -99,31 +99,37 @@ class RowSizeSubheader extends Subheader {
 
     @Override
     void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_ROW_SIZE); // signature
 
-        write8(page, subheaderOffset + 8, 0xF0); // unknown
-        write8(page, subheaderOffset + 16, pageLayout.subheaders.size() + 2); // unknown
-        write8(page, subheaderOffset + 24, 0x00); // unknown
-        write8(page, subheaderOffset + 32, 0x223011); // unknown
+        var subheaderInformation = new Sas7bdatPageLayout.NextSubheader() {
 
-        write8(page, subheaderOffset + 40, rowSizeInBytes); // row length in bytes
-        write8(page, subheaderOffset + 48, totalObservationsInDataset); // (deleted and not)
-        write8(page, subheaderOffset + 56, 0); // number of deleted observations
-        write8(page, subheaderOffset + 64, 0); // unknown
+            int totalSubheaders = 0;
 
-        // Calculate the number of ColumnFormatSubheaders on the first metadata page
-        // that has them and the number of ColumnFormatSubheaders on the final metadata
-        // page that has them.
-        // SAS can't process datasets if this is incorrect.
-        var columnFormatSubheaderLocator = new Sas7bdatPageLayout.NextSubheader() {
+            // The next value at offset 88 is unknown, but setting it incorrectly can cause SAS to crash.
+            //
+            // This seems to be
+            // 1) the size of the "payload" of all ColumnListSubheaders (subheader size - 28)
+            // 2) the value at offset 16 of the first ColumnListSubheader when there is only one
+            // 3) 22 + 2 * the total columns (offset 26) the first ColumnListSubheader
+            //
+            // Calculate it with method 1.
+            int offset88 = 0;
+
+            // Calculate the number of ColumnFormatSubheaders on the first metadata page
+            // that has them and the number of ColumnFormatSubheaders on the final metadata
+            // page that has them.
+            // SAS can't process datasets if this is incorrect.
             int firstPageWithColumnFormatSubheader = 0; // impossible value
             int totalColumnFormatSubheadersOnFirstPage = 0;
             int secondPageWithColumnFormatSubheader = 0; // impossible value
             int totalColumnFormatSubheadersOnSecondPage = 0;
             int blockOfFirstColumnFormatSubheader = 0; // impossible value
 
+            int totalColumnTextSubheaders = 0;
+
             @Override
             public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
+                totalSubheaders++;
+
                 if (subheader instanceof ColumnFormatSubheader) {
                     if (firstPageWithColumnFormatSubheader == 0) {
                         // This is the first ColumnFormatSubheader in the metadata.
@@ -144,31 +150,34 @@ class RowSizeSubheader extends Subheader {
                         // This is on the second page of metadata with ColumnFormatSubheaders
                         totalColumnFormatSubheadersOnSecondPage++;
                     }
+
+                } else if (subheader instanceof ColumnListSubheader) {
+                    // Add to the size of the "payload" of all ColumnListSubheaders (subheader size - 28)
+                    offset88 += subheader.size() - 28;
+
+                } else if (subheader instanceof ColumnTextSubheader) {
+                    totalColumnTextSubheaders++;
                 }
             }
         };
-        pageLayout.forEachSubheader(columnFormatSubheaderLocator);
+        pageLayout.forEachSubheader(subheaderInformation);
+
+        write8(page, subheaderOffset, SIGNATURE_ROW_SIZE); // signature
+
+        write8(page, subheaderOffset + 8, 0xF0); // unknown
+        write8(page, subheaderOffset + 16, subheaderInformation.totalSubheaders + 2); // unknown
+        write8(page, subheaderOffset + 24, 0x00); // unknown
+        write8(page, subheaderOffset + 32, 0x223011); // unknown
+
+        write8(page, subheaderOffset + 40, rowSizeInBytes); // row length in bytes
+        write8(page, subheaderOffset + 48, totalObservationsInDataset); // (deleted and not)
+        write8(page, subheaderOffset + 56, 0); // number of deleted observations
+        write8(page, subheaderOffset + 64, 0); // unknown
 
         // The number of ColumnFormatSubheaders on the first and second page.
-        write8(page, subheaderOffset + 72, columnFormatSubheaderLocator.totalColumnFormatSubheadersOnFirstPage);
-        write8(page, subheaderOffset + 80, columnFormatSubheaderLocator.totalColumnFormatSubheadersOnSecondPage);
-
-        // The next value is unknown, but setting it incorrectly can cause SAS to crash.
-        //
-        // This seems to be
-        // 1) the size of the "payload" of all ColumnListSubheaders (subheader size - 28)
-        // 2) the value at offset 16 of the first ColumnListSubheader when there is only one
-        // 3) 22 + 2 * the total columns (offset 26) the first ColumnListSubheader
-        //
-        // Calculate it with method 1.
-        int unknownNumber = 0;
-        for (final Subheader subheader : pageLayout.subheaders) {
-            if (subheader instanceof ColumnListSubheader) {
-                unknownNumber += subheader.size() - 28;
-            }
-        }
-        write8(page, subheaderOffset + 88, unknownNumber);
-
+        write8(page, subheaderOffset + 72, subheaderInformation.totalColumnFormatSubheadersOnFirstPage);
+        write8(page, subheaderOffset + 80, subheaderInformation.totalColumnFormatSubheadersOnSecondPage);
+        write8(page, subheaderOffset + 88, subheaderInformation.offset88);
         write8(page, subheaderOffset + 96, totalVariableNameLength);
 
         write8(page, subheaderOffset + 104, page.length); // page size
@@ -295,8 +304,8 @@ class RowSizeSubheader extends Subheader {
         writeRecordLocation(
             page,
             subheaderOffset + 576,
-            columnFormatSubheaderLocator.firstPageWithColumnFormatSubheader,
-            columnFormatSubheaderLocator.blockOfFirstColumnFormatSubheader);
+            subheaderInformation.firstPageWithColumnFormatSubheader,
+            subheaderInformation.blockOfFirstColumnFormatSubheader);
 
         write8(page, subheaderOffset + 592, 0); // unknown
         write8(page, subheaderOffset + 600, 0); // unknown
@@ -349,13 +358,7 @@ class RowSizeSubheader extends Subheader {
 
         // The value at 748 can cause SAS to crash if it's too small.
         // This makes me think it's an offset or count.
-        int totalColumnTextSubheaders = 0;
-        for (Subheader subheader : pageLayout.subheaders) {
-            if (subheader instanceof ColumnTextSubheader) {
-                totalColumnTextSubheaders++;
-            }
-        }
-        write2(page, subheaderOffset + 748, (short) totalColumnTextSubheaders);
+        write2(page, subheaderOffset + 748, (short) subheaderInformation.totalColumnTextSubheaders);
 
         write2(page, subheaderOffset + 750, (short) maxVariableNameLength);
 

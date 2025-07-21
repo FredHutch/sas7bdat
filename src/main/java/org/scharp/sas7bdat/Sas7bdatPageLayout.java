@@ -21,7 +21,6 @@ class Sas7bdatPageLayout {
     final int pageSize;
     private final Sas7bdatVariablesLayout variablesLayout;
     final ColumnText columnText;
-    final List<Subheader> subheaders;
     final List<Sas7bdatPage> completeMetadataPages;
 
     Sas7bdatPage currentMetadataPage;
@@ -32,19 +31,12 @@ class Sas7bdatPageLayout {
         this.variablesLayout = variablesLayout;
         this.columnText = new ColumnText(this);
 
-        subheaders = new ArrayList<>();
         completeMetadataPages = new ArrayList<>();
         currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
     }
 
     private void finalizeSubheadersOnCurrentMetadataPage() {
         currentMetadataPage.finalizeSubheaders();
-
-        // finalizeSubheaders() inserts a terminal subheader.  We must therefore update the
-        // subheaders list to include this terminal subheader.
-        Subheader terminalSubheader = currentMetadataPage.subheaders().get(
-            currentMetadataPage.subheaders().size() - 1);
-        subheaders.add(terminalSubheader);
 
         completeMetadataPages.add(currentMetadataPage);
     }
@@ -63,9 +55,6 @@ class Sas7bdatPageLayout {
             boolean success = currentMetadataPage.addSubheader(subheader);
             assert success : "couldn't add a subheader to a new page";
         }
-
-        // Track which page the subheader was added to.
-        subheaders.add(subheader);
     }
 
     /**

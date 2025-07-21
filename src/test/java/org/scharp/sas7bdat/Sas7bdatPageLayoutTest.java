@@ -1,11 +1,9 @@
 package org.scharp.sas7bdat;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -48,16 +46,6 @@ public class Sas7bdatPageLayoutTest {
         mixedPage.write(mixedPageData);
         assertEquals(0x00, mixedPageData[32], "finalizeMetadata() did not return a mixed page");
         assertEquals(0x02, mixedPageData[33], "finalizeMetadata() did not return a mixed page");
-
-        // Confirm that the subheaders were added.
-        assertThat(pageLayout.subheaders, Matchers.hasSize(7));
-        assertSame(subheader1, pageLayout.subheaders.get(0));
-        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(1));
-        assertSame(subheader2, pageLayout.subheaders.get(2));
-        assertSame(subheader3, pageLayout.subheaders.get(3));
-        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(4));
-        assertSame(subheader4, pageLayout.subheaders.get(5));
-        assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(6));
 
         // Confirm that we can iterate over the subheaders.
         int[] finalInvocationIndex = { 0 };
