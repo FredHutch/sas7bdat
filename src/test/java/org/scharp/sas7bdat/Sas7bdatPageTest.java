@@ -50,6 +50,7 @@ public class Sas7bdatPageTest {
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
+        assertEquals(pageSize - 40, page.totalBytesRemaining());
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Add some subheaders
@@ -60,9 +61,8 @@ public class Sas7bdatPageTest {
         assertTrue(page.addSubheader(subheader1));
 
         // Confirm all side effects for adding subheader #1
-        assertEquals(
-            pageSize - 40 - 24 * 3 - subheader1.size(),
-            page.totalBytesRemainingForNewSubheader());
+        assertEquals(pageSize - 40 - 24 * 1 - subheader1.size(), page.totalBytesRemaining());
+        assertEquals(pageSize - 40 - 24 * 3 - subheader1.size(), page.totalBytesRemainingForNewSubheader());
         assertEquals(1, page.subheaders().size());
         assertSame(subheader1, page.subheaders().get(0));
 
@@ -70,9 +70,8 @@ public class Sas7bdatPageTest {
         assertTrue(page.addSubheader(subheader2));
 
         // Confirm all side effects for adding subheader #1
-        assertEquals(
-            pageSize - 40 - 24 * 4 - subheader1.size() - subheader2.size(),
-            page.totalBytesRemainingForNewSubheader());
+        assertEquals(pageSize - 40 - 24 * 2 - subheader1.size() - subheader2.size(), page.totalBytesRemaining());
+        assertEquals(page.totalBytesRemaining() - 24 * 2, page.totalBytesRemainingForNewSubheader());
         assertEquals(2, page.subheaders().size());
         assertSame(subheader1, page.subheaders().get(0));
         assertSame(subheader2, page.subheaders().get(1));
@@ -85,6 +84,7 @@ public class Sas7bdatPageTest {
         page.finalizeSubheaders();
 
         // Confirm all side effects for finalizing the subheader.
+        assertEquals(pageSize - 40 - 24 * 3 - subheader1.size() - subheader2.size(), page.totalBytesRemaining());
         assertEquals(3, page.subheaders().size());
         assertSame(subheader1, page.subheaders().get(0));
         assertSame(subheader2, page.subheaders().get(1));
@@ -148,22 +148,27 @@ public class Sas7bdatPageTest {
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
+        assertEquals(pageSize - 40, page.totalBytesRemaining());
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Add a subheader
         Subheader subheader = new FillerSubheader(1000, (byte) 1);
         assertTrue(page.addSubheader(subheader));
+        assertEquals(pageSize - 40 - 24 * 1 - subheader.size(), page.totalBytesRemaining());
         assertEquals(pageSize - 40 - 24 * 3 - subheader.size(), page.totalBytesRemainingForNewSubheader());
 
         // Finalize
         page.finalizeSubheaders();
+        assertEquals(pageSize - 40 - 24 * 2 - subheader.size(), page.totalBytesRemaining());
 
         // Add some observations
         byte[] observation1 = new byte[] { 'a', 'b', 'c', 'd' };
         assertTrue(page.addObservation(observation1));
+        assertEquals(pageSize - 40 - 24 * 2 - subheader.size() - 4, page.totalBytesRemaining());
 
         byte[] observation2 = new byte[] { '1', '2', '3', '4' };
         assertTrue(page.addObservation(observation2));
+        assertEquals(pageSize - 40 - 24 * 2 - subheader.size() - 8, page.totalBytesRemaining());
 
         // Write the page.
         byte[] actualData = new byte[pageSize];
@@ -210,6 +215,7 @@ public class Sas7bdatPageTest {
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
+        assertEquals(pageSize - 40, page.totalBytesRemaining());
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Try to add a header that can't fit.  This shouldn't change the page into a mixed page.
@@ -218,10 +224,12 @@ public class Sas7bdatPageTest {
 
         // Finalize subheaders without adding one.
         page.finalizeSubheaders();
+        assertEquals(pageSize - 40, page.totalBytesRemaining());
 
         // Add an observation
         byte[] observation1 = new byte[] { 'o', 'b', 's', 'e', 'r', 'v', 'a', 't', 'i', 'o', 'n' };
         assertTrue(page.addObservation(observation1));
+        assertEquals(pageSize - 40 - observation1.length, page.totalBytesRemaining());
 
         // Write the page.
         byte[] actualData = new byte[pageSize];
