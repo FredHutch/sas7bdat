@@ -33,6 +33,7 @@ public class Sas7bdatPageTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
+        assertEquals(pageSize, page.pageSize());
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Add some subheaders
@@ -117,6 +118,9 @@ public class Sas7bdatPageTest {
 
         // The page sequence should have been incremented.
         assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+
+        // The page size should not have changed.
+        assertEquals(pageSize, page.pageSize());
     }
 
     @Test
@@ -128,6 +132,7 @@ public class Sas7bdatPageTest {
         final int pageSize = 0x10000;
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
+        assertEquals(pageSize, page.pageSize());
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Add a subheader
@@ -176,6 +181,9 @@ public class Sas7bdatPageTest {
 
         // The page sequence should have been incremented.
         assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+
+        // The page size should not have changed.
+        assertEquals(pageSize, page.pageSize());
     }
 
     @Test
@@ -187,6 +195,7 @@ public class Sas7bdatPageTest {
         final int pageSize = 0x10000;
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
+        assertEquals(pageSize, page.pageSize());
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
         // Try to add a header that can't fit.  This shouldn't change the page into a mixed page.
@@ -218,6 +227,9 @@ public class Sas7bdatPageTest {
 
         // The page sequence should have been incremented.
         assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+
+        // The page size should not have changed.
+        assertEquals(pageSize, page.pageSize());
     }
 
     /**

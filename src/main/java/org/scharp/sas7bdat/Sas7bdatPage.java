@@ -27,7 +27,7 @@ class Sas7bdatPage {
     // For 64-bit, these are each 24 bytes long.
     private static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
 
-    final int pageSize;
+    private final int pageSize;
     private final long pageSequenceNumber;
     private final List<Subheader> subheaders;
     private final List<byte[]> observations;
@@ -61,6 +61,15 @@ class Sas7bdatPage {
 
     private boolean subheadersAreFinalized() {
         return 0 <= maxObservations;
+    }
+
+    /**
+     * Gets the size of this page.  This was given in the constructor.
+     *
+     * @return The size of this page in bytes.
+     */
+    int pageSize() {
+        return pageSize;
     }
 
     /**

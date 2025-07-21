@@ -352,7 +352,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
             // Start a new data page.
             totalPagesAllocated++;
-            currentPage = new Sas7bdatPage(pageSequenceGenerator, currentPage.pageSize, variablesLayout);
+            currentPage = new Sas7bdatPage(pageSequenceGenerator, currentPage.pageSize(), variablesLayout);
             currentPage.finalizeSubheaders(); // a data page has no subheaders
 
             // Write the observation to the new page.
