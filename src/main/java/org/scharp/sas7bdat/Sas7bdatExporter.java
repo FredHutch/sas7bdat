@@ -45,7 +45,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
             currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
         }
 
-        void finalizeSubheaders() {
+        void finalizeSubheadersOnCurrentMetadataPage() {
             currentMetadataPage.finalizeSubheaders();
 
             // finalizeSubheaders() inserts a terminal subheader.  We must therefore update the
@@ -61,7 +61,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
                 // There's not enough space on this metadata page for this subheader.
 
                 // Finalize the subheaders on the current page.
-                finalizeSubheaders();
+                finalizeSubheadersOnCurrentMetadataPage();
 
                 // Create a new page.
                 completeMetadataPages.add(currentMetadataPage);
@@ -244,7 +244,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
 
         // Finalize the subheaders on the final metadata page.
-        pageLayout.finalizeSubheaders();
+        pageLayout.finalizeSubheadersOnCurrentMetadataPage();
 
         // Mark the final metadata page as a "mixed" page, even if it doesn't contain data.
         // This is what SAS does.  I don't know if this is necessary.
