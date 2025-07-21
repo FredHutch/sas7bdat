@@ -230,8 +230,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
             offset += nextSubheader.totalVariablesInSubheader();
         }
 
+        // Add the column list subheaders.  SAS only adds them if there's more than one variable.
         if (1 < variablesLayout.totalVariables()) {
-            // TODO when is this needed?  when there's more than one variable?
             offset = 0;
             while (offset < variablesLayout.totalVariables()) {
                 ColumnListSubheader nextSubheader = new ColumnListSubheader(variablesLayout, offset);
@@ -239,6 +239,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
                 offset += nextSubheader.totalVariablesInSubheader();
             }
         }
+
+        // Add the column format subheaders.
         for (Variable variable : metadata.variables()) {
             pageLayout.addSubheader(new ColumnFormatSubheader(variable, pageLayout.columnText));
         }
