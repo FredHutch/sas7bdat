@@ -53,7 +53,7 @@ class SubheaderCountsSubheader extends Subheader {
         }
 
         // Write the information to the page.
-        write8(page, offset + 0, signature);
+        write8(page, offset, signature);
         write8(page, offset + 8, subheaderLocator.pageOfFirstAppearance);
         write8(page, offset + 16, subheaderLocator.positionOfFirstAppearance);
         write8(page, offset + 24, subheaderLocator.pageOfLastAppearance);
