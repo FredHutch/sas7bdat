@@ -85,9 +85,9 @@ public class RowSizeSubheaderTest {
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
+        pageLayout.finalizeSubheaders();
 
         // Set some values that appear in the row size subheader.
-        rowSizeSubheader.setTotalPossibleObservationOnMixedPage(120);
         rowSizeSubheader.setMaxObservationsPerDataPage(121);
         rowSizeSubheader.setTotalMetadataPages(122);
         rowSizeSubheader.setTotalPagesInDataset(123);
@@ -96,7 +96,7 @@ public class RowSizeSubheaderTest {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature
 
             -16, 0, 0, 0, 0, 0, 0, 0, // unknown
-            8, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
+            9, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             17, 48, 34, 0, 0, 0, 0, 0, // unknown
 
@@ -113,7 +113,7 @@ public class RowSizeSubheaderTest {
             50, 3, 0, 0, 0, 0, 0, 0, // page size
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
 
-            120, 0, 0, 0, 0, 0, 0, 0, // max observations on mix page
+            -83, 0, 0, 0, 0, 0, 0, 0, // max observations on mix page
 
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // bit pattern
 
@@ -167,19 +167,19 @@ public class RowSizeSubheaderTest {
             0, 0, 0, 0, 0, 0, 0, 0, // repair timestamp
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
-            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page of ColumnSizeSubheader
+            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            122, 0, 0, 0, 0, 0, 0, 0, // page of last subheader
-            1, 0, 0, 0, 0, 0, 0, 0, // subheader in page of last subheader
+            122, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
+            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             122, 0, 0, 0, 0, 0, 0, 0, // page of first observation
-            3, 0, 0, 0, 0, 0, 0, 0, // block index in page of first observation
+            4, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
 
             123, 0, 0, 0, 0, 0, 0, 0, // page of last observation
-            61, 0, 0, 0, 0, 0, 0, 0, // block index in page of last observation
+            8, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page of first ColumnFormatSubheader
+            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
@@ -274,11 +274,14 @@ public class RowSizeSubheaderTest {
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout,
             pageLayout, 0);
 
+        pageLayout.addSubheader(rowSizeSubheader);
+        pageLayout.finalizeSubheaders();
+
         final byte[] expectedSubheaderData = new byte[] {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature
 
             -16, 0, 0, 0, 0, 0, 0, 0, // unknown
-            2, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
+            4, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             17, 48, 34, 0, 0, 0, 0, 0, // unknown
 
@@ -295,7 +298,7 @@ public class RowSizeSubheaderTest {
             40, 3, 0, 0, 0, 0, 0, 0, // page size
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
 
-            0, 0, 0, 0, 0, 0, 0, 0, // max observations on mix page
+            19, 31, 0, 0, 0, 0, 0, 0, // max observations on mix page
 
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // bit pattern
 
@@ -349,19 +352,19 @@ public class RowSizeSubheaderTest {
             0, 0, 0, 0, 0, 0, 0, 0, // repair timestamp
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
-            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page of ColumnSizeSubheader
+            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            0, 0, 0, 0, 0, 0, 0, 0, // page of last subheader
-            -1, -1, -1, -1, -1, -1, -1, -1, // subheader in page of last subheader
+            0, 0, 0, 0, 0, 0, 0, 0, // page index of final subheader
+            1, 0, 0, 0, 0, 0, 0, 0, // total subheaders in page with final subheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // page of first observation
-            3, 0, 0, 0, 0, 0, 0, 0, // block index in page of first observation
+            3, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
 
             0, 0, 0, 0, 0, 0, 0, 0, // page of last observation
-            3, 0, 0, 0, 0, 0, 0, 0, // block index in page of last observation
+            3, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             0, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            1, 0, 0, 0, 0, 0, 0, 0, // subheader in page of first ColumnFormatSubheader
+            1, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown

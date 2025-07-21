@@ -250,9 +250,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
         // This is what SAS does.  I don't know if this is necessary.
         pageLayout.currentMetadataPage.setIsFinalMetadataPage();
 
-        final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations();
-        rowSizeSubheader.setTotalPossibleObservationOnMixedPage(pageLayout.currentMetadataPage.maxObservations());
-
         final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size() + 1;
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
@@ -264,6 +261,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         // Calculate how many pages will be needed in the dataset.
         {
+            final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations();
             final int totalNumberOfDataPages;
             if (totalObservationsInDataset <= maxObservationsOnMixedPage) {
                 // All observations can fit on the mixed page, so there's no need for data pages.

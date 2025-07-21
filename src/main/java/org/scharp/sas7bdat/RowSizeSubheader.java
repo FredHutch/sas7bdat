@@ -24,8 +24,6 @@ class RowSizeSubheader extends Subheader {
     private final int maxVariableNameLength;
     private final int maxVariableLabelLength;
 
-    private int totalPossibleObservationsOnMixedPage;
-    private int totalObservationsOnMixedPage;
     private int maxObservationsPerDataPage;
     private int totalMetadataPages;
     private int totalPagesInDataset;
@@ -81,12 +79,6 @@ class RowSizeSubheader extends Subheader {
     private void writeRecordLocation(byte[] page, int offset, long pageIndex, long recordIndex) {
         write8(page, offset, pageIndex);
         write8(page, offset + 8, recordIndex);
-    }
-
-    void setTotalPossibleObservationOnMixedPage(int totalPossibleObservationsOnMixedPage) {
-        this.totalPossibleObservationsOnMixedPage = totalPossibleObservationsOnMixedPage;
-        this.totalObservationsOnMixedPage = Math.min(totalPossibleObservationsOnMixedPage,
-            totalObservationsInDataset);
     }
 
     void setMaxObservationsPerDataPage(int maxObservationsPerDataPage) {
@@ -186,8 +178,10 @@ class RowSizeSubheader extends Subheader {
         write8(page, subheaderOffset + 104, page.length); // page size
         write8(page, subheaderOffset + 112, 0); // unknown
 
-        // How many observations could fit on the page, which is necessarily a 'mix' page.
+        // How many observations can fit on a 'mix' page.
         // This may be larger than the number of observations that are actually on the page.
+        final Sas7bdatPage finalMetadataPage = pageLayout.currentMetadataPage;
+        final int totalPossibleObservationsOnMixedPage = finalMetadataPage.maxObservations();
         write8(page, subheaderOffset + 120, totalPossibleObservationsOnMixedPage);
 
         write8(page, subheaderOffset + 128, 0xFFFFFFFFFFFFFFFFL); // bit pattern
@@ -246,14 +240,13 @@ class RowSizeSubheader extends Subheader {
         // the second subheader added to the first page.
         writeRecordLocation(page, subheaderOffset + 512, 1, 2);
 
-        final Sas7bdatPage finalMetadataPage = pageLayout.currentMetadataPage;
-
         // Unknown, but could be the location of the last Subheader block, in which case
         // the -1 doesn't include the terminal subheader.
         writeRecordLocation(page, subheaderOffset + 528, totalMetadataPages,
             finalMetadataPage.subheaders().size() - 1);
 
         // The location of the first data record.
+        int totalObservationsOnMixedPage = Math.min(totalPossibleObservationsOnMixedPage, totalObservationsInDataset);
         if (totalObservationsInDataset == 0) {
             writeRecordLocation(page, subheaderOffset + 544, 0, 3); // why 3?
         } else {
