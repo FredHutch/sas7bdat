@@ -209,7 +209,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         {
             Sas7bdatHeader header = new Sas7bdatHeader(
                 pageSequenceGenerator,
-                pageLayout.pageSize,
+                pageLayout.pageSize, // SAS uses the same value for page size and header size
                 pageLayout.pageSize,
                 metadata.datasetName(),
                 metadata.creationTime(),
