@@ -318,4 +318,24 @@ public class Sas7bdatPageTest {
         assertEquals(1, subheaders.size());
         assertEquals(newSubheader, subheaders.get(0));
     }
+
+    @Test
+    void testMaxObservationsPerDataPage() {
+        Sas7bdatVariablesLayout variablesLayout1 = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
+
+        Sas7bdatVariablesLayout variablesLayout100 = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(100).build()));
+
+        Sas7bdatVariablesLayout variablesLayout1000 = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1000).build()));
+
+        assertEquals(58218, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout1));
+        assertEquals(654, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout100));
+        assertEquals(65, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout1000));
+
+        assertEquals(116472, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout1));
+        assertEquals(1308, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout100));
+        assertEquals(131, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout1000));
+    }
 }
