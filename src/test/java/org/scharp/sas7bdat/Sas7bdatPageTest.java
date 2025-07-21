@@ -42,8 +42,7 @@ public class Sas7bdatPageTest {
     void testPureMetadataPage() {
         // Create variables whose row length is chosen to be just slightly too large to fit
         // on the page once the subheaders have been added.
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(5124).build()));
+        Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(5124);
 
         // Create a sas7bdat page
         final int pageSize = 0x10000;
@@ -144,8 +143,7 @@ public class Sas7bdatPageTest {
     void testMixedPage() {
         // Create a sas7bdat page
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(4).build()));
+        Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(4);
         final int pageSize = 0x10000;
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
@@ -207,8 +205,7 @@ public class Sas7bdatPageTest {
     void testDataPage() {
         // Create a sas7bdat page
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(11).build()));
+        Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(11);
         final int pageSize = 0x10000;
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
@@ -257,8 +254,7 @@ public class Sas7bdatPageTest {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
+        Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
@@ -312,8 +308,7 @@ public class Sas7bdatPageTest {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
+        Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
         Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
         // The subheaders should be empty.
@@ -338,14 +333,9 @@ public class Sas7bdatPageTest {
 
     @Test
     void testMaxObservationsPerDataPage() {
-        Sas7bdatVariablesLayout variablesLayout1 = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
-
-        Sas7bdatVariablesLayout variablesLayout100 = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(100).build()));
-
-        Sas7bdatVariablesLayout variablesLayout1000 = new Sas7bdatVariablesLayout(List.of(
-            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1000).build()));
+        Sas7bdatVariablesLayout variablesLayout1 = createVariableLayoutForRowSize(1);
+        Sas7bdatVariablesLayout variablesLayout100 = createVariableLayoutForRowSize(100);
+        Sas7bdatVariablesLayout variablesLayout1000 = createVariableLayoutForRowSize(1000);
 
         assertEquals(58218, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout1));
         assertEquals(654, Sas7bdatPage.maxObservationsPerDataPage(0x10000, variablesLayout100));
