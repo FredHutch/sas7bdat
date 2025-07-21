@@ -84,7 +84,7 @@ public class RowSizeSubheaderTest {
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
-        pageLayout.finalizeSubheadersOnCurrentMetadataPage();
+        pageLayout.finalizeMetadata();
 
         // Set some values that appear in the row size subheader.
         rowSizeSubheader.setMaxObservationsPerDataPage(121);
@@ -274,7 +274,7 @@ public class RowSizeSubheaderTest {
             pageLayout, 0);
 
         pageLayout.addSubheader(rowSizeSubheader);
-        pageLayout.finalizeSubheadersOnCurrentMetadataPage();
+        pageLayout.finalizeMetadata();
 
         final byte[] expectedSubheaderData = new byte[] {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature

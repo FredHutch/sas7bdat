@@ -39,7 +39,15 @@ public class Sas7bdatPageLayoutTest {
         Subheader subheader4 = new FillerSubheader(Short.MAX_VALUE);
         pageLayout.addSubheader(subheader4);
 
-        pageLayout.finalizeSubheadersOnCurrentMetadataPage();
+        // Finalize the metadata.
+        Sas7bdatPage mixedPage = pageLayout.finalizeMetadata();
+
+        // Confirm that the mixed page's type was set to mixed.
+        assertEquals(0x10000, mixedPage.pageSize());
+        byte[] mixedPageData = new byte[mixedPage.pageSize()];
+        mixedPage.write(mixedPageData);
+        assertEquals(0x00, mixedPageData[32], "finalizeMetadata() did not return a mixed page");
+        assertEquals(0x02, mixedPageData[33], "finalizeMetadata() did not return a mixed page");
 
         // Confirm that the subheaders were added.
         assertThat(pageLayout.subheaders, Matchers.hasSize(7));

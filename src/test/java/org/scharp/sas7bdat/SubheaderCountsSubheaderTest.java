@@ -103,6 +103,8 @@ public class SubheaderCountsSubheaderTest {
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
 
+        pageLayout.finalizeMetadata();
+
         final byte[] expectedSubheaderData = new byte[] {
             0, -4, -1, -1, -1, -1, -1, -1,  // signature
 

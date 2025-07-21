@@ -37,7 +37,7 @@ class Sas7bdatPageLayout {
         currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
     }
 
-    void finalizeSubheadersOnCurrentMetadataPage() {
+    private void finalizeSubheadersOnCurrentMetadataPage() {
         currentMetadataPage.finalizeSubheaders();
 
         // finalizeSubheaders() inserts a terminal subheader.  We must therefore update the
@@ -45,6 +45,8 @@ class Sas7bdatPageLayout {
         Subheader terminalSubheader = currentMetadataPage.subheaders().get(
             currentMetadataPage.subheaders().size() - 1);
         subheaders.add(terminalSubheader);
+
+        completeMetadataPages.add(currentMetadataPage);
     }
 
     void addSubheader(Subheader subheader) {
@@ -55,7 +57,6 @@ class Sas7bdatPageLayout {
             finalizeSubheadersOnCurrentMetadataPage();
 
             // Create a new page.
-            completeMetadataPages.add(currentMetadataPage);
             currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
 
             // Add the subheader to the new page.
@@ -65,6 +66,23 @@ class Sas7bdatPageLayout {
 
         // Track which page the subheader was added to.
         subheaders.add(subheader);
+    }
+
+    /**
+     * Finalizes the metadata pages and returns the final metadata page, which may be able to hold observations (and is
+     * therefore a mixed page).
+     *
+     * @return a mixed page.
+     */
+    Sas7bdatPage finalizeMetadata() {
+        // Mark the final metadata page as a "mixed" page, even if it doesn't contain data.
+        // This is what SAS does.  I don't know if this is necessary.
+        currentMetadataPage.setIsFinalMetadataPage();
+
+        // Finalize the subheader on the mixed page.
+        finalizeSubheadersOnCurrentMetadataPage();
+
+        return currentMetadataPage;
     }
 
     /**
@@ -103,14 +121,6 @@ class Sas7bdatPageLayout {
                 // Invoke the callback
                 nextSubheader.nextSubheader(currentSubheader, (short) (pageIndex + 1), (short) (subheaderIndex + 1));
             }
-        }
-
-        // The final metadata page is never added to completeMetadataPages, so we gave to iterate over it specially.
-        // TODO: change the logic so that it's added.
-        for (int subheaderIndex = 0; subheaderIndex < currentMetadataPage.subheaders().size(); ++subheaderIndex) {
-            Subheader currentSubheader = currentMetadataPage.subheaders().get(subheaderIndex);
-            nextSubheader.nextSubheader(currentSubheader, (short) (completeMetadataPages.size() + 1),
-                (short) (subheaderIndex + 1));
         }
     }
 }

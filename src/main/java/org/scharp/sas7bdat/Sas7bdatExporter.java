@@ -178,13 +178,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
 
         // Finalize the subheaders on the final metadata page.
-        pageLayout.finalizeSubheadersOnCurrentMetadataPage();
+        Sas7bdatPage mixedPage = pageLayout.finalizeMetadata();
 
-        // Mark the final metadata page as a "mixed" page, even if it doesn't contain data.
-        // This is what SAS does.  I don't know if this is necessary.
-        pageLayout.currentMetadataPage.setIsFinalMetadataPage();
-
-        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size() + 1;
+        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
         rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
 
         // Calculate how many observations fit on a data page.
@@ -195,7 +191,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         // Calculate how many pages will be needed in the dataset.
         {
-            final int maxObservationsOnMixedPage = pageLayout.currentMetadataPage.maxObservations();
+            final int maxObservationsOnMixedPage = mixedPage.maxObservations();
             final int totalNumberOfDataPages;
             if (totalObservationsInDataset <= maxObservationsOnMixedPage) {
                 // All observations can fit on the mixed page, so there's no need for data pages.
@@ -224,12 +220,14 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         // Write out all complete metadata pages (but not the last one, which can hold observations)
         for (Sas7bdatPage currentMetadataPage : pageLayout.completeMetadataPages) {
-            writePage(currentMetadataPage);
+            if (currentMetadataPage != mixedPage) {
+                writePage(currentMetadataPage);
+            }
         }
 
         totalObservationsWritten = 0;
         totalPagesAllocated = totalNumberOfMetadataPages;
-        currentPage = pageLayout.currentMetadataPage;
+        currentPage = mixedPage;
     }
 
     /**
