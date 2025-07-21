@@ -2,6 +2,7 @@ package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +17,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Unit tests for {@link Sas7bdatPage}. */
 public class Sas7bdatPageTest {
+
+    private static Sas7bdatVariablesLayout createVariableLayoutForRowSize(int targetRowSize) {
+        List<Variable> variables = new ArrayList<>();
+
+        // Add variables to the list until their combined length equals targetRowSize.
+        int bytesRemaining = targetRowSize;
+        while (bytesRemaining != 0) {
+            int variableLength = Math.min(Short.MAX_VALUE, bytesRemaining);
+            variables.add(Variable.builder().name("VAR").type(VariableType.CHARACTER).length(variableLength).build());
+            bytesRemaining -= variableLength;
+        }
+
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variables);
+        assertEquals(targetRowSize, variablesLayout.rowLength(), "TEST BUG: created variables incorrectly");
+        return variablesLayout;
+    }
 
     /**
      * Tests creating a pure metadata page (no observations).  Also tests when new subheaders/observations can't be
@@ -337,5 +354,15 @@ public class Sas7bdatPageTest {
         assertEquals(116472, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout1));
         assertEquals(1308, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout100));
         assertEquals(131, Sas7bdatPage.maxObservationsPerDataPage(0x20000, variablesLayout1000));
+    }
+
+    @Test
+    void testCalculatePageSize() {
+        assertEquals(0x10000, Sas7bdatPage.calculatePageSize(createVariableLayoutForRowSize(1)));
+        assertEquals(0x10000, Sas7bdatPage.calculatePageSize(createVariableLayoutForRowSize(0x10000 - 41)));
+        assertEquals(0x10400, Sas7bdatPage.calculatePageSize(createVariableLayoutForRowSize(0x10000 - 40)));
+        assertEquals(0x10400, Sas7bdatPage.calculatePageSize(createVariableLayoutForRowSize(0x10000)));
+        assertEquals(0x20000, Sas7bdatPage.calculatePageSize(createVariableLayoutForRowSize(0x1FF00)));
+        assertEquals(0x20400, Sas7bdatPage.calculatePageSize(createVariableLayoutForRowSize(0x1FFFF)));
     }
 }
