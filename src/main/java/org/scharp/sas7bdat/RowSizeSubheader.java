@@ -1,7 +1,5 @@
 package org.scharp.sas7bdat;
 
-import java.util.Map;
-
 import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
@@ -117,43 +115,43 @@ class RowSizeSubheader extends Subheader {
         // that has them and the number of ColumnFormatSubheaders on the final metadata
         // page that has them.
         // SAS can't process datasets if this is incorrect.
-        int firstPageWithColumnFormatSubheader = 0; // impossible value
-        int totalColumnFormatSubheadersOnFirstPage = 0;
-        int secondPageWithColumnFormatSubheader = 0; // impossible value
-        int totalColumnFormatSubheadersOnSecondPage = 0;
-        for (final Subheader subheader : pageLayout.subheaders) {
-            if (subheader instanceof ColumnFormatSubheader) {
-                final int pageNumberOfSubheader = pageLayout.subheaderLocations.get(subheader);
+        var columnFormatSubheaderLocator = new Sas7bdatPageLayout.NextSubheader() {
+            int firstPageWithColumnFormatSubheader = 0; // impossible value
+            int totalColumnFormatSubheadersOnFirstPage = 0;
+            int secondPageWithColumnFormatSubheader = 0; // impossible value
+            int totalColumnFormatSubheadersOnSecondPage = 0;
+            int blockOfFirstColumnFormatSubheader = 0; // impossible value
 
-                if (firstPageWithColumnFormatSubheader == 0) {
-                    // This is the first ColumnFormatSubheader in the metadata.
-                    firstPageWithColumnFormatSubheader = pageNumberOfSubheader;
-                    totalColumnFormatSubheadersOnFirstPage++;
+            @Override
+            public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
+                if (subheader instanceof ColumnFormatSubheader) {
+                    if (firstPageWithColumnFormatSubheader == 0) {
+                        // This is the first ColumnFormatSubheader in the metadata.
+                        firstPageWithColumnFormatSubheader = pageNumberOfSubheader;
+                        blockOfFirstColumnFormatSubheader = positionInPage;
+                        totalColumnFormatSubheadersOnFirstPage++;
 
-                } else if (firstPageWithColumnFormatSubheader == pageNumberOfSubheader) {
-                    // This ColumnFormatSubheader is on the first page of metadata with ColumnFormatSubheaders
-                    totalColumnFormatSubheadersOnFirstPage++;
+                    } else if (firstPageWithColumnFormatSubheader == pageNumberOfSubheader) {
+                        // This ColumnFormatSubheader is on the first page of metadata with ColumnFormatSubheaders
+                        totalColumnFormatSubheadersOnFirstPage++;
 
-                } else if (secondPageWithColumnFormatSubheader == 0) {
-                    // This is the first ColumnFormatSubheader on the second page of metadata with ColumnFormatSubheaders
-                    secondPageWithColumnFormatSubheader = pageNumberOfSubheader;
-                    totalColumnFormatSubheadersOnSecondPage++;
+                    } else if (secondPageWithColumnFormatSubheader == 0) {
+                        // This is the first ColumnFormatSubheader on the second page of metadata with ColumnFormatSubheaders
+                        secondPageWithColumnFormatSubheader = pageNumberOfSubheader;
+                        totalColumnFormatSubheadersOnSecondPage++;
 
-                } else if (secondPageWithColumnFormatSubheader == pageNumberOfSubheader) {
-                    // This is on the second page of metadata with ColumnFormatSubheaders
-                    totalColumnFormatSubheadersOnSecondPage++;
-
-                } else {
-                    // We went past the second page of metadata with ColumnFormatSubheaders.
-                    // Since we don't care about what follows, we can break.
-                    break;
+                    } else if (secondPageWithColumnFormatSubheader == pageNumberOfSubheader) {
+                        // This is on the second page of metadata with ColumnFormatSubheaders
+                        totalColumnFormatSubheadersOnSecondPage++;
+                    }
                 }
             }
-        }
+        };
+        pageLayout.forEachSubheader(columnFormatSubheaderLocator);
 
         // The number of ColumnFormatSubheaders on the first and second page.
-        write8(page, subheaderOffset + 72, totalColumnFormatSubheadersOnFirstPage);
-        write8(page, subheaderOffset + 80, totalColumnFormatSubheadersOnSecondPage);
+        write8(page, subheaderOffset + 72, columnFormatSubheaderLocator.totalColumnFormatSubheadersOnFirstPage);
+        write8(page, subheaderOffset + 80, columnFormatSubheaderLocator.totalColumnFormatSubheadersOnSecondPage);
 
         // The next value is unknown, but setting it incorrectly can cause SAS to crash.
         //
@@ -294,23 +292,11 @@ class RowSizeSubheader extends Subheader {
 
         // The location of the first ColumnFormatSubheader block.
         // SAS may not be able to process the dataset if this is incorrect.
-        //
-        // Since ColumnFormatSubheader are always last in the metadata, it is sufficient to count
-        // the number of subheaders that aren't ColumnFormatSubheader (or the terminal subheader)
-        // on the first page that has a ColumnFormatSubheader.  All of those subheaders are necessarily
-        // before the ColumnFormatSubheader.
-        int blockOfFirstColumnFormatSubheader = 1;
-        for (Map.Entry<Subheader, Integer> entry : pageLayout.subheaderLocations.entrySet()) {
-            final Subheader subheader = entry.getKey();
-            final int pageNumber = entry.getValue();
-            if (pageNumber == firstPageWithColumnFormatSubheader) {
-                if (!(subheader instanceof ColumnFormatSubheader) && !(subheader instanceof TerminalSubheader)) {
-                    blockOfFirstColumnFormatSubheader++;
-                }
-            }
-        }
-        writeRecordLocation(page, subheaderOffset + 576, firstPageWithColumnFormatSubheader,
-            blockOfFirstColumnFormatSubheader);
+        writeRecordLocation(
+            page,
+            subheaderOffset + 576,
+            columnFormatSubheaderLocator.firstPageWithColumnFormatSubheader,
+            columnFormatSubheaderLocator.blockOfFirstColumnFormatSubheader);
 
         write8(page, subheaderOffset + 592, 0); // unknown
         write8(page, subheaderOffset + 600, 0); // unknown

@@ -51,10 +51,55 @@ public class Sas7bdatPageLayoutTest {
         assertSame(subheader4, pageLayout.subheaders.get(5));
         assertInstanceOf(TerminalSubheader.class, pageLayout.subheaders.get(6));
 
-        // Confirm that the subheaders were added to the expected pages.
-        assertEquals(1, pageLayout.subheaderLocations.get(subheader1));
-        assertEquals(2, pageLayout.subheaderLocations.get(subheader2));
-        assertEquals(2, pageLayout.subheaderLocations.get(subheader3));
-        assertEquals(3, pageLayout.subheaderLocations.get(subheader4));
+        // Confirm that we can iterate over the subheaders.
+        int[] finalInvocationIndex = { 0 };
+        pageLayout.forEachSubheader((Subheader subheader, short pageIndex, short subheaderPosition) -> {
+            switch (finalInvocationIndex[0]) {
+            case 0:
+                assertSame(subheader1, subheader);
+                assertEquals(1, pageIndex);
+                assertEquals(1, subheaderPosition);
+                break;
+
+            case 1:
+                assertInstanceOf(TerminalSubheader.class, subheader);
+                assertEquals(1, pageIndex);
+                assertEquals(2, subheaderPosition);
+                break;
+
+            case 2:
+                assertSame(subheader2, subheader);
+                assertEquals(2, pageIndex);
+                assertEquals(1, subheaderPosition);
+                break;
+
+            case 3:
+                assertSame(subheader3, subheader);
+                assertEquals(2, pageIndex);
+                assertEquals(2, subheaderPosition);
+                break;
+
+            case 4:
+                assertInstanceOf(TerminalSubheader.class, subheader);
+                assertEquals(2, pageIndex);
+                assertEquals(3, subheaderPosition);
+                break;
+
+            case 5:
+                assertSame(subheader4, subheader);
+                assertEquals(3, pageIndex);
+                assertEquals(1, subheaderPosition);
+                break;
+
+            case 6:
+                assertInstanceOf(TerminalSubheader.class, subheader);
+                assertEquals(3, pageIndex);
+                assertEquals(2, subheaderPosition);
+                break;
+            }
+
+            finalInvocationIndex[0]++;
+        });
+        assertEquals(7, finalInvocationIndex[0], "forEachSubheader callback invoked incorrect number of times");
     }
 }

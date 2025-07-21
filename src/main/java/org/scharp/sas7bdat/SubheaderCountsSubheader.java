@@ -23,48 +23,41 @@ class SubheaderCountsSubheader extends Subheader {
 
     private <T extends Subheader> void writeSubheaderInformation(byte[] page, int offset, Class<T> clazz,
         long signature) {
+
         // Determine the location of the first/last subheader of the requested type.
         // These values are initialized to something that means "not found".
-        short pageOfFirstAppearance = 0;
-        short positionOfFirstAppearance = 0;
-        short pageOfLastAppearance = 0;
-        short positionOfLastAppearance = 0;
+        var subheaderLocator = new Sas7bdatPageLayout.NextSubheader() {
 
-        if (clazz != null) {
-            short currentPageNumber = 0; // impossible number
-            short subheaderPositionOnPage = 0;
-            for (Subheader subheader : pageLayout.subheaders) {
-                short subheaderPageNumber = pageLayout.subheaderLocations.get(subheader).shortValue();
-                if (subheaderPageNumber == currentPageNumber) {
-                    // This subheader is on the same page as the previous subheader.
-                    subheaderPositionOnPage++;
-                } else {
-                    // This is the first subheader is on a new page.
-                    assert currentPageNumber + 1 == subheaderPageNumber : "skipped a page";
-                    currentPageNumber = subheaderPageNumber;
-                    subheaderPositionOnPage = 1;
-                }
+            short pageOfFirstAppearance = 0;
+            short positionOfFirstAppearance = 0;
+            short pageOfLastAppearance = 0;
+            short positionOfLastAppearance = 0;
 
+            @Override
+            public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
                 if (clazz.isInstance(subheader)) {
                     // If this is the first time we've seen this subheader type, note it as the first appearance.
                     if (pageOfFirstAppearance == 0) {
-                        pageOfFirstAppearance = subheaderPageNumber;
-                        positionOfFirstAppearance = subheaderPositionOnPage;
+                        pageOfFirstAppearance = pageNumberOfSubheader;
+                        positionOfFirstAppearance = positionInPage;
                     }
 
                     // Always log the last occurrence.
-                    pageOfLastAppearance = subheaderPageNumber;
-                    positionOfLastAppearance = subheaderPositionOnPage;
+                    pageOfLastAppearance = pageNumberOfSubheader;
+                    positionOfLastAppearance = positionInPage;
                 }
             }
+        };
+        if (clazz != null) {
+            pageLayout.forEachSubheader(subheaderLocator);
         }
 
         // Write the information to the page.
         write8(page, offset + 0, signature);
-        write8(page, offset + 8, pageOfFirstAppearance);
-        write8(page, offset + 16, positionOfFirstAppearance);
-        write8(page, offset + 24, pageOfLastAppearance);
-        write8(page, offset + 32, positionOfLastAppearance);
+        write8(page, offset + 8, subheaderLocator.pageOfFirstAppearance);
+        write8(page, offset + 16, subheaderLocator.positionOfFirstAppearance);
+        write8(page, offset + 24, subheaderLocator.pageOfLastAppearance);
+        write8(page, offset + 32, subheaderLocator.positionOfLastAppearance);
     }
 
     @Override

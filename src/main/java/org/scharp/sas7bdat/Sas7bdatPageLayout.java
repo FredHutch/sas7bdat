@@ -1,9 +1,7 @@
 package org.scharp.sas7bdat;
 
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A helper class for putting subheaders into metadata pages.
@@ -25,7 +23,6 @@ class Sas7bdatPageLayout {
     final ColumnText columnText;
     final List<Subheader> subheaders;
     final List<Sas7bdatPage> completeMetadataPages;
-    final Map<Subheader, Integer> subheaderLocations;
 
     Sas7bdatPage currentMetadataPage;
 
@@ -37,7 +34,6 @@ class Sas7bdatPageLayout {
 
         subheaders = new ArrayList<>();
         completeMetadataPages = new ArrayList<>();
-        subheaderLocations = new IdentityHashMap<>();
         currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
     }
 
@@ -49,7 +45,6 @@ class Sas7bdatPageLayout {
         Subheader terminalSubheader = currentMetadataPage.subheaders().get(
             currentMetadataPage.subheaders().size() - 1);
         subheaders.add(terminalSubheader);
-        subheaderLocations.put(terminalSubheader, completeMetadataPages.size() + 1);
     }
 
     void addSubheader(Subheader subheader) {
@@ -70,6 +65,52 @@ class Sas7bdatPageLayout {
 
         // Track which page the subheader was added to.
         subheaders.add(subheader);
-        subheaderLocations.put(subheader, completeMetadataPages.size() + 1);
+    }
+
+    /**
+     * An interface that defines a callback when iterating over all subheaders in the data set.
+     */
+    @FunctionalInterface
+    interface NextSubheader {
+        /**
+         * A callback when iterating over all subheaders in the data set.
+         *
+         * @param subheader
+         *     The next subheader in the data set.
+         * @param pageNumberOfSubheader
+         *     The page number where {@code subheader} is located.  1 is the first page number.
+         * @param positionInPage
+         *     The position of {@code subheader} within the page.  The first subheader position is 1.
+         */
+        void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage);
+    }
+
+    /**
+     * Iterates over all subheaders in the data set, invoking a callback for each subheader.
+     *
+     * @param nextSubheader
+     *     A callback interface
+     */
+    void forEachSubheader(NextSubheader nextSubheader) {
+        // Iterate over all pages
+        for (int pageIndex = 0; pageIndex < completeMetadataPages.size(); ++pageIndex) {
+            Sas7bdatPage currentPage = completeMetadataPages.get(pageIndex);
+
+            // Iterate over subheaders within the page
+            for (int subheaderIndex = 0; subheaderIndex < currentPage.subheaders().size(); ++subheaderIndex) {
+                Subheader currentSubheader = currentPage.subheaders().get(subheaderIndex);
+
+                // Invoke the callback
+                nextSubheader.nextSubheader(currentSubheader, (short) (pageIndex + 1), (short) (subheaderIndex + 1));
+            }
+        }
+
+        // The final metadata page is never added to completeMetadataPages, so we gave to iterate over it specially.
+        // TODO: change the logic so that it's added.
+        for (int subheaderIndex = 0; subheaderIndex < currentMetadataPage.subheaders().size(); ++subheaderIndex) {
+            Subheader currentSubheader = currentMetadataPage.subheaders().get(subheaderIndex);
+            nextSubheader.nextSubheader(currentSubheader, (short) (completeMetadataPages.size() + 1),
+                (short) (subheaderIndex + 1));
+        }
     }
 }

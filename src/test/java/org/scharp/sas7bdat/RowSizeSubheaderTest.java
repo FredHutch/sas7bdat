@@ -79,7 +79,7 @@ public class RowSizeSubheaderTest {
         pageLayout.columnText.add("dataset label");
         pageLayout.columnText.noMoreText();
 
-        // Add ColumnFormatSubheader, one on first page, two on second page.
+        // Add ColumnFormatSubheader, one on the first page, two on the second page.
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(0), pageLayout.columnText));
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
@@ -178,7 +178,7 @@ public class RowSizeSubheaderTest {
             8, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
@@ -363,7 +363,7 @@ public class RowSizeSubheaderTest {
             3, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             0, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            1, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            0, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
