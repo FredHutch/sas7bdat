@@ -251,7 +251,6 @@ public class Sas7bdatExporterTest {
      * <ul>
      *   <li>{@link Sas7bdatExporter#Sas7bdatExporter(Path, Sas7bdatMetadata, int)}</li>
      *   <li>{@link Sas7bdatExporter#writeObservation(List)}</li>
-     *   <li>{@link Sas7bdatExporter#isComplete()}</li>
      * </ul>
      *
      * Includes:
@@ -329,10 +328,8 @@ public class Sas7bdatExporterTest {
             try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
                 for (int i = 0; i < totalObservations; i++) {
                     // The exporter should not be complete until all observations are written.
-                    assertFalse(exporter.isComplete());
                     exporter.writeObservation(List.of("Value #1 for Var #1!", "Value #1 for Var #2$", "Text3", "A", i));
                 }
-                assertTrue(exporter.isComplete());
             }
 
             // Read the dataset with parso to confirm that it was written correctly.
@@ -393,7 +390,6 @@ public class Sas7bdatExporterTest {
                     try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, 100)) {
                         // Write a few observations.
                         for (int i = 0; i < 10; i++) {
-                            assertFalse(exporter.isComplete());
                             exporter.writeObservation(List.of("Value"));
                         }
 
@@ -431,7 +427,6 @@ public class Sas7bdatExporterTest {
                 () -> {
                     try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, 100)) {
                         for (int i = 0; i < 99; i++) {
-                            assertFalse(exporter.isComplete());
                             exporter.writeObservation(List.of("Value"));
                         }
                     }
@@ -460,10 +455,8 @@ public class Sas7bdatExporterTest {
             int totalObservations = 1234;
             try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
                 for (int i = 0; i < totalObservations; i++) {
-                    assertFalse(exporter.isComplete());
                     exporter.writeObservation(List.of("Value #" + i));
                 }
-                assertTrue(exporter.isComplete());
 
                 // Write one more.
                 Exception exception = assertThrows(
@@ -918,8 +911,6 @@ public class Sas7bdatExporterTest {
                 // Modify the list's contents
                 observation.set(0, "MODIFIED");
                 observation.set(1, 2L);
-
-                assertTrue(sas7bdatExporter.isComplete(), "TEST BUG: didn't write enough observations");
             }
 
             // Read the dataset with parso to confirm that the two observations that were successfully written.
@@ -972,12 +963,8 @@ public class Sas7bdatExporterTest {
                     assertNull(sasFileReader.readNext(), "more rows were read than expected");
                 }
 
-                // It's not legal to check if a dataset is complete after it's been closed.
-                Exception exception = assertThrows(IllegalStateException.class, () -> sas7bdatExporter.isComplete());
-                assertEquals("Cannot invoke isComplete on closed exporter", exception.getMessage());
-
                 // It's not legal to write a new observation after the exporter has been closed.
-                exception = assertThrows(
+                Exception exception = assertThrows(
                     IllegalStateException.class,
                     () -> sas7bdatExporter.writeObservation(List.of("ROW3")));
                 assertEquals("Cannot invoke writeObservation on closed exporter", exception.getMessage());

@@ -290,23 +290,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
         totalObservationsWritten++;
     }
 
-    /**
-     * Determines whether all observations that were promised as the {@code totalObservations} argument to the
-     * constructor have been written.
-     * <p>
-     *
-     * @return {@code true}, if all observations that were promised have been written.  {@code false}, otherwise.
-     *
-     * @throws IllegalStateException
-     *     if this exporter has already been closed.
-     */
-    public boolean isComplete() {
-        if (isClosed()) {
-            throw new IllegalStateException("Cannot invoke isComplete on closed exporter");
-        }
-        return totalObservationsInDataset == totalObservationsWritten;
-    }
-
     private void writePage(Sas7bdatPage page) throws IOException {
         // Clear the data on the buffer so that parts of the previous page
         // don't get repeated in this page for the parts that aren't filled in.
@@ -403,7 +386,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
         ArgumentUtil.checkNotNull(metadata, "metadata");
 
         try (Sas7bdatExporter datasetWriter = new Sas7bdatExporter(targetLocation, metadata, observations.size())) {
-
             // Write all observations
             for (List<Object> observation : observations) {
                 if (observation == null) {
@@ -411,7 +393,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
                 }
                 datasetWriter.writeObservation(observation);
             }
-            assert datasetWriter.isComplete();
         }
     }
 }
