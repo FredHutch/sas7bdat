@@ -1,6 +1,8 @@
 package org.scharp.sas7bdat;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.scharp.sas7bdat.WriteUtil.write8;
@@ -16,47 +18,23 @@ class SubheaderCountsSubheader extends Subheader {
 
     private final Sas7bdatPageLayout pageLayout;
 
-    SubheaderCountsSubheader(Sas7bdatPageLayout pageLayout) {
-        this.pageLayout = pageLayout; // this is filled in later by the caller
+    private static class SubheaderCount {
+        short pageOfFirstAppearance = 0;
+        short positionOfFirstAppearance = 0;
+        short pageOfLastAppearance = 0;
+        short positionOfLastAppearance = 0;
+
+        private void writeInformation(byte[] page, int offset, long signature) {
+            write8(page, offset, signature);
+            write8(page, offset + 8, pageOfFirstAppearance);
+            write8(page, offset + 16, positionOfFirstAppearance);
+            write8(page, offset + 24, pageOfLastAppearance);
+            write8(page, offset + 32, positionOfLastAppearance);
+        }
     }
 
-    private <T extends Subheader> void writeSubheaderInformation(byte[] page, int offset, Class<T> clazz,
-        long signature) {
-
-        // Determine the location of the first/last subheader of the requested type.
-        // These values are initialized to something that means "not found".
-        var subheaderLocator = new Sas7bdatPageLayout.NextSubheader() {
-
-            short pageOfFirstAppearance = 0;
-            short positionOfFirstAppearance = 0;
-            short pageOfLastAppearance = 0;
-            short positionOfLastAppearance = 0;
-
-            @Override
-            public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
-                if (clazz.isInstance(subheader)) {
-                    // If this is the first time we've seen this subheader type, note it as the first appearance.
-                    if (pageOfFirstAppearance == 0) {
-                        pageOfFirstAppearance = pageNumberOfSubheader;
-                        positionOfFirstAppearance = positionInPage;
-                    }
-
-                    // Always log the last occurrence.
-                    pageOfLastAppearance = pageNumberOfSubheader;
-                    positionOfLastAppearance = positionInPage;
-                }
-            }
-        };
-        if (clazz != null) {
-            pageLayout.forEachSubheader(subheaderLocator);
-        }
-
-        // Write the information to the page.
-        write8(page, offset, signature);
-        write8(page, offset + 8, subheaderLocator.pageOfFirstAppearance);
-        write8(page, offset + 16, subheaderLocator.positionOfFirstAppearance);
-        write8(page, offset + 24, subheaderLocator.pageOfLastAppearance);
-        write8(page, offset + 32, subheaderLocator.positionOfLastAppearance);
+    SubheaderCountsSubheader(Sas7bdatPageLayout pageLayout) {
+        this.pageLayout = pageLayout; // this is filled in later by the caller
     }
 
     @Override
@@ -66,8 +44,6 @@ class SubheaderCountsSubheader extends Subheader {
 
     @Override
     void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_SUBHEADER_COUNTS); // signature
-
         // The subheader types that are counted
         final long[] subheaderSignatures = new long[] {
             SIGNATURE_COLUMN_ATTRS,
@@ -81,10 +57,10 @@ class SubheaderCountsSubheader extends Subheader {
             SIGNATURE_UNKNOWN_C,
         };
 
-        // Create a HashSet from the array for faster lookup.
-        final Set<Long> countedSubheaderTypes = new HashSet<>();
+        // Initialize a map that counts the occurrence of each subheader type that we're tracking.
+        final Map<Long, SubheaderCount> subheaderCounts = new HashMap<>();
         for (long subheaderSignature : subheaderSignatures) {
-            countedSubheaderTypes.add(subheaderSignature);
+            subheaderCounts.put(subheaderSignature, new SubheaderCount());
         }
 
         var fieldCalculator = new Sas7bdatPageLayout.NextSubheader() {
@@ -108,14 +84,27 @@ class SubheaderCountsSubheader extends Subheader {
                     maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnAttributesSubheader.sizeOfData());
                 }
 
-                // For the set of subheader classes that we count, determine if any are within the data set.
-                long thisSubheaderSignature = subheader.signature();
-                if (countedSubheaderTypes.contains(thisSubheaderSignature)) {
-                    subheaderTypesPresent.add(thisSubheaderSignature);
+                // If this is a subheader type that we count, note its location.
+                SubheaderCount subheaderCount = subheaderCounts.get(subheader.signature());
+                if (subheaderCount != null) {
+                    // Note that this subheader type exists.
+                    subheaderTypesPresent.add(subheader.signature());
+
+                    // If this is the first time we've seen this subheader type, note it as the first appearance.
+                    if (subheaderCount.pageOfFirstAppearance == 0) {
+                        subheaderCount.pageOfFirstAppearance = pageNumberOfSubheader;
+                        subheaderCount.positionOfFirstAppearance = positionInPage;
+                    }
+
+                    // Always log the last occurrence.
+                    subheaderCount.pageOfLastAppearance = pageNumberOfSubheader;
+                    subheaderCount.positionOfLastAppearance = positionInPage;
                 }
             }
         };
         pageLayout.forEachSubheader(fieldCalculator);
+
+        write8(page, subheaderOffset, SIGNATURE_SUBHEADER_COUNTS); // signature
 
         // The next field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
         // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
@@ -139,22 +128,20 @@ class SubheaderCountsSubheader extends Subheader {
         write8(page, subheaderOffset + 104, 0); // unknown
         write8(page, subheaderOffset + 112, 1804); // unknown
 
-        writeSubheaderInformation(page, subheaderOffset + 120, ColumnAttributesSubheader.class, SIGNATURE_COLUMN_ATTRS);
-        writeSubheaderInformation(page, subheaderOffset + 160, ColumnTextSubheader.class, SIGNATURE_COLUMN_TEXT);
-        writeSubheaderInformation(page, subheaderOffset + 200, ColumnNameSubheader.class, SIGNATURE_COLUMN_NAME);
-        writeSubheaderInformation(page, subheaderOffset + 240, ColumnListSubheader.class, SIGNATURE_COLUMN_LIST);
-
-        // There are three subheader types that we don't know anything about.
-        writeSubheaderInformation(page, subheaderOffset + 280, null, SIGNATURE_UNKNOWN_A);
-        writeSubheaderInformation(page, subheaderOffset + 320, null, SIGNATURE_UNKNOWN_B);
-        writeSubheaderInformation(page, subheaderOffset + 360, null, SIGNATURE_UNKNOWN_C);
+        // Write each of the subheader counts that were calculated above.
+        for (int i = 0; i < subheaderSignatures.length; i++) {
+            final long signature = subheaderSignatures[i];
+            final SubheaderCount subheaderCount = subheaderCounts.get(signature);
+            subheaderCount.writeInformation(page, subheaderOffset + 120 + i * 40, signature);
+        }
 
         // There are five empty slots, possibly reserved for future use.
-        writeSubheaderInformation(page, subheaderOffset + 400, null, 0L);
-        writeSubheaderInformation(page, subheaderOffset + 440, null, 0L);
-        writeSubheaderInformation(page, subheaderOffset + 480, null, 0L);
-        writeSubheaderInformation(page, subheaderOffset + 520, null, 0L);
-        writeSubheaderInformation(page, subheaderOffset + 560, null, 0L);
+        SubheaderCount emptyCount = new SubheaderCount();
+        emptyCount.writeInformation(page, subheaderOffset + 400, 0);
+        emptyCount.writeInformation(page, subheaderOffset + 440, 0);
+        emptyCount.writeInformation(page, subheaderOffset + 480, 0);
+        emptyCount.writeInformation(page, subheaderOffset + 520, 0);
+        emptyCount.writeInformation(page, subheaderOffset + 560, 0);
     }
 
     @Override
