@@ -134,9 +134,8 @@ public class ColumnTextTest {
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
-        // We want to determine how many strings need to be added before the last ColumnTextSubheader on
-        // the first page is created.
-        // Keep adding UUIDs (small strings) until the first page is full.
+        // We want to determine how many strings must be added before the first ColumnTextSubheader is full.
+        // Keep adding UUIDs (small strings) until the subheader page is complete.
         int totalNumberUuidsAdded = 0;
         while (pageLayout.currentMetadataPage.subheaders().isEmpty()) {
             columnText.add(UUID.randomUUID().toString());
