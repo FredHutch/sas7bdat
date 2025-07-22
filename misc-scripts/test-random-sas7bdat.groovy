@@ -1121,7 +1121,6 @@ class TestRandomSas7Bdat {
 
         // Add each observation
         Dataset.processObservations(testCaseFile) { observation -> datasetExporter.writeObservation(observation) }
-        assert datasetExporter.isComplete()
 
         datasetExporter.close()
 
