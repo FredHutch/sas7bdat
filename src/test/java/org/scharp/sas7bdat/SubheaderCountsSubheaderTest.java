@@ -113,6 +113,10 @@ public class SubheaderCountsSubheaderTest {
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
 
+        // Add the subheader counts subheader to the end so that there's subheaders types that aren't counted.
+        // This also ensures that the unit-under-test doesn't assume that the ColumnListSubheader is last.
+        pageLayout.addSubheader(subheaderCountsSubheader);
+
         pageLayout.finalizeMetadata();
 
         final byte[] expectedSubheaderData = new byte[] {
