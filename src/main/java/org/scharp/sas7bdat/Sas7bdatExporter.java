@@ -16,11 +16,11 @@ public final class Sas7bdatExporter implements AutoCloseable {
     private final PageSequenceGenerator pageSequenceGenerator;
     private final byte[] pageBuffer;
 
-    int totalObservationsWritten;
+    private int totalObservationsWritten;
     private Sas7bdatPage currentPage;
 
-    int totalPagesAllocated; // TODO: only to assert at the end
-    int totalPagesInDataset;
+    private int totalPagesAllocated; // TODO: only to assert at the end
+    private int totalPagesInDataset;
 
     private static int divideAndRoundUp(int dividend, int divisor) {
         return (dividend + divisor - 1) / divisor;
