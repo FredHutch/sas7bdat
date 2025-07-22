@@ -1,0 +1,21 @@
+{
+    "testDescription" : "A dataset that has non-ASCII characters in text fields, to test UTF-8 encoding",
+
+    "name": "α dataset with non-ASCII characters 😄 123456789_123456789 Ω",
+    "label": "α dataset with non-ASCII characters 😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄_Ω",
+    "type": "α😄Ω",
+    "creationDate": "2020-01-03T20:12:31",
+    "variables": [
+        {
+            "name": "α non-ASCII characters 😄__Ω",
+            "type": "CHARACTER",
+            "label": "α variable with non-ASCII characters 😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄😄Ω",
+            "length": 64,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        }
+    ],
+    "observations": [
+        [ "α dataset with non-ASCII characters 😄 123456789_123456789 Ω" ]
+   ]
+}
