@@ -57,174 +57,183 @@ public final class Sas7bdatExporter implements AutoCloseable {
         ArgumentUtil.checkNotNull(metadata, "metadata");
 
         outputStream = Files.newOutputStream(targetLocation);
-        variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
-        this.totalObservationsInDataset = totalObservationsInDataset;
-        pageSequenceGenerator = new PageSequenceGenerator();
+        try {
+            variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
+            this.totalObservationsInDataset = totalObservationsInDataset;
+            pageSequenceGenerator = new PageSequenceGenerator();
 
-        //
-        // Create the metadata for this dataset.
-        //
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        pageBuffer = new byte[pageLayout.pageSize];
-
-        // SAS always pads the dataset type with spaces so that it's 8 bytes.
-        String paddedDatasetType = metadata.datasetType() + " ".repeat(
-            8 - metadata.datasetType().getBytes(StandardCharsets.UTF_8).length);
-
-        // Add the subheaders in the order in which they should be listed in the subheaders index.
-        // Note that this is the reverse order in which they appear on a metadata page.
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(
-            pageSequenceGenerator,
-            paddedDatasetType,
-            metadata.datasetLabel(),
-            variablesLayout,
-            pageLayout,
-            totalObservationsInDataset);
-        pageLayout.addSubheader(rowSizeSubheader);
-
-        pageLayout.addSubheader(new ColumnSizeSubheader(metadata.variables()));
-
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(
-            metadata.variables(),
-            pageLayout);
-        pageLayout.addSubheader(subheaderCountsSubheader);
-
-        // Next, SAS adds the ColumnTextSubheaders.  Since a Subheader cannot be larger than Short.MAX_SIZE
-        // bytes, if there's a lot of metadata text, multiple ColumnTextSubheaders may be needed.
-        // SAS adds these in a way that is aware of how much space is left on the metadata page so that
-        // a subheader is limited to fill what's left on the page.  Therefore, populating the
-        // ColumnTextSubheaders must be coupled with the logic for adding subheaders to pages.
-        // And since all ColumnTextSubheaders must be consecutive, all text must be added at the same time.
-        //
-        // I would have preferred a design where each subheader that needs to reference a string would
-        // be the one to add it to the ColumnText.  I think that would have been better encapsulation.
-        // However, I wasn't able to make that design work and still limit the column text subheaders
-        // to fit the available space on the page.  Therefore, all strings referenced by any subheader
-        // are added here.
-        //
-        // To assist with troubleshooting, the text is added in the same order in which SAS adds it.
-
-        // The first ColumnTextSubheader in the datasets which SAS generates has an extra
-        // four bytes of padding between the size of the header and the first string.
-        // Adding the string of 0x00 0x00 0x00 0x00 matches what SAS usually generates.
-        // Sometimes SAS generates 0x00 0x00 0x00 0x14 or 0x00 0x00 0x00 0x1d,
-        // but I don't know if this has any meaning.
-        pageLayout.columnText.add("\0\0\0\0");
-
-        pageLayout.columnText.add(" ".repeat(8)); // unknown
-        pageLayout.columnText.add(paddedDatasetType); // Add the dataset type, padded with spaces.
-        pageLayout.columnText.add("DATASTEP"); // add the PROC step which created the dataset
-        pageLayout.columnText.add(metadata.datasetLabel()); // add the dataset label
-
-        for (Variable variable : metadata.variables()) {
-            pageLayout.columnText.add(variable.name());
-            pageLayout.columnText.add(variable.label());
-
-            // CONSIDER: SAS uppercases the format names before storing them.
-            pageLayout.columnText.add(variable.inputFormat().name());
-            pageLayout.columnText.add(variable.outputFormat().name());
-        }
-
-        // Add the partially-written column text subheader to the metadata page.
-        // This is essential, as all column text subheaders must be added before
-        // the next subheader type is added.
-        pageLayout.columnText.noMoreText();
-
-        int offset = 0;
-        while (offset < variablesLayout.totalVariables()) {
-            ColumnNameSubheader nextSubheader = new ColumnNameSubheader(
-                metadata.variables(),
-                offset,
-                pageLayout.columnText);
-            pageLayout.addSubheader(nextSubheader);
-            offset += nextSubheader.totalVariablesInSubheader();
-        }
-
-        // Add the ColumnAttributesSubheaders
-        offset = 0;
-        while (offset < variablesLayout.totalVariables()) {
-            // Datasets that are generated by SAS limit the size of this subheader to 24588 bytes.
-            // In theory, it should be able to hold (Short.MAX_VALUE - 8) / 16 bytes, or 2047 variables.
             //
-            // If there isn't enough space on the current metadata page for a subheader that contains all variables,
-            // then split the subheader so that we use all remaining space on the metadata pages.  This is what
-            // SAS does.
-            final int spaceInPage = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
-            final int maxSize;
-            if (spaceInPage < ColumnAttributesSubheader.MIN_SIZE) {
-                // There's not enough space remaining for a useful header. Pick a large subheader for the next page.
-                maxSize = 24588;
-            } else {
-                maxSize = Math.min(24588, spaceInPage);
+            // Create the metadata for this dataset.
+            //
+            Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+            pageBuffer = new byte[pageLayout.pageSize];
+
+            // SAS always pads the dataset type with spaces so that it's 8 bytes.
+            String paddedDatasetType = metadata.datasetType() + " ".repeat(
+                8 - metadata.datasetType().getBytes(StandardCharsets.UTF_8).length);
+
+            // Add the subheaders in the order in which they should be listed in the subheaders index.
+            // Note that this is the reverse order in which they appear on a metadata page.
+            RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(
+                pageSequenceGenerator,
+                paddedDatasetType,
+                metadata.datasetLabel(),
+                variablesLayout,
+                pageLayout,
+                totalObservationsInDataset);
+            pageLayout.addSubheader(rowSizeSubheader);
+
+            pageLayout.addSubheader(new ColumnSizeSubheader(metadata.variables()));
+
+            SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(
+                metadata.variables(),
+                pageLayout);
+            pageLayout.addSubheader(subheaderCountsSubheader);
+
+            // Next, SAS adds the ColumnTextSubheaders.  Since a Subheader cannot be larger than Short.MAX_SIZE
+            // bytes, if there's a lot of metadata text, multiple ColumnTextSubheaders may be needed.
+            // SAS adds these in a way that is aware of how much space is left on the metadata page so that
+            // a subheader is limited to fill what's left on the page.  Therefore, populating the
+            // ColumnTextSubheaders must be coupled with the logic for adding subheaders to pages.
+            // And since all ColumnTextSubheaders must be consecutive, all text must be added at the same time.
+            //
+            // I would have preferred a design where each subheader that needs to reference a string would
+            // be the one to add it to the ColumnText.  I think that would have been better encapsulation.
+            // However, I wasn't able to make that design work and still limit the column text subheaders
+            // to fit the available space on the page.  Therefore, all strings referenced by any subheader
+            // are added here.
+            //
+            // To assist with troubleshooting, the text is added in the same order in which SAS adds it.
+
+            // The first ColumnTextSubheader in the datasets which SAS generates has an extra
+            // four bytes of padding between the size of the header and the first string.
+            // Adding the string of 0x00 0x00 0x00 0x00 matches what SAS usually generates.
+            // Sometimes SAS generates 0x00 0x00 0x00 0x14 or 0x00 0x00 0x00 0x1d,
+            // but I don't know if this has any meaning.
+            pageLayout.columnText.add("\0\0\0\0");
+
+            pageLayout.columnText.add(" ".repeat(8)); // unknown
+            pageLayout.columnText.add(paddedDatasetType); // Add the dataset type, padded with spaces.
+            pageLayout.columnText.add("DATASTEP"); // add the PROC step which created the dataset
+            pageLayout.columnText.add(metadata.datasetLabel()); // add the dataset label
+
+            for (Variable variable : metadata.variables()) {
+                pageLayout.columnText.add(variable.name());
+                pageLayout.columnText.add(variable.label());
+
+                // CONSIDER: SAS uppercases the format names before storing them.
+                pageLayout.columnText.add(variable.inputFormat().name());
+                pageLayout.columnText.add(variable.outputFormat().name());
             }
 
-            ColumnAttributesSubheader nextSubheader = new ColumnAttributesSubheader(variablesLayout, offset, maxSize);
-            pageLayout.addSubheader(nextSubheader);
-            offset += nextSubheader.totalVariablesInSubheader();
-        }
+            // Add the partially-written column text subheader to the metadata page.
+            // This is essential, as all column text subheaders must be added before
+            // the next subheader type is added.
+            pageLayout.columnText.noMoreText();
 
-        // Add the column list subheaders.  SAS only adds them if there's more than one variable.
-        if (1 < variablesLayout.totalVariables()) {
-            offset = 0;
+            int offset = 0;
             while (offset < variablesLayout.totalVariables()) {
-                ColumnListSubheader nextSubheader = new ColumnListSubheader(variablesLayout, offset);
+                ColumnNameSubheader nextSubheader = new ColumnNameSubheader(
+                    metadata.variables(),
+                    offset,
+                    pageLayout.columnText);
                 pageLayout.addSubheader(nextSubheader);
                 offset += nextSubheader.totalVariablesInSubheader();
             }
-        }
 
-        // Add the column format subheaders.
-        for (Variable variable : metadata.variables()) {
-            pageLayout.addSubheader(new ColumnFormatSubheader(variable, pageLayout.columnText));
-        }
+            // Add the ColumnAttributesSubheaders
+            offset = 0;
+            while (offset < variablesLayout.totalVariables()) {
+                // Datasets that are generated by SAS limit the size of this subheader to 24588 bytes.
+                // In theory, it should be able to hold (Short.MAX_VALUE - 8) / 16 bytes, or 2047 variables.
+                //
+                // If there isn't enough space on the current metadata page for a subheader that contains all variables,
+                // then split the subheader so that we use all remaining space on the metadata pages.  This is what
+                // SAS does.
+                final int spaceInPage = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
+                final int maxSize;
+                if (spaceInPage < ColumnAttributesSubheader.MIN_SIZE) {
+                    // There's not enough space remaining for a useful header. Pick a large subheader for the next page.
+                    maxSize = 24588;
+                } else {
+                    maxSize = Math.min(24588, spaceInPage);
+                }
 
-        // Finalize the subheaders on the final metadata page.
-        Sas7bdatPage mixedPage = pageLayout.finalizeMetadata();
+                ColumnAttributesSubheader nextSubheader = new ColumnAttributesSubheader(variablesLayout, offset,
+                    maxSize);
+                pageLayout.addSubheader(nextSubheader);
+                offset += nextSubheader.totalVariablesInSubheader();
+            }
 
-        // Calculate how many pages will be needed in the dataset.
-        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
-        {
-            final int maxObservationsOnMixedPage = mixedPage.maxObservations();
-            final int totalNumberOfDataPages;
-            if (totalObservationsInDataset <= maxObservationsOnMixedPage) {
-                // All observations can fit on the mixed page, so there's no need for data pages.
-                totalNumberOfDataPages = 0;
-            } else {
-                int observationsOnAllDataPages = totalObservationsInDataset - maxObservationsOnMixedPage;
-                final int maxObservationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
+            // Add the column list subheaders.  SAS only adds them if there's more than one variable.
+            if (1 < variablesLayout.totalVariables()) {
+                offset = 0;
+                while (offset < variablesLayout.totalVariables()) {
+                    ColumnListSubheader nextSubheader = new ColumnListSubheader(variablesLayout, offset);
+                    pageLayout.addSubheader(nextSubheader);
+                    offset += nextSubheader.totalVariablesInSubheader();
+                }
+            }
+
+            // Add the column format subheaders.
+            for (Variable variable : metadata.variables()) {
+                pageLayout.addSubheader(new ColumnFormatSubheader(variable, pageLayout.columnText));
+            }
+
+            // Finalize the subheaders on the final metadata page.
+            Sas7bdatPage mixedPage = pageLayout.finalizeMetadata();
+
+            // Calculate how many pages will be needed in the dataset.
+            final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
+            {
+                final int maxObservationsOnMixedPage = mixedPage.maxObservations();
+                final int totalNumberOfDataPages;
+                if (totalObservationsInDataset <= maxObservationsOnMixedPage) {
+                    // All observations can fit on the mixed page, so there's no need for data pages.
+                    totalNumberOfDataPages = 0;
+                } else {
+                    int observationsOnAllDataPages = totalObservationsInDataset - maxObservationsOnMixedPage;
+                    final int maxObservationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
+                        pageLayout.pageSize,
+                        variablesLayout);
+
+                    // observationsOnAllDataPages / observationsPerDataPage rounded up
+                    totalNumberOfDataPages = divideAndRoundUp(observationsOnAllDataPages, maxObservationsPerDataPage);
+                }
+                totalPagesInDataset = totalNumberOfMetadataPages + totalNumberOfDataPages;
+            }
+            rowSizeSubheader.setTotalPagesInDataset(totalPagesInDataset);
+
+            // Write the file header.
+            {
+                Sas7bdatHeader header = new Sas7bdatHeader(
+                    pageSequenceGenerator,
+                    pageLayout.pageSize, // SAS uses the same value for page size and header size
                     pageLayout.pageSize,
-                    variablesLayout);
-
-                // observationsOnAllDataPages / observationsPerDataPage rounded up
-                totalNumberOfDataPages = divideAndRoundUp(observationsOnAllDataPages, maxObservationsPerDataPage);
+                    metadata.datasetName(),
+                    metadata.creationTime(),
+                    totalPagesInDataset);
+                header.write(pageBuffer);
+                outputStream.write(pageBuffer);
             }
-            totalPagesInDataset = totalNumberOfMetadataPages + totalNumberOfDataPages;
-        }
-        rowSizeSubheader.setTotalPagesInDataset(totalPagesInDataset);
 
-        // Write the file header.
-        {
-            Sas7bdatHeader header = new Sas7bdatHeader(
-                pageSequenceGenerator,
-                pageLayout.pageSize, // SAS uses the same value for page size and header size
-                pageLayout.pageSize,
-                metadata.datasetName(),
-                metadata.creationTime(),
-                totalPagesInDataset);
-            header.write(pageBuffer);
-            outputStream.write(pageBuffer);
-        }
-
-        // Write out all metadata pages except the last one, which may be able to hold observations.
-        for (Sas7bdatPage currentMetadataPage : pageLayout.completeMetadataPages) {
-            if (currentMetadataPage != mixedPage) {
-                writePage(currentMetadataPage);
+            // Write out all metadata pages except the last one, which may be able to hold observations.
+            for (Sas7bdatPage currentMetadataPage : pageLayout.completeMetadataPages) {
+                if (currentMetadataPage != mixedPage) {
+                    writePage(currentMetadataPage);
+                }
             }
-        }
 
-        totalObservationsWritten = 0;
-        totalPagesAllocated = totalNumberOfMetadataPages;
-        currentPage = mixedPage;
+            totalObservationsWritten = 0;
+            totalPagesAllocated = totalNumberOfMetadataPages;
+            currentPage = mixedPage;
+
+        } catch (Throwable throwable) {
+            // If something goes wrong, and we can't construct the exporter, then
+            // close the output stream that we opened to avoid leaking a file handle.
+            outputStream.close();
+            throw throwable;
+        }
     }
 
     /**
