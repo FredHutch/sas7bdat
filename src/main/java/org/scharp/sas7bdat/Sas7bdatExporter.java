@@ -218,6 +218,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *
      * @throws IOException
      *     If an I/O problem prevented the SAS7BDAT from being written.
+     * @throws NullPointerException
+     *     if {@code outputStream} or {@code metadata} are {@code null}.
      */
     // The totalObservationsInDataset parameter is a kludge that enables that header and metadata pages to be completely
     // written by the time this method returns.  It would be a better API if the caller didn't have to provide this
@@ -261,6 +263,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *
      * @throws IOException
      *     If an I/O problem prevented the SAS7BDAT from being created.
+     * @throws NullPointerException
+     *     if {@code outputStream} or {@code metadata} are {@code null}.
      */
     // The totalObservationsInDataset parameter is a kludge that enables that header and metadata pages to be completely
     // written by the time this method returns.  It would be a better API if the caller didn't have to provide this
@@ -442,7 +446,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      * @throws IOException
      *     If a file I/O error prevents the dataset from being written.
      * @throws NullPointerException
-     *     If {@code targetLocation}, {@code metadata}, or {@code observations} is {@code null}.
+     *     If {@code targetLocation}, {@code metadata}, or {@code observations} is {@code null}; or if
+     *     {@code observations} contains {@code null}.
      */
     public static void exportDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
         throws IOException {
