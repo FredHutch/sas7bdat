@@ -386,6 +386,11 @@ class RowSizeSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return SIGNATURE_ROW_SIZE;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_A;
     }

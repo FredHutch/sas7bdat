@@ -7,10 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_COLUMN_TEXT;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_B;
 
 /** Unit tests for {@link ColumnTextSubheader}. */
 public class ColumnTextSubheaderTest {
+
+    @Test
+    void testSignature() {
+        ColumnTextSubheader columnTextSubheader = new ColumnTextSubheader((short) 0, (short) 0x7F00);
+        assertEquals(SIGNATURE_COLUMN_TEXT, columnTextSubheader.signature());
+    }
 
     @Test
     void testTypeCode() {

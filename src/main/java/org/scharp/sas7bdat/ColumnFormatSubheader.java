@@ -49,6 +49,11 @@ class ColumnFormatSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return SIGNATURE_COLUMN_FORMAT;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_A;
     }

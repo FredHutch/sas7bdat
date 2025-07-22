@@ -7,6 +7,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_COLUMN_FORMAT;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_A;
 
 /** Unit tests for {@link ColumnFormatSubheader}. */
@@ -24,6 +25,15 @@ public class ColumnFormatSubheaderTest {
         columnText.add(variable.label());
 
         return columnText;
+    }
+
+    @Test
+    void testSignature() {
+        Variable variable = Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20).build();
+        ColumnText columnText = newColumnText(variable);
+
+        ColumnFormatSubheader columnFormatSubheader = new ColumnFormatSubheader(variable, columnText);
+        assertEquals(SIGNATURE_COLUMN_FORMAT, columnFormatSubheader.signature());
     }
 
     @Test

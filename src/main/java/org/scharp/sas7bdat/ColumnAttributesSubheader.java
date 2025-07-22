@@ -126,6 +126,11 @@ class ColumnAttributesSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return SIGNATURE_COLUMN_ATTRS;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_B;
     }

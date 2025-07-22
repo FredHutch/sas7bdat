@@ -55,10 +55,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         pageLayout.addSubheader(new ColumnSizeSubheader(metadata.variables()));
 
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(
-            metadata.variables(),
-            pageLayout);
-        pageLayout.addSubheader(subheaderCountsSubheader);
+        pageLayout.addSubheader(new SubheaderCountsSubheader(pageLayout));
 
         // Next, SAS adds the ColumnTextSubheaders.  Since a Subheader cannot be larger than Short.MAX_SIZE
         // bytes, if there's a lot of metadata text, multiple ColumnTextSubheaders may be needed.

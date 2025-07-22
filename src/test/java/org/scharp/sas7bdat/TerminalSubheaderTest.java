@@ -11,6 +11,12 @@ import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_A;
 public class TerminalSubheaderTest {
 
     @Test
+    void testSignature() {
+        TerminalSubheader terminalSubheader = new TerminalSubheader();
+        assertEquals(0, terminalSubheader.signature());
+    }
+
+    @Test
     void testTypeCode() {
         TerminalSubheader terminalSubheader = new TerminalSubheader();
         assertEquals(SUBHEADER_TYPE_A, terminalSubheader.typeCode());

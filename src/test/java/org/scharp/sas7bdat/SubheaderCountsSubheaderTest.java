@@ -7,19 +7,30 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_SUBHEADER_COUNTS;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_A;
 
 /** Unit tests for {@link SubheaderCountsSubheader}. */
 public class SubheaderCountsSubheaderTest {
 
     @Test
+    void testSignature() {
+        // Create a SubheaderCountsSubheader
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
+
+        assertEquals(SIGNATURE_SUBHEADER_COUNTS, subheaderCountsSubheader.signature());
+    }
+
+    @Test
     void testTypeCode() {
         // Create a SubheaderCountsSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        List<Variable> variableList = List.of();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         assertEquals(SUBHEADER_TYPE_A, subheaderCountsSubheader.typeCode());
     }
@@ -28,10 +39,9 @@ public class SubheaderCountsSubheaderTest {
     void testCompressionCode() {
         // Create a SubheaderCountsSubheader
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        List<Variable> variableList = List.of();
-        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, subheaderCountsSubheader.compressionCode());
     }
@@ -73,7 +83,7 @@ public class SubheaderCountsSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         // Add the subheaders that get counted to the metadata.
         // This is intentionally not a realistically constructed metadata; many of the repeated
@@ -109,8 +119,8 @@ public class SubheaderCountsSubheaderTest {
             0, -4, -1, -1, -1, -1, -1, -1,  // signature
 
             72, 0, 0, 0, 0, 0, 0, 0, // max subheader data size
-            4, 0, 0, 0, 0, 0, 0, 0, // unknown
-            7, 0, 0, 0, 0, 0, 0, 0, // unknown, maybe a count
+            4, 0, 0, 0, 0, 0, 0, 0, // total non-zero counts
+            7, 0, 0, 0, 0, 0, 0, 0, // total subheader types counted
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
@@ -241,14 +251,14 @@ public class SubheaderCountsSubheaderTest {
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(variableList, pageLayout);
+        SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         final byte[] expectedSubheaderData = new byte[] {
             0, -4, -1, -1, -1, -1, -1, -1,  // signature
 
             0, 0, 0, 0, 0, 0, 0, 0, // max subheader data size
-            3, 0, 0, 0, 0, 0, 0, 0, // unknown
-            7, 0, 0, 0, 0, 0, 0, 0, // unknown, maybe a count
+            0, 0, 0, 0, 0, 0, 0, 0, // total non-zero counts
+            7, 0, 0, 0, 0, 0, 0, 0, // total subheader types counted
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown

@@ -8,10 +8,18 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_COLUMN_SIZE;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_A;
 
 /** Unit tests for {@link ColumnSizeSubheader}. */
 public class ColumnSizeSubheaderTest {
+
+    @Test
+    void testSignature() {
+        Variable variable = Variable.builder().name("MY_VAR").type(VariableType.CHARACTER).length(20).build();
+        ColumnSizeSubheader columnSizeSubheader = new ColumnSizeSubheader(List.of(variable));
+        assertEquals(SIGNATURE_COLUMN_SIZE, columnSizeSubheader.signature());
+    }
 
     @Test
     void testTypeCode() {

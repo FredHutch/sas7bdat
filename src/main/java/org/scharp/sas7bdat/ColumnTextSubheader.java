@@ -232,6 +232,11 @@ class ColumnTextSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return SIGNATURE_COLUMN_TEXT;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_B;
     }

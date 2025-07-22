@@ -31,6 +31,11 @@ class FillerSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return 0xF11L;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_A;
     }

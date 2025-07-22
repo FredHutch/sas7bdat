@@ -1,6 +1,7 @@
 package org.scharp.sas7bdat;
 
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.scharp.sas7bdat.WriteUtil.write8;
 
@@ -13,11 +14,9 @@ class SubheaderCountsSubheader extends Subheader {
      */
     private static final int PAGE_SIZE = 600;
 
-    private final Collection<Variable> variables;
     private final Sas7bdatPageLayout pageLayout;
 
-    SubheaderCountsSubheader(Collection<Variable> variables, Sas7bdatPageLayout pageLayout) {
-        this.variables = variables;
+    SubheaderCountsSubheader(Sas7bdatPageLayout pageLayout) {
         this.pageLayout = pageLayout; // this is filled in later by the caller
     }
 
@@ -69,14 +68,35 @@ class SubheaderCountsSubheader extends Subheader {
     void writeSubheader(byte[] page, int subheaderOffset) {
         write8(page, subheaderOffset, SIGNATURE_SUBHEADER_COUNTS); // signature
 
-        // The next field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
-        // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
-        // This may also include all variable-length subheaders, but the rest would be smaller.
-        // This may be a performance hint for how large a buffer to allocate when reading
-        // the data.  However, setting this to small or negative value doesn't prevent SAS
-        // from reading the dataset, so its value may be ignored.
-        var maximumPayloadSizeCalculator = new Sas7bdatPageLayout.NextSubheader() {
+        // The subheader types that are counted
+        final long[] subheaderSignatures = new long[] {
+            SIGNATURE_COLUMN_ATTRS,
+            SIGNATURE_COLUMN_TEXT,
+            SIGNATURE_COLUMN_NAME,
+            SIGNATURE_COLUMN_LIST,
+
+            // There are three subheader types that we don't know anything about.
+            SIGNATURE_UNKNOWN_A,
+            SIGNATURE_UNKNOWN_B,
+            SIGNATURE_UNKNOWN_C,
+        };
+
+        // Create a HashSet from the array for faster lookup.
+        final Set<Long> countedSubheaderTypes = new HashSet<>();
+        for (long subheaderSignature : subheaderSignatures) {
+            countedSubheaderTypes.add(subheaderSignature);
+        }
+
+        var fieldCalculator = new Sas7bdatPageLayout.NextSubheader() {
+            // This first field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
+            // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
+            // This may also include all variable-length subheaders, but the rest would be smaller.
+            // This may be a performance hint for how large a buffer to allocate when reading
+            // the data.  However, setting this to small or negative value doesn't prevent SAS
+            // from reading the dataset, so its value may be ignored.
             int maxSubheaderPayloadSize = 0;
+
+            final Set<Long> subheaderTypesPresent = new HashSet<>();
 
             @Override
             public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
@@ -87,15 +107,26 @@ class SubheaderCountsSubheader extends Subheader {
                 } else if (subheader instanceof ColumnAttributesSubheader columnAttributesSubheader) {
                     maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnAttributesSubheader.sizeOfData());
                 }
+
+                // For the set of subheader classes that we count, determine if any are within the data set.
+                long thisSubheaderSignature = subheader.signature();
+                if (countedSubheaderTypes.contains(thisSubheaderSignature)) {
+                    subheaderTypesPresent.add(thisSubheaderSignature);
+                }
             }
         };
-        pageLayout.forEachSubheader(maximumPayloadSizeCalculator);
-        write8(page, subheaderOffset + 8, maximumPayloadSizeCalculator.maxSubheaderPayloadSize);
+        pageLayout.forEachSubheader(fieldCalculator);
 
-        final int magicNumber = variables.size() == 1 ? 3 : 4;
-        //final int magicNumber = variables.size() - 1;
-        write8(page, subheaderOffset + 16, magicNumber); // unknown
-        write8(page, subheaderOffset + 24, 7); // unknown, maybe a count?
+        // The next field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
+        // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
+        // This may also include all variable-length subheaders, but the rest would be smaller.
+        // This may be a performance hint for how large a buffer to allocate when reading
+        // the data.  However, setting this to small or negative value doesn't prevent SAS
+        // from reading the dataset, so its value may be ignored.
+        write8(page, subheaderOffset + 8, fieldCalculator.maxSubheaderPayloadSize);
+
+        write8(page, subheaderOffset + 16, fieldCalculator.subheaderTypesPresent.size());
+        write8(page, subheaderOffset + 24, subheaderSignatures.length); // how many non-zero vectors exist
         write8(page, subheaderOffset + 32, 0); // unknown
         write8(page, subheaderOffset + 40, 0); // unknown
         write8(page, subheaderOffset + 48, 0); // unknown
@@ -124,6 +155,11 @@ class SubheaderCountsSubheader extends Subheader {
         writeSubheaderInformation(page, subheaderOffset + 480, null, 0L);
         writeSubheaderInformation(page, subheaderOffset + 520, null, 0L);
         writeSubheaderInformation(page, subheaderOffset + 560, null, 0L);
+    }
+
+    @Override
+    long signature() {
+        return SIGNATURE_SUBHEADER_COUNTS;
     }
 
     @Override

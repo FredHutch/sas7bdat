@@ -7,10 +7,25 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_COLUMN_ATTRS;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_B;
 
 /** Unit tests for {@link ColumnAttributesSubheader}. */
 public class ColumnAttributesSubheaderTest {
+
+    @Test
+    void testSignature() {
+        Variable variable = Variable.builder().
+            name("TEXT").
+            type(VariableType.CHARACTER).
+            length(20).
+            label("A label").
+            outputFormat(new Format("$", 10)).build();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
+
+        ColumnAttributesSubheader subheader = new ColumnAttributesSubheader(variablesLayout, 0, Short.MAX_VALUE);
+        assertEquals(SIGNATURE_COLUMN_ATTRS, subheader.signature());
+    }
 
     @Test
     void testTypeCode() {

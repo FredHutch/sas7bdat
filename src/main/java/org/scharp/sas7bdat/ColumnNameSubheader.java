@@ -104,6 +104,11 @@ class ColumnNameSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return SIGNATURE_COLUMN_NAME;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_B;
     }

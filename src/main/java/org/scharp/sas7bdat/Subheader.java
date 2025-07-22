@@ -55,6 +55,11 @@ abstract class Subheader {
     abstract void writeSubheader(byte[] page, int subheaderOffset);
 
     /**
+     * @return the signature of this subheader
+     */
+    abstract long signature();
+
+    /**
      * @return A byte which represents the "type" of this subheader.
      */
     abstract byte typeCode();

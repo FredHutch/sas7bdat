@@ -7,10 +7,24 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_ROW_SIZE;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_A;
 
 /** Unit tests for {@link RowSizeSubheader}. */
 public class RowSizeSubheaderTest {
+
+    @Test
+    void testSignature() {
+        // Create a RowSizeSubheader
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
+            Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
+            variablesLayout, pageLayout, 0);
+
+        assertEquals(SIGNATURE_ROW_SIZE, rowSizeSubheader.signature());
+    }
 
     @Test
     void testTypeCode() {

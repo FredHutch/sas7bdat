@@ -18,6 +18,11 @@ class TerminalSubheader extends Subheader {
     }
 
     @Override
+    long signature() {
+        return 0;
+    }
+
+    @Override
     byte typeCode() {
         return SUBHEADER_TYPE_A;
     }

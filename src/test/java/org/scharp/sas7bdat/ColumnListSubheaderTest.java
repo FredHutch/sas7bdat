@@ -8,10 +8,21 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.scharp.sas7bdat.Subheader.COMPRESSION_UNCOMPRESSED;
+import static org.scharp.sas7bdat.Subheader.SIGNATURE_COLUMN_LIST;
 import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_B;
 
 /** Unit tests for {@link ColumnListSubheader}. */
 public class ColumnListSubheaderTest {
+
+    @Test
+    void testSignature() {
+        List<Variable> variablesList = List.of(
+            Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20).build());
+        Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variablesList);
+
+        ColumnListSubheader columnListSubheader = new ColumnListSubheader(variablesLayout, 0);
+        assertEquals(SIGNATURE_COLUMN_LIST, columnListSubheader.signature());
+    }
 
     @Test
     void testTypeCode() {
