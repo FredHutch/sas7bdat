@@ -214,7 +214,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
             outputStream.write(pageBuffer);
         }
 
-        // Write out all complete metadata pages (but not the last one, which can hold observations)
+        // Write out all metadata pages except the last one, which may be able to hold observations.
         for (Sas7bdatPage currentMetadataPage : pageLayout.completeMetadataPages) {
             if (currentMetadataPage != mixedPage) {
                 writePage(currentMetadataPage);
