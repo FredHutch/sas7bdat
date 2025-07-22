@@ -8,8 +8,11 @@ import com.epam.parso.impl.SasFileReaderImpl;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -369,6 +372,125 @@ public class Sas7bdatExporterTest {
     }
 
     /**
+     * Variations for the streaming interface:
+     * <ul>
+     *   <li>{@link Sas7bdatExporter#Sas7bdatExporter(OutputStream, Sas7bdatMetadata, int)}</li>
+     *   <li>{@link Sas7bdatExporter#writeObservation(List)}</li>
+     * </ul>
+     *
+     * Includes:
+     * <ul>
+     *   <li>Writing non-ASCII characters</li>
+     *   <li>Writing CHARACTER values exactly as long as the variable</li>
+     *   <li>Writing both CHARACTER and NUMERIC values</li>
+     * </ul>
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testStreamingToOutputStream() throws IOException {
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            // Set a known "creation date" to make it easier to diff output from multiple runs.
+            LocalDateTime creationDate = LocalDateTime.parse("2020-11-20T06:53:07");
+
+            String greek = "\u0395\u03BB\u03BB\u03B7\u03BD\u03B9\u03BA\u03AC"; // Greek word for greek
+
+            String datasetLabel = "A sample dataset: " + greek;
+
+            String datasetType = "TestFile";
+
+            Variable variable1 = Variable.builder().
+                name("TEXT").
+                type(VariableType.CHARACTER).
+                length(200).
+                label("Some simple text").
+                inputFormat(new Format("$", 10)).
+                build();
+
+            Variable variable2 = Variable.builder().
+                name("VERY_LONG_0123456789_123456789VR").
+                type(VariableType.CHARACTER).
+                length(20).
+                label("A second text variable with a long name").
+                outputFormat(new Format("$CHAR", 200)).
+                build();
+
+            Variable variable3 = Variable.builder().
+                name("TEXT3").
+                type(VariableType.CHARACTER).
+                length(5).
+                label("").
+                outputFormat(new Format("$UPCASE", 10)).
+                build();
+
+            Variable variable4 = Variable.builder().
+                name("Letter").
+                type(VariableType.CHARACTER).
+                length(1).
+                label("A single letter").
+                outputFormat(new Format("$ASCII", 1)).
+                build();
+
+            Variable variable5 = Variable.builder().
+                name("MY_NUMBER").
+                type(VariableType.NUMERIC).
+                length(8).
+                label("A number").
+                inputFormat(new Format("d", 10)).
+                build();
+
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+                creationTime(creationDate).
+                datasetLabel(datasetLabel).
+                datasetType(datasetType).
+                variables(List.of(variable1, variable2, variable3, variable4, variable5)).
+                build();
+
+            // Write a data set using a streaming interface.
+            final int totalObservations = 1_000;
+            try (Sas7bdatExporter exporter = new Sas7bdatExporter(outputStream, metadata, totalObservations)) {
+                for (int i = 0; i < totalObservations; i++) {
+                    // The exporter should not be complete until all observations are written.
+                    exporter.writeObservation(List.of("Value #1 for Var #1!", "Value #1 for Var #2$", "Text3", "A", i));
+                }
+            }
+
+            // Read the dataset with parso to confirm that it was written correctly.
+            try (InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray())) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(240, sasFileProperties.getRowLength()); // 234 rounded up
+                assertEquals(262, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(4, sasFileProperties.getPageCount());
+
+                // Test the observations
+                assertEquals(totalObservations, sasFileProperties.getRowCount());
+                int i = 0;
+                Object[] row;
+                while (null != (row = sasFileReader.readNext())) {
+                    assertEquals(5, row.length);
+                    assertEquals("Value #1 for Var #1!", row[0]);
+                    assertEquals("Value #1 for Var #2$", row[1]);
+                    assertEquals("Text3", row[2]);
+                    assertEquals("A", row[3]);
+                    assertEquals(Long.valueOf(i), row[4]);
+                    i++;
+                }
+                assertEquals(totalObservations, i, "parso didn't return all rows");
+            }
+        }
+    }
+
+    /**
      * Tests that the IllegalStateException that is thrown by {@link Sas7bdatExporter#close()} when too few observations
      * are written doesn't replace the original exception.
      * <p>
@@ -677,7 +799,7 @@ public class Sas7bdatExporterTest {
     }
 
     @Test
-    public void testConstructWithNullTargetFile() {
+    public void testConstructWithNullPath() {
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
             variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
             build();
@@ -685,16 +807,28 @@ public class Sas7bdatExporterTest {
         // Invoke the unit-under-test with a null path.
         Exception exception = assertThrows(
             NullPointerException.class,
-            () -> new Sas7bdatExporter(null, metadata, 0));
+            () -> new Sas7bdatExporter((Path) null, metadata, 0));
         assertEquals("targetLocation must not be null", exception.getMessage());
+    }
+
+    @Test
+    public void testConstructWithNullOutputStream() {
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+
+        // Invoke the unit-under-test with a null path.
+        Exception exception = assertThrows(
+            NullPointerException.class,
+            () -> new Sas7bdatExporter((OutputStream) null, metadata, 0));
+        assertEquals("outputStream must not be null", exception.getMessage());
     }
 
     @Test
     public void testConstructWithNullMetadata() throws IOException {
         Path targetPath = Path.of("testConstructWithNullMetadata.sas7bdat");
-
         try {
-            // Invoke the unit-under-test with a null metadata object.
+            // Invoke the Path constructor with a null metadata object.
             Exception exception = assertThrows(
                 NullPointerException.class,
                 () -> new Sas7bdatExporter(targetPath, null, 0));
@@ -702,8 +836,17 @@ public class Sas7bdatExporterTest {
 
             // Confirm that the file was not created.
             assertFalse(Files.exists(targetPath), "target file unexpectedly created");
+
+            // Invoke the OutputStream constructor with a null metadata object.
+            try (OutputStream outputStream = Files.newOutputStream(targetPath)) {
+                exception = assertThrows(
+                    NullPointerException.class,
+                    () -> new Sas7bdatExporter(targetPath, null, 0));
+                assertEquals("metadata must not be null", exception.getMessage());
+            }
+
         } finally {
-            Files.deleteIfExists(targetPath); // cleanup, just in case
+            Files.deleteIfExists(targetPath); // cleanup
         }
     }
 
