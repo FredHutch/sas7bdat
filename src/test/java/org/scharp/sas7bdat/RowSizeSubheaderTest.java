@@ -77,6 +77,8 @@ public class RowSizeSubheaderTest {
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE    ", "dataset label",
             variablesLayout, pageLayout, 0x12456);
 
+        pageLayout.addSubheader(rowSizeSubheader);
+
         pageLayout.columnText.add("TYPE    ");
         pageLayout.columnText.add("dataset label");
         pageLayout.columnText.noMoreText();
@@ -95,7 +97,7 @@ public class RowSizeSubheaderTest {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature
 
             -16, 0, 0, 0, 0, 0, 0, 0, // unknown
-            9, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
+            10, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             17, 48, 34, 0, 0, 0, 0, 0, // unknown
 
@@ -178,7 +180,7 @@ public class RowSizeSubheaderTest {
             19, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
