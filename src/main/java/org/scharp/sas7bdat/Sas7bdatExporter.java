@@ -331,15 +331,35 @@ public final class Sas7bdatExporter implements AutoCloseable {
         return currentPage == null;
     }
 
+    /**
+     * Flushes any buffered data to the output stream and closes it.
+     * <p>
+     * This is safe to invoke multiple times.
+     * </p>
+     *
+     * @throws IOException
+     *     if there was a problem flushing any buffered data.
+     * @throws IllegalStateException
+     *     if this method is invoked before all observations that were promised in the constructor have been written. In
+     *     this case, the resulting SAS7BDAT file is corrupt, as the information in the header does not match its
+     *     contents.
+     */
     public void close() throws IOException {
 
         if (!isClosed()) {
-            // It'd be nice to throw an exception if fewer observation were written than were promised in the
-            // constructor, since it means that the header was written incorrectly, but since close() may be
-            // invoked as a result of an exception when writing, doing so would
-            // suppress the original exception with one that doesn't contain new information.
+            // Throw an exception if fewer observations were written than were promised in the
+            // constructor, since it means that the header and metadata was written incorrectly.
+            // (writeObservation() should prevent writing more observations than promised.)
             //
-            // The best we can do is for the caller to "opt in" by asserting isComplete().
+            // If the caller invokes close() in a "finally" block that is executed due to an
+            // unhandled exception while writing the observations, then we will throw a rather
+            // obvious exception here.  In this case, the JVM will suppress this exception and
+            // continue with the original one.
+            if (totalObservationsInDataset != totalObservationsWritten) {
+                throw new IllegalStateException(
+                    "The constructor was told to expect " + totalObservationsInDataset +
+                        " observation(s) but only " + totalObservationsWritten + " were written.");
+            }
 
             // Write the page.
             writePage(currentPage);

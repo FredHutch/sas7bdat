@@ -371,6 +371,143 @@ public class Sas7bdatExporterTest {
         }
     }
 
+    /**
+     * Tests that the IllegalStateException that is thrown by {@link Sas7bdatExporter#close()} when too few observations
+     * are written doesn't replace the original exception.
+     * <p>
+     * This isn't really a test of Sas7bdatExporter, but that it works correctly with the JVM.
+     * </p>
+     */
+    @Test
+    public void testUnhandledExceptionWhenWritingObservations() throws IOException {
+
+        Path targetLocation = Files.createTempFile("sas7bdat-testUnhandledExceptionWhenWritingObservations-",
+            ".sas7bdat");
+        try {
+            Variable variable = Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(100).build();
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().variables(List.of(variable)).build();
+
+            Exception ioException = assertThrows(
+                IOException.class,
+                () -> {
+                    try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, 100)) {
+                        // Write a few observations.
+                        for (int i = 0; i < 10; i++) {
+                            assertFalse(exporter.isComplete());
+                            exporter.writeObservation(List.of("Value"));
+                        }
+
+                        // Throw an exception, simulating some kind of problem.
+                        throw new IOException("my unhandled exception");
+                    }
+                });
+
+            // Confirm that the IOException was unhandled and that the IllegalStateException was suppressed.
+            assertEquals("my unhandled exception", ioException.getMessage());
+            assertEquals(1, ioException.getSuppressed().length);
+            assertEquals(
+                "The constructor was told to expect 100 observation(s) but only 10 were written.",
+                ioException.getSuppressed()[0].getMessage());
+
+            // The data set is corrupt, so there's no need to check its contents.
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
+        }
+    }
+
+    @Test
+    public void testWritingFewerObservationsThanPromised() throws IOException {
+
+        Path targetLocation = Files.createTempFile("sas7bdat-testWritingFewerObservationsThanPromised-", ".sas7bdat");
+        try {
+            Variable variable = Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(20000).build();
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().variables(List.of(variable)).build();
+
+            // Promise 100 observations but only write 99.
+            Exception exception = assertThrows(
+                IllegalStateException.class,
+                () -> {
+                    try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, 100)) {
+                        for (int i = 0; i < 99; i++) {
+                            assertFalse(exporter.isComplete());
+                            exporter.writeObservation(List.of("Value"));
+                        }
+                    }
+                });
+            assertEquals(
+                "The constructor was told to expect 100 observation(s) but only 99 were written.",
+                exception.getMessage());
+
+            // The data set is corrupt, so there's no need to check its contents.
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
+        }
+    }
+
+    @Test
+    public void testWritingMoreObservationsThanPromised() throws IOException {
+
+        Path targetLocation = Files.createTempFile("sas7bdat-testWritingMoreObservationsThanPromised-", ".sas7bdat");
+        try {
+            Variable variable = Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(100).build();
+            Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().variables(List.of(variable)).build();
+
+            // Promise 1234 observations but only write 1235.
+            int totalObservations = 1234;
+            try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
+                for (int i = 0; i < totalObservations; i++) {
+                    assertFalse(exporter.isComplete());
+                    exporter.writeObservation(List.of("Value #" + i));
+                }
+                assertTrue(exporter.isComplete());
+
+                // Write one more.
+                Exception exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> exporter.writeObservation(List.of("Too Many")));
+                assertEquals("wrote more observations than promised in the constructor", exception.getMessage());
+            }
+
+            // The data set should be well-formed because the exception in writeObservation should not
+            // have changed any state and then close() should have closed the data set with the original
+            // observations.
+
+            // Read the dataset with parso to confirm that it was written correctly.
+            try (InputStream inputStream = Files.newInputStream(targetLocation)) {
+                SasFileReader sasFileReader = new SasFileReaderImpl(inputStream);
+
+                // Test the metadata headers
+                assertMetadata(metadata, sasFileReader);
+
+                // Assert some additional properties that are subject to change (but should not change unintentionally)
+                SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
+                assertEquals(variable.length(), sasFileProperties.getRowLength());
+                assertEquals(635, sasFileProperties.getMixPageRowCount());
+                assertEquals(0x10000, sasFileProperties.getHeaderLength());
+                assertEquals(0x10000, sasFileProperties.getPageLength());
+                assertEquals(2, sasFileProperties.getPageCount());
+
+                // Test the observations
+                assertEquals(totalObservations, sasFileProperties.getRowCount());
+                int i = 0;
+                Object[] row;
+                while (null != (row = sasFileReader.readNext())) {
+                    assertArrayEquals(new Object[] { "Value #" + i }, row);
+                    i++;
+                }
+                assertEquals(totalObservations, i, "parso didn't return all rows");
+            }
+
+        } finally {
+            // Always clean up
+            Files.deleteIfExists(targetLocation);
+        }
+    }
+
     private static String padToSize(String string, int targetLength) {
         assertThat("TEST BUG: string is already too long", string.length(), Matchers.lessThanOrEqualTo(targetLength));
         return string + "x".repeat(targetLength - string.length());
