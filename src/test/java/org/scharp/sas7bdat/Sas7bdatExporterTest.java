@@ -837,16 +837,16 @@ public class Sas7bdatExporterTest {
             // Confirm that the file was not created.
             assertFalse(Files.exists(targetPath), "target file unexpectedly created");
 
-            // Invoke the OutputStream constructor with a null metadata object.
-            try (OutputStream outputStream = new ByteArrayOutputStream()) {
-                exception = assertThrows(
-                    NullPointerException.class,
-                    () -> new Sas7bdatExporter(outputStream, null, 0));
-                assertEquals("metadata must not be null", exception.getMessage());
-            }
-
         } finally {
             Files.deleteIfExists(targetPath); // cleanup
+        }
+
+        // Invoke the OutputStream constructor with a null metadata object.
+        try (OutputStream outputStream = new ByteArrayOutputStream()) {
+            Exception exception = assertThrows(
+                NullPointerException.class,
+                () -> new Sas7bdatExporter(outputStream, null, 0));
+            assertEquals("metadata must not be null", exception.getMessage());
         }
     }
 
@@ -866,16 +866,16 @@ public class Sas7bdatExporterTest {
 
             // Confirm that the file was not created.
             assertFalse(Files.exists(targetPath), "target file unexpectedly created");
-
-            // Invoke the OutputStream constructor with a negative totalObservationsInDataset.
-            try (OutputStream outputStream = new ByteArrayOutputStream()) {
-                exception = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new Sas7bdatExporter(outputStream, metadata, -1));
-                assertEquals("totalObservationsInDataset must not be negative", exception.getMessage());
-            }
         } finally {
             Files.deleteIfExists(targetPath); // cleanup
+        }
+
+        // Invoke the OutputStream constructor with a negative totalObservationsInDataset.
+        try (OutputStream outputStream = new ByteArrayOutputStream()) {
+            Exception exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Sas7bdatExporter(outputStream, metadata, -1));
+            assertEquals("totalObservationsInDataset must not be negative", exception.getMessage());
         }
     }
 
