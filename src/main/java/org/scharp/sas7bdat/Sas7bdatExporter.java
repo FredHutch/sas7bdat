@@ -35,7 +35,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      * </p>
      *
      * @param targetLocation
-     *     The path to the file to which the SAS7BDAT should be written.
+     *     The path to the file to which the SAS7BDAT should be written. If the file doesn't exist, then it will be
+     *     created.  If the file does exist, then its contents will be replaced.
      * @param metadata
      *     The metadata for the SAS7BDAT.
      * @param totalObservationsInDataset
@@ -379,7 +380,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      * </p>
      *
      * @param targetLocation
-     *     The location where
+     *     The path to the file to which the SAS7BDAT should be written. If the file doesn't exist, then it will be
+     *     created.  If the file does exist, then its contents will be replaced.
      * @param metadata
      *     The data set's metadata.
      * @param observations
