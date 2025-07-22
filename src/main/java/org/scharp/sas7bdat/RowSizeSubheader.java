@@ -22,7 +22,6 @@ class RowSizeSubheader extends Subheader {
 
     private final int maxObservationsPerDataPage;
 
-    private int totalMetadataPages;
     private int totalPagesInDataset;
 
     /**
@@ -81,10 +80,6 @@ class RowSizeSubheader extends Subheader {
         write8(page, offset + 8, recordIndex);
     }
 
-    void setTotalMetadataPages(int totalMetadataPages) {
-        this.totalMetadataPages = totalMetadataPages;
-    }
-
     void setTotalPagesInDataset(int totalPagesInDataset) {
         this.totalPagesInDataset = totalPagesInDataset;
     }
@@ -98,6 +93,8 @@ class RowSizeSubheader extends Subheader {
     void writeSubheader(byte[] page, int subheaderOffset) {
 
         var subheaderInformation = new Sas7bdatPageLayout.NextSubheader() {
+
+            int maxMetadataPageNumber = 0;
 
             int totalSubheaders = 0;
 
@@ -126,6 +123,12 @@ class RowSizeSubheader extends Subheader {
             @Override
             public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
                 totalSubheaders++;
+
+                // Track the largest page number that has metadata.
+                // This is also the total number of metadata pages.
+                if (maxMetadataPageNumber < pageNumberOfSubheader) {
+                    maxMetadataPageNumber = pageNumberOfSubheader;
+                }
 
                 if (subheader instanceof ColumnFormatSubheader) {
                     if (firstPageWithColumnFormatSubheader == 0) {
@@ -244,7 +247,7 @@ class RowSizeSubheader extends Subheader {
 
         // Unknown, but could be the location of the last Subheader block, in which case
         // the -1 doesn't include the terminal subheader.
-        writeRecordLocation(page, subheaderOffset + 528, totalMetadataPages,
+        writeRecordLocation(page, subheaderOffset + 528, subheaderInformation.maxMetadataPageNumber,
             finalMetadataPage.subheaders().size() - 1);
 
         // The location of the first data record.
@@ -256,11 +259,11 @@ class RowSizeSubheader extends Subheader {
             final int blockOfFirstDataRecord;
             if (totalObservationsOnMixedPage == 0) {
                 // There is no mixed page.
-                pageOfFirstDataRecord = totalMetadataPages + 1;
+                pageOfFirstDataRecord = subheaderInformation.maxMetadataPageNumber + 1;
                 blockOfFirstDataRecord = 1;
             } else {
                 // There is a mixed page.
-                pageOfFirstDataRecord = totalMetadataPages;
+                pageOfFirstDataRecord = subheaderInformation.maxMetadataPageNumber;
                 blockOfFirstDataRecord = finalMetadataPage.subheaders().size() + 1;
             }
             writeRecordLocation(page, subheaderOffset + 544, pageOfFirstDataRecord, blockOfFirstDataRecord);

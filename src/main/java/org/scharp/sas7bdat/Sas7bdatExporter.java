@@ -180,10 +180,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
         // Finalize the subheaders on the final metadata page.
         Sas7bdatPage mixedPage = pageLayout.finalizeMetadata();
 
-        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
-        rowSizeSubheader.setTotalMetadataPages(totalNumberOfMetadataPages);
-
         // Calculate how many pages will be needed in the dataset.
+        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
         {
             final int maxObservationsOnMixedPage = mixedPage.maxObservations();
             final int totalNumberOfDataPages;

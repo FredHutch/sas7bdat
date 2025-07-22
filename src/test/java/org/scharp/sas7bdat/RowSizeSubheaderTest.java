@@ -88,8 +88,7 @@ public class RowSizeSubheaderTest {
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
         pageLayout.finalizeMetadata();
 
-        // Set some values that appear in the row size subheader.
-        rowSizeSubheader.setTotalMetadataPages(122);
+        // Set a value that appears in the row size subheader.
         rowSizeSubheader.setTotalPagesInDataset(123);
 
         final byte[] expectedSubheaderData = new byte[] {
@@ -169,10 +168,10 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            122, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
+            2, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
-            122, 0, 0, 0, 0, 0, 0, 0, // page of first observation
+            2, 0, 0, 0, 0, 0, 0, 0, // page of first observation
             4, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
 
             123, 0, 0, 0, 0, 0, 0, 0, // page of last observation
@@ -354,7 +353,7 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            0, 0, 0, 0, 0, 0, 0, 0, // page index of final subheader
+            1, 0, 0, 0, 0, 0, 0, 0, // page index of final subheader
             1, 0, 0, 0, 0, 0, 0, 0, // total subheaders in page with final subheader
 
             0, 0, 0, 0, 0, 0, 0, 0, // page of first observation
