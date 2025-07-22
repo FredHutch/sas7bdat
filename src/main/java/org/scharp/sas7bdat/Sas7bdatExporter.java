@@ -220,6 +220,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     If an I/O problem prevented the SAS7BDAT from being written.
      * @throws NullPointerException
      *     if {@code outputStream} or {@code metadata} are {@code null}.
+     * @throws IllegalArgumentException
+     *     if {@code totalObservationsInDataset} is negative.
      */
     // The totalObservationsInDataset parameter is a kludge that enables that header and metadata pages to be completely
     // written by the time this method returns.  It would be a better API if the caller didn't have to provide this
@@ -229,6 +231,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         throws IOException {
         ArgumentUtil.checkNotNull(outputStream, "outputStream");
         ArgumentUtil.checkNotNull(metadata, "metadata");
+        ArgumentUtil.checkNotNegative(totalObservationsInDataset, "totalObservationsInDataset");
 
         this.outputStream = outputStream;
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
@@ -265,6 +268,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     If an I/O problem prevented the SAS7BDAT from being created.
      * @throws NullPointerException
      *     if {@code outputStream} or {@code metadata} are {@code null}.
+     * @throws IllegalArgumentException
+     *     if {@code totalObservationsInDataset} is negative.
      */
     // The totalObservationsInDataset parameter is a kludge that enables that header and metadata pages to be completely
     // written by the time this method returns.  It would be a better API if the caller didn't have to provide this
@@ -274,6 +279,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         throws IOException {
         ArgumentUtil.checkNotNull(targetLocation, "targetLocation");
         ArgumentUtil.checkNotNull(metadata, "metadata");
+        ArgumentUtil.checkNotNegative(totalObservationsInDataset, "totalObservationsInDataset");
 
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;

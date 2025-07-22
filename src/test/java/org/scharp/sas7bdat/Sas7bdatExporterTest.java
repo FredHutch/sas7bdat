@@ -838,13 +838,42 @@ public class Sas7bdatExporterTest {
             assertFalse(Files.exists(targetPath), "target file unexpectedly created");
 
             // Invoke the OutputStream constructor with a null metadata object.
-            try (OutputStream outputStream = Files.newOutputStream(targetPath)) {
+            try (OutputStream outputStream = new ByteArrayOutputStream()) {
                 exception = assertThrows(
                     NullPointerException.class,
-                    () -> new Sas7bdatExporter(targetPath, null, 0));
+                    () -> new Sas7bdatExporter(outputStream, null, 0));
                 assertEquals("metadata must not be null", exception.getMessage());
             }
 
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup
+        }
+    }
+
+    @Test
+    public void testConstructWithNegativeTotalObservationsInDataset() throws IOException {
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+
+        Path targetPath = Path.of("testConstructWithNullMetadata.sas7bdat");
+        try {
+            // Invoke the Path constructor with a negative totalObservationsInDataset.
+            Exception exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Sas7bdatExporter(targetPath, metadata, -1));
+            assertEquals("totalObservationsInDataset must not be negative", exception.getMessage());
+
+            // Confirm that the file was not created.
+            assertFalse(Files.exists(targetPath), "target file unexpectedly created");
+
+            // Invoke the OutputStream constructor with a negative totalObservationsInDataset.
+            try (OutputStream outputStream = new ByteArrayOutputStream()) {
+                exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> new Sas7bdatExporter(outputStream, metadata, -1));
+                assertEquals("totalObservationsInDataset must not be negative", exception.getMessage());
+            }
         } finally {
             Files.deleteIfExists(targetPath); // cleanup
         }
