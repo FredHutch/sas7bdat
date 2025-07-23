@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.writeUtf8;
 
@@ -174,9 +173,6 @@ class ColumnTextSubheader extends VariableSizeSubheader {
 
     @Override
     void writeVariableSizedPayload(byte[] page, int subheaderOffset) {
-
-        write2(page, subheaderOffset + 16, (short) 0); // unknown, maybe padding
-        write2(page, subheaderOffset + 18, (short) 0); // unknown, maybe padding
 
         for (Map.Entry<String, Integer> entry : stringOffsets.entrySet()) {
             final String string = entry.getKey();
