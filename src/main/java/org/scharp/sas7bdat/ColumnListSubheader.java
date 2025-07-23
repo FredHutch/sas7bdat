@@ -62,6 +62,7 @@ class ColumnListSubheader extends VariableSizeSubheader {
      *
      * @return The number of bytes of data in this subheader
      */
+    @Override
     int sizeOfData() {
         return totalColumns * SIZE_OF_ENTRY + OFFSET_OF_FIRST_COLUMN - SIGNATURE_SIZE;
     }
