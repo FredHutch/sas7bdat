@@ -72,7 +72,8 @@ class ColumnListSubheader extends VariableSizeSubheader {
         // Hack: SAS writes this, but it might be unintentional.
         write2(page, subheaderOffset + 10, (short) 0x7FC8); // unknown
 
-        write8(page, subheaderOffset + 16, totalColumns * 2 + 22); // length remaining in subheader??
+        // length remaining in subheader?
+        write8(page, subheaderOffset + 16, sizeOfData() - PAYLOAD_DESCRIPTION_FIELD_SIZE);
 
         write2(page, subheaderOffset + 24, (short) totalVariables);
         write2(page, subheaderOffset + 26, (short) totalColumns); // length of list
