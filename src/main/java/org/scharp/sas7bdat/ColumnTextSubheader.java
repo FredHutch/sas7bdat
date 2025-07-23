@@ -130,6 +130,7 @@ class ColumnTextSubheader extends VariableSizeSubheader {
         Integer offset = stringOffsets.get(string);
         assert offset != null : string + " was not added to this ColumnTextSubheader";
         assert offset <= Short.MAX_VALUE : "offset exceeds what is addressable";
+        assert SIGNATURE_SIZE + PAYLOAD_DESCRIPTION_FIELD_SIZE <= offset : "offset is too small";
         return (short) (offset - SIGNATURE_SIZE);
     }
 
