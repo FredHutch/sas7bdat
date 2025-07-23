@@ -36,6 +36,10 @@ class ColumnTextSubheader extends VariableSizeSubheader {
      */
     static final short MAX_SIZE = 32740;
 
+    /**
+     * A map of string within this ColumnTextSubheader to the offset of that string from the beginning of the subheader
+     * (the start of the signature).
+     */
     private final Map<String, Integer> stringOffsets;
     private final short columnTextSubheaderIndex;
     private final short maxSize;
