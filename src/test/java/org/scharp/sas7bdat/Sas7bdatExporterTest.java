@@ -73,7 +73,7 @@ public class Sas7bdatExporterTest {
         assertEquals("9.0401M2", sasFileProperties.getSasRelease());
         assertEquals("UTF-8", sasFileProperties.getEncoding());
         assertEquals(1, sasFileProperties.getEndianness());
-        assertEquals(null, sasFileProperties.getCompressionMethod());
+        assertNull(sasFileProperties.getCompressionMethod());
         assertEquals("x86_64", sasFileProperties.getOsName());
         assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
         assertEquals("Linux", sasFileProperties.getServerType());
@@ -249,7 +249,7 @@ public class Sas7bdatExporterTest {
                 assertEquals(2, sasFileProperties.getRowCount());
                 assertArrayEquals(new Object[] { "1" }, sasFileReader.readNext());
                 assertArrayEquals(new Object[] { "2" }, sasFileReader.readNext());
-                assertEquals(null, sasFileReader.readNext());
+                assertNull(sasFileReader.readNext());
             }
 
         } finally {
@@ -683,7 +683,7 @@ public class Sas7bdatExporterTest {
 
                 // Test the observations
                 assertEquals(0, sasFileProperties.getRowCount());
-                assertEquals(null, sasFileReader.readNext());
+                assertNull(sasFileReader.readNext());
             }
 
         } finally {
@@ -723,7 +723,7 @@ public class Sas7bdatExporterTest {
 
                 // Test the observations
                 assertEquals(0, sasFileProperties.getRowCount());
-                assertEquals(null, sasFileReader.readNext());
+                assertNull(sasFileReader.readNext());
             }
 
         } finally {
@@ -924,7 +924,7 @@ public class Sas7bdatExporterTest {
                 assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "BEFORE" }, sasFileReader.readNext());
                 assertArrayEquals(new Object[] { "AFTER" }, sasFileReader.readNext());
-                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+                assertNull(sasFileReader.readNext(), "more rows were read than expected");
             }
 
         } finally {
@@ -982,7 +982,7 @@ public class Sas7bdatExporterTest {
                 assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "BEFORE", 1L }, sasFileReader.readNext());
                 assertArrayEquals(new Object[] { "AFTER", 2L }, sasFileReader.readNext());
-                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+                assertNull(sasFileReader.readNext(), "more rows were read than expected");
             }
 
         } finally {
@@ -1053,7 +1053,7 @@ public class Sas7bdatExporterTest {
                 assertEquals(2, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "BEFORE", 1L }, sasFileReader.readNext());
                 assertArrayEquals(new Object[] { "AFTER", 2L }, sasFileReader.readNext());
-                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+                assertNull(sasFileReader.readNext(), "more rows were read than expected");
             }
 
         } finally {
@@ -1105,7 +1105,7 @@ public class Sas7bdatExporterTest {
                 // Test the observations
                 assertEquals(1, sasFileReader.getSasFileProperties().getRowCount());
                 assertArrayEquals(new Object[] { "ORIGINAL", 1L }, sasFileReader.readNext());
-                assertEquals(null, sasFileReader.readNext(), "more rows were read than expected");
+                assertNull(sasFileReader.readNext(), "more rows were read than expected");
             }
 
         } finally {
@@ -1203,7 +1203,7 @@ public class Sas7bdatExporterTest {
 
                 // Test the observations
                 assertEquals(0, sasFileProperties.getRowCount());
-                assertEquals(null, sasFileReader.readNext());
+                assertNull(sasFileReader.readNext());
             }
 
         } finally {

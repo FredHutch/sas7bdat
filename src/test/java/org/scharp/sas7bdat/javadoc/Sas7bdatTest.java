@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * A class for executing the sample code that's within the package JavaDoc.
@@ -102,7 +103,7 @@ public class Sas7bdatTest {
                 // Hard-coded values
                 assertEquals("9.0401M2", sasFileProperties.getSasRelease());
                 assertEquals("UTF-8", sasFileProperties.getEncoding());
-                assertEquals(null, sasFileProperties.getCompressionMethod());
+                assertNull(sasFileProperties.getCompressionMethod());
                 assertEquals("x86_64", sasFileProperties.getOsName());
                 assertEquals("4.4.104-18.44", sasFileProperties.getOsType());
                 assertEquals("Linux", sasFileProperties.getServerType());
