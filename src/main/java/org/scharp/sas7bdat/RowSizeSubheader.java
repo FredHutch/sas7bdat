@@ -7,7 +7,7 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
 /**
  * A subheader that contains information about row sizes.
  */
-class RowSizeSubheader extends Subheader {
+class RowSizeSubheader extends FixedSizeSubheader {
 
     private final String datasetType;
     private final String datasetLabel;
@@ -162,7 +162,7 @@ class RowSizeSubheader extends Subheader {
         };
         pageLayout.forEachSubheader(subheaderInformation);
 
-        write8(page, subheaderOffset, SIGNATURE_ROW_SIZE); // signature
+        write8(page, subheaderOffset, signature()); // signature
 
         write8(page, subheaderOffset + 8, 0xF0); // unknown
         write8(page, subheaderOffset + 16, subheaderInformation.totalSubheaders + 2); // unknown
@@ -388,15 +388,5 @@ class RowSizeSubheader extends Subheader {
     @Override
     long signature() {
         return SIGNATURE_ROW_SIZE;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_A;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }

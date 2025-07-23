@@ -7,7 +7,7 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
  * A column format subheader contains references to the column's format and label. There is one of these per column in
  * the dataset.
  */
-class ColumnFormatSubheader extends Subheader {
+class ColumnFormatSubheader extends FixedSizeSubheader {
     private final Variable variable;
     private final ColumnText columnText;
 
@@ -23,7 +23,7 @@ class ColumnFormatSubheader extends Subheader {
 
     @Override
     void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_COLUMN_FORMAT); // signature
+        write8(page, subheaderOffset, signature()); // signature
         write8(page, subheaderOffset + 8, 0); // unknown, maybe padding
         write8(page, subheaderOffset + 16, 0); // unknown, maybe padding
 
@@ -51,15 +51,5 @@ class ColumnFormatSubheader extends Subheader {
     @Override
     long signature() {
         return SIGNATURE_COLUMN_FORMAT;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_A;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }

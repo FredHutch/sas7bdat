@@ -7,7 +7,7 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
 /**
  * A subheader that contains information about the number of columns in a dataset.
  */
-class ColumnSizeSubheader extends Subheader {
+class ColumnSizeSubheader extends FixedSizeSubheader {
 
     private final int totalVariables;
 
@@ -22,7 +22,7 @@ class ColumnSizeSubheader extends Subheader {
 
     @Override
     void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_COLUMN_SIZE); // signature
+        write8(page, subheaderOffset, signature()); // signature
         write8(page, subheaderOffset + 8, totalVariables); // number of columns
         write8(page, subheaderOffset + 16, 0x00); // unknown, maybe padding
     }
@@ -30,15 +30,5 @@ class ColumnSizeSubheader extends Subheader {
     @Override
     long signature() {
         return SIGNATURE_COLUMN_SIZE;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_A;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }

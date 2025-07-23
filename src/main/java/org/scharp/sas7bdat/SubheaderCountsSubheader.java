@@ -10,7 +10,7 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
 /**
  * A subheader that contains some additional information about the repeatable subheaders.
  */
-class SubheaderCountsSubheader extends Subheader {
+class SubheaderCountsSubheader extends FixedSizeSubheader {
     /**
      * The number of bytes in a SubheaderCountsSubheader.
      */
@@ -104,7 +104,7 @@ class SubheaderCountsSubheader extends Subheader {
         };
         pageLayout.forEachSubheader(fieldCalculator);
 
-        write8(page, subheaderOffset, SIGNATURE_SUBHEADER_COUNTS); // signature
+        write8(page, subheaderOffset, signature()); // signature
 
         // The next field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
         // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
@@ -147,15 +147,5 @@ class SubheaderCountsSubheader extends Subheader {
     @Override
     long signature() {
         return SIGNATURE_SUBHEADER_COUNTS;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_A;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }
