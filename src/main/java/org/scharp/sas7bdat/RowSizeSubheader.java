@@ -70,9 +70,7 @@ class RowSizeSubheader extends FixedSizeSubheader {
         this.totalVariableNameLength = totalVariableNameLength;
         this.maxVariableNameLength = maxVariableNameLength;
         this.maxVariableLabelLength = maxVariableLabelLength;
-        this.maxObservationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(
-            pageLayout.pageSize,
-            variablesLayout);
+        this.maxObservationsPerDataPage = Sas7bdatPage.maxObservationsPerDataPage(pageLayout.pageSize, variablesLayout);
     }
 
     private void writeRecordLocation(byte[] page, int offset, long pageIndex, long recordIndex) {
