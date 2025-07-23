@@ -67,6 +67,7 @@ class SubheaderCountsSubheader extends FixedSizeSubheader {
             // This first field appears to be the maximum size of the ColumnTextSubheader or ColumnAttributesSubheader
             // blocks, as reported at their offset 8.  This doesn't include the signature or the padding.
             // This may also include all variable-length subheaders, but the rest would be smaller.
+            //
             // This may be a performance hint for how large a buffer to allocate when reading
             // the data.  However, setting this to small or negative value doesn't prevent SAS
             // from reading the dataset, so its value may be ignored.
@@ -77,11 +78,8 @@ class SubheaderCountsSubheader extends FixedSizeSubheader {
             @Override
             public void nextSubheader(Subheader subheader, short pageNumberOfSubheader, short positionInPage) {
 
-                if (subheader instanceof ColumnTextSubheader columnTextSubheader) {
-                    maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnTextSubheader.sizeOfData());
-
-                } else if (subheader instanceof ColumnAttributesSubheader columnAttributesSubheader) {
-                    maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, columnAttributesSubheader.sizeOfData());
+                if (subheader instanceof VariableSizeSubheader variableSizeSubheader) {
+                    maxSubheaderPayloadSize = Math.max(maxSubheaderPayloadSize, variableSizeSubheader.sizeOfData());
                 }
 
                 // If this is a subheader type that we count, note its location.
