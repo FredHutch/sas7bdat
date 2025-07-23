@@ -155,6 +155,11 @@ public class Sas7bdatExporterTest {
                 observations.add(List.of("Value #" + i + " for Var #1!", "Var #2$", "Text3", "A", i));
             }
 
+            // Add missing values
+            for (MissingValue missingValue : MissingValue.values()) {
+                observations.add(List.of(missingValue.toString(), "", "", "", missingValue));
+            }
+
             // Write a data set.
             Sas7bdatExporter.exportDataset(targetFile, metadata, observations);
 
@@ -178,12 +183,17 @@ public class Sas7bdatExporterTest {
                 int i = 0;
                 Object[] row;
                 while (null != (row = sasFileReader.readNext())) {
-                    assertEquals(5, row.length);
-                    assertEquals("Value #" + i + " for Var #1!", row[0]);
-                    assertEquals("Var #2$", row[1]);
-                    assertEquals("Text3", row[2]);
-                    assertEquals("A", row[3]);
-                    assertEquals(Long.valueOf(i), row[4]);
+                    if (i < 1000) {
+                        // values
+                        assertArrayEquals(
+                            new Object[] { "Value #" + i + " for Var #1!", "Var #2$", "Text3", "A", Long.valueOf(i) },
+                            row);
+                    } else {
+                        // missing value tests
+                        assertArrayEquals(
+                            new Object[] { MissingValue.values()[i - 1000].toString(), null, null, null, null },
+                            row);
+                    }
                     i++;
                 }
                 assertEquals(observations.size(), i, "parso didn't return all rows");
@@ -1024,7 +1034,7 @@ public class Sas7bdatExporterTest {
                     () -> sas7bdatExporter.writeObservation(List.of("ok", "100")));
                 assertEquals(
                     "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                        "(NUMERIC values must be null or of type java.lang.Number)",
+                        "(NUMERIC values must be null, of type org.scharp.sas7bdat.MissingValue, or of type java.lang.Number)",
                     exception.getMessage());
 
                 // The exception should not have corrupted the state of the exporter,

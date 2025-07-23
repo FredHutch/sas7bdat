@@ -9,8 +9,6 @@ import java.util.List;
 /** A collection of variables in a sas7bdat file that knows how variables are laid out */
 class Sas7bdatVariablesLayout {
 
-    private static final byte[] MISSING_NUMERIC = { 0, 0, 0, 0, 0, (byte) 0xFE, (byte) 0xFF, (byte) 0xFF };
-
     private final List<Variable> variables;
     private final int[] physicalOffsets;
     private final int rowLength;
@@ -113,27 +111,35 @@ class Sas7bdatVariablesLayout {
                             variable.name() + ", which has a length of " + variable.length());
                 }
             } else {
-                // NUMERIC types accept null and Number objects.
+                // NUMERIC types accept null, MissingValue, and Number objects.
+                final long valueBits;
                 if (value == null) {
-                    valueBytes = MISSING_NUMERIC;
+                    valueBits = MissingValue.STANDARD.rawLongBits();
+
+                } else if (value instanceof MissingValue missingValue) {
+                    valueBits = missingValue.rawLongBits();
+
                 } else if (value instanceof Number numberValue) {
-                    long valueBits = Double.doubleToRawLongBits(numberValue.doubleValue());
-                    valueBytes = new byte[] { //
-                        (byte) (valueBits), //
-                        (byte) (valueBits >> 8), //
-                        (byte) (valueBits >> 16), //
-                        (byte) (valueBits >> 24), //
-                        (byte) (valueBits >> 32), //
-                        (byte) (valueBits >> 40), //
-                        (byte) (valueBits >> 48), //
-                        (byte) (valueBits >> 56), //
-                    };
+                    valueBits = Double.doubleToRawLongBits(numberValue.doubleValue());
+
                 } else {
                     throw new IllegalArgumentException(
                         "A " + value.getClass().getTypeName() + " was given as a value to the variable named " +
                             variable.name() + ", which has a NUMERIC type " +
-                            "(NUMERIC values must be null or of type java.lang.Number)");
+                            "(NUMERIC values must be null, of type " + MissingValue.class.getCanonicalName() +
+                            ", or of type " + Number.class.getCanonicalName() + ")");
                 }
+
+                valueBytes = new byte[] {
+                    (byte) (valueBits),
+                    (byte) (valueBits >> 8),
+                    (byte) (valueBits >> 16),
+                    (byte) (valueBits >> 24),
+                    (byte) (valueBits >> 32),
+                    (byte) (valueBits >> 40),
+                    (byte) (valueBits >> 48),
+                    (byte) (valueBits >> 56),
+                };
             }
 
             final int offsetOfValue = offsetOfObservation + physicalOffsets[i];

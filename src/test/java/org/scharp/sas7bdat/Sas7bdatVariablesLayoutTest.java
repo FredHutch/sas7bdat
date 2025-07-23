@@ -166,6 +166,83 @@ public class Sas7bdatVariablesLayoutTest {
                 0, 0, 0, 0, 0, 0, 8, -64, // -3
             },
             actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.STANDARD, MissingValue.UNDERSCORE, MissingValue.A, MissingValue.B));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -2, -1, -1, // .
+                0, 0, 0, 0, 0, -1, -1, -1, // ._
+                0, 0, 0, 0, 0, -3, -1, -1, // .A
+                0, 0, 0, 0, 0, -4, -1, -1, // .B
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.C, MissingValue.D, MissingValue.E, MissingValue.F));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -5, -1, -1, // .C
+                0, 0, 0, 0, 0, -6, -1, -1, // .D
+                0, 0, 0, 0, 0, -7, -1, -1, // .E
+                0, 0, 0, 0, 0, -8, -1, -1, // .F
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.G, MissingValue.H, MissingValue.I, MissingValue.J));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -9, -1, -1, // .G
+                0, 0, 0, 0, 0, -10, -1, -1, // .H
+                0, 0, 0, 0, 0, -11, -1, -1, // .I
+                0, 0, 0, 0, 0, -12, -1, -1, // .J
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.K, MissingValue.L, MissingValue.M, MissingValue.N));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -13, -1, -1, // .K
+                0, 0, 0, 0, 0, -14, -1, -1, // .L
+                0, 0, 0, 0, 0, -15, -1, -1, // .M
+                0, 0, 0, 0, 0, -16, -1, -1, // .N
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.O, MissingValue.P, MissingValue.Q, MissingValue.R));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -17, -1, -1, // .O
+                0, 0, 0, 0, 0, -18, -1, -1, // .P
+                0, 0, 0, 0, 0, -19, -1, -1, // .Q
+                0, 0, 0, 0, 0, -20, -1, -1, // .R
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.S, MissingValue.T, MissingValue.U, MissingValue.V));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -21, -1, -1, // .S
+                0, 0, 0, 0, 0, -22, -1, -1, // .T
+                0, 0, 0, 0, 0, -23, -1, -1, // .U
+                0, 0, 0, 0, 0, -24, -1, -1, // .V
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(MissingValue.W, MissingValue.X, MissingValue.Y, MissingValue.Z));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -25, -1, -1, // .W
+                0, 0, 0, 0, 0, -26, -1, -1, // .X
+                0, 0, 0, 0, 0, -27, -1, -1, // .Y
+                0, 0, 0, 0, 0, -28, -1, -1, // .Z
+            },
+            actualData);
     }
 
     @Test
@@ -427,13 +504,22 @@ public class Sas7bdatVariablesLayoutTest {
                 + "(CHARACTER values must be of type java.lang.String)",
             exception.getMessage());
 
+        // MissingValue is not legal for CHARACTER variables.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of(MissingValue.STANDARD, 100)));
+        assertEquals(
+            "A org.scharp.sas7bdat.MissingValue was given as a value to the variable named TEXT, which has a CHARACTER type "
+                + "(CHARACTER values must be of type java.lang.String)",
+            exception.getMessage());
+
         // Write a value that's not a Numeric to the NUMERIC variable.
         exception = assertThrows(
             IllegalArgumentException.class,
             () -> variablesLayout.writeObservation(actualData, 0, List.of("ok", "100")));
         assertEquals(
             "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                "(NUMERIC values must be null or of type java.lang.Number)",
+                "(NUMERIC values must be null, of type org.scharp.sas7bdat.MissingValue, or of type java.lang.Number)",
             exception.getMessage());
 
         // The exception should not have corrupted the state of the variables layout,

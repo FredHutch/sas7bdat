@@ -6,6 +6,7 @@ import com.epam.parso.SasFileReader;
 import com.epam.parso.impl.SasFileReaderImpl;
 import org.junit.jupiter.api.Test;
 import org.scharp.sas7bdat.Format;
+import org.scharp.sas7bdat.MissingValue;
 import org.scharp.sas7bdat.Sas7bdatExporter;
 import org.scharp.sas7bdat.Sas7bdatMetadata;
 import org.scharp.sas7bdat.Variable;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -66,16 +66,16 @@ public class Sas7bdatTest {
                         build()
                 )).build();
 
-        List<List<Object>> observations = Arrays.asList(
-            Arrays.asList("Atlanta", "GA", 72, 53),
-            Arrays.asList("Austin", "TX", 80, 5),
-            Arrays.asList("Baltimore", "MD", 65, 45),
-            Arrays.asList("Birmingham", "AL", 74, 53),
-            Arrays.asList("Boston", "MA", 59, null), // null means missing
-            Arrays.asList("Buffalo", "NY", 56, 40),
+        List<List<Object>> observations = List.of(
+            List.of("Atlanta", "GA", 72, 53),
+            List.of("Austin", "TX", 80, 5),
+            List.of("Baltimore", "MD", 65, 45),
+            List.of("Birmingham", "AL", 74, 53),
+            List.of("Boston", "MA", 59, MissingValue.STANDARD),
+            List.of("Buffalo", "NY", 56, 40),
             // ...
-            Arrays.asList("Virginia Beach", "VA", 68, 52),
-            Arrays.asList("Washington", "DC", 68, 52));
+            List.of("Virginia Beach", "VA", 68, 52),
+            List.of("Washington", "DC", 68, 52));
 
         // Export the data set a SAS7BDAT file.
         Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);

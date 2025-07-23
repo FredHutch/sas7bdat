@@ -24,6 +24,7 @@ class TestRandomSas7Bdat {
     private static final Class Variable
     private static final Class VariableType
     private static final Class Format
+    private static final Class MissingValue
 
     private static final Constructor FormatConstructor
     private static final Constructor Sas7bdatExporterConstructor
@@ -48,6 +49,7 @@ class TestRandomSas7Bdat {
         Variable         = Class.forName("org.scharp.sas7bdat.Variable")
         VariableType     = Class.forName("org.scharp.sas7bdat.VariableType")
         Format           = Class.forName("org.scharp.sas7bdat.Format")
+        MissingValue     = Class.forName("org.scharp.sas7bdat.MissingValue")
 
         FormatConstructor = Format.getDeclaredConstructor(String.class, int.class, int.class)
 
@@ -270,10 +272,18 @@ class TestRandomSas7Bdat {
                             def value = randomStringGenerator.nextRandomString(variable.length(), ~/^[^ ].*|$/)
                             generator.writeString(value)
                         } else {
-                            // 1% chance of null (MISSING VALUE)
                             // TODO: more variations in number values
-                            def value = randomNumberGenerator.nextInt(100) == 0 ? null : randomNumberGenerator.nextInt()
-                            generator.writeNumber(value)
+                            randomNumber = randomNumberGenerator.nextInt(100)
+                            if (randomNumber < 95) { // 95% chance of an Integer
+                                generator.writeNumber(randomNumberGenerator.nextInt())
+
+                            } else if (randomNumber < 99) { // 4% chance of a MissingValue
+                                def value = randomElement(MissingValue.values().toList())
+                                generator.writeString("MissingValue." + value.name())
+
+                            } else { // 1% chance of null (MISSING VALUE)
+                                generator.writeNull()
+                            }
                         }
                     }
 
@@ -444,7 +454,19 @@ class TestRandomSas7Bdat {
                             break
 
                         case JsonToken.VALUE_STRING:
-                            observation << parser.getText()
+                            def variable = metadata.variables[observation.size()]
+                            if (variable.type() == VariableType.CHARACTER) {
+                                observation << parser.getText()
+                            } else {
+                                def value = parser.getText()
+                                if (!value.startsWith("MissingValue.")) {
+                                    throw new IllegalArgumentException(
+                                        "JSON is malformed: String value \"$value\" given to NUMERIC variable ${variable.name()}")
+                                }
+
+                                // Get corresponding MissingValue
+                                observation << MissingValue.valueOf(value.replace("MissingValue.", ""))
+                            }
                             break
 
                         case JsonToken.VALUE_NULL:
@@ -535,6 +557,7 @@ class TestRandomSas7Bdat {
                 |Variable         = Class.forName("org.scharp.sas7bdat.Variable")
                 |VariableType     = Class.forName("org.scharp.sas7bdat.VariableType")
                 |Format           = Class.forName("org.scharp.sas7bdat.Format")
+                |MissingValue     = Class.forName("org.scharp.sas7bdat.MissingValue")
                 |
                 |Constructor FormatConstructor = Format.getDeclaredConstructor(String.class, int.class, int.class)
                 |
@@ -629,8 +652,23 @@ class TestRandomSas7Bdat {
                 // Write the observation
                 writer.append "datasetExporter.writeObservation([" // start of observation
                 observation.eachWithIndex { value, i ->
-                    // quote character values
-                    writer.append metadata.variables[i].type() == VariableType.CHARACTER ? quoteStringLiteral(value) : "$value"
+                    def groovyLiteral
+                    if (metadata.variables[i].type() == VariableType.CHARACTER) {
+                        // quote character values
+                        groovyLiteral = quoteStringLiteral(value)
+                    } else {
+                        if (value == null) {
+                            groovyLiteral = 'null'
+
+                        }  else if (value.class == MissingValue) {
+                            groovyLiteral = 'MissingValue.' + value.name()
+
+                        } else {
+                            // Numeric types format themselves
+                            groovyLiteral = value.toString()
+                        }
+                    }
+                    writer.append groovyLiteral
 
                     // comma-separate values in an observation
                     if (i != observation.size() - 1) {
@@ -664,12 +702,18 @@ class TestRandomSas7Bdat {
                 // Quote any values that contain commas, using '' to quote a quote character.
                 stringBuilder << (observation[i].contains(',') ? "'${observation[i].replace("'", "''")}'" : observation[i])
             } else {
-                // MISSING numerics are formatted as blank, so there's no need to write them.
-                if (observation[i] != null) {
+                def value = observation[i]
+                if (value == null) {
+                    // MISSING numerics may be formatted as blank, so there's no need to write them.
+                } else if (value.class == MissingValue) {
+                    // MissingValue.toString() formats correctly for SAS.
+                    stringBuilder << value.toString()
+
+                } else {
                     // Other numeric are formatted according to their input format.
                     // If the number of digits is 2, then SAS divides the representation in the datalines by 100,
                     // so we must multiply it by 100 to preserve the number.
-                    def number = new BigDecimal(observation[i].toString())
+                    def number = new BigDecimal(value.toString())
                     number = number.movePointRight(variable.inputFormat().numberOfDigits())
                     def string = number.toPlainString()
 
@@ -1020,7 +1064,14 @@ class TestRandomSas7Bdat {
                     } else {
                         // For decimals, format according to the variable's output format.
                         if (value == null) {
-                            stringizedObservation << '.' // MISSING VALUE is always a .
+                            stringizedObservation << '.' // MISSING VALUE is formatted as "."
+
+                        } else if (value.class == MissingValue) {
+                            // In a CSV export, with the exception of ".", a missing value is formatted as
+                            // SAS formats it without the "." prefix.  For example, MissingValue.A, which
+                            // SAS normally formats as ".A", is written as "A" in the CSV export.
+                            stringizedObservation << value.toString().replaceAll(~/.(.)/, '$1')
+
                         } else {
                             def format = expectedMetadata.variables[columnIndex].outputFormat()
                             def number = new BigDecimal(value.toString())
@@ -1119,7 +1170,7 @@ class TestRandomSas7Bdat {
                 build(),
             metadata.totalObservations)
 
-        // Add each observation
+        // Write each observation to the SAS7BDAT exporter.
         Dataset.processObservations(testCaseFile) { observation -> datasetExporter.writeObservation(observation) }
 
         datasetExporter.close()
