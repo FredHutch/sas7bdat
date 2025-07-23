@@ -1,7 +1,6 @@
 package org.scharp.sas7bdat;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
-import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 
 /**
@@ -9,7 +8,7 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
  * <p>
  * sas7bdat.pdf calls this "column list", but it really corresponds to something that's a superset of columns.
  */
-class ColumnListSubheader extends Subheader {
+class ColumnListSubheader extends VariableSizeSubheader {
     /**
      * No subheader can be larger than Short.MAX_VALUE, so we only have room for (Short.MAX_VALUE - 50) / 2 = 16358
      * columns in each one.  However, SAS never creates datasets with a size larger than 32740 bytes, which is 16345
@@ -21,8 +20,6 @@ class ColumnListSubheader extends Subheader {
      * Number of bytes in each variable entry.
      */
     private static final int SIZE_OF_ENTRY = 2;
-
-    private final static int FOOTER_PADDING = 12;
 
     private final static int OFFSET_OF_FIRST_COLUMN = 38;
 
@@ -61,26 +58,19 @@ class ColumnListSubheader extends Subheader {
     }
 
     /**
-     * The number of bytes of data in this subheader without signature or FOOTER_PADDING.
+     * The number of bytes of data in this subheader without signature or footer padding.
      *
      * @return The number of bytes of data in this subheader
      */
-    private int sizeOfData() {
+    int sizeOfData() {
         return totalColumns * SIZE_OF_ENTRY + OFFSET_OF_FIRST_COLUMN - SIGNATURE_SIZE;
     }
 
     @Override
-    int size() {
-        return totalColumns * SIZE_OF_ENTRY + OFFSET_OF_FIRST_COLUMN + FOOTER_PADDING;
-    }
+    void writeVariableSizedPayload(byte[] page, int subheaderOffset) {
 
-    @Override
-    void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_COLUMN_LIST); // signature
-
-        write2(page, subheaderOffset + 8, (short) sizeOfData());
+        // Hack: SAS writes this, but it might be unintentional.
         write2(page, subheaderOffset + 10, (short) 0x7FC8); // unknown
-        write4(page, subheaderOffset + 12, 0x00); // unknown
 
         write8(page, subheaderOffset + 16, totalColumns * 2 + 22); // length remaining in subheader??
 
@@ -118,24 +108,10 @@ class ColumnListSubheader extends Subheader {
 
             offsetFromSubheaderStart += SIZE_OF_ENTRY;
         }
-
-        // There is some padding at the end.
-        write4(page, subheaderOffset + offsetFromSubheaderStart, 0);
-        write8(page, subheaderOffset + offsetFromSubheaderStart + 4, 0);
     }
 
     @Override
     long signature() {
         return SIGNATURE_COLUMN_LIST;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_B;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }

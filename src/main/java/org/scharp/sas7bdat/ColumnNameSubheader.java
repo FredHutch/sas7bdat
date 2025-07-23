@@ -3,13 +3,11 @@ package org.scharp.sas7bdat;
 import java.util.List;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
-import static org.scharp.sas7bdat.WriteUtil.write4;
-import static org.scharp.sas7bdat.WriteUtil.write8;
 
 /**
  * A subheader that contains the names of columns
  */
-class ColumnNameSubheader extends Subheader {
+class ColumnNameSubheader extends VariableSizeSubheader {
 
     /**
      * No subheader can be larger than Short.MAX_VALUE, so we only have room for (Short.MAX_VALUE - 28) / 8 = 4092
@@ -68,22 +66,15 @@ class ColumnNameSubheader extends Subheader {
      *
      * @return The number of bytes of data in this subheader
      */
-    private int sizeOfData() {
+    @Override
+    int sizeOfData() {
         return variables.size() * SIZE_OF_ENTRY + 8;
     }
 
     @Override
-    int size() {
-        return variables.size() * SIZE_OF_ENTRY + 28;
-    }
+    void writeVariableSizedPayload(byte[] page, int subheaderOffset) {
 
-    @Override
-    void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_COLUMN_NAME); // signature
-
-        write8(page, subheaderOffset + 8, (short) sizeOfData()); // remaining bytes in subheader
-
-        int offsetWithinSubheader = 16;
+        int offsetWithinSubheader = SIGNATURE_SIZE + PAYLOAD_DESCRIPTION_FIELD_SIZE;
         for (Variable variable : variables) {
             // Locate the text subheader that has this variable's name.
             final String variableName = variable.name();
@@ -96,25 +87,10 @@ class ColumnNameSubheader extends Subheader {
 
             offsetWithinSubheader += SIZE_OF_ENTRY;
         }
-
-        // There is some padding at the end.
-        assert size() == offsetWithinSubheader + 12;
-        write4(page, subheaderOffset + offsetWithinSubheader, 0);
-        write8(page, subheaderOffset + offsetWithinSubheader + 4, 0);
     }
 
     @Override
     long signature() {
         return SIGNATURE_COLUMN_NAME;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_B;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }

@@ -6,17 +6,15 @@ import java.util.Map;
 
 import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write4;
-import static org.scharp.sas7bdat.WriteUtil.write8;
 import static org.scharp.sas7bdat.WriteUtil.writeUtf8;
 
 /**
  * A column text subheader holds all textual metadata that is associated with a dataset. This includes the dataset
  * label, creator proc, column names, column labels, and column format names.
  */
-class ColumnTextSubheader extends Subheader {
+class ColumnTextSubheader extends VariableSizeSubheader {
 
-    static private final int OFFSET_OF_FIRST_STRING = 16; // 8 byte signature + 2 byte size + 6 bytes of padding
-    static private final int FOOTER_PADDING = 12;
+    static private final int OFFSET_OF_FIRST_STRING = SIGNATURE_SIZE + PAYLOAD_DESCRIPTION_FIELD_SIZE;
 
     /**
      * A flag to indicate that the code should emulate the way SAS generates datasets, which is to allow the same text
@@ -27,7 +25,7 @@ class ColumnTextSubheader extends Subheader {
     /**
      * The minimum size of a ColumnTextSubheader.  This includes the header and footer but no text.
      */
-    static final short MIN_SIZE = OFFSET_OF_FIRST_STRING + FOOTER_PADDING;
+    static final short MIN_SIZE = VARIABLE_SUBHEADER_OVERHEAD;
 
     /**
      * The maximum size of a ColumnTextSubheader.
@@ -92,7 +90,7 @@ class ColumnTextSubheader extends Subheader {
         int newNextOffset = WriteUtil.align(nextOffset + sizeof(string), 4);
 
         // Check to see if there's space for the new string.
-        if (maxSize < newNextOffset + sizeOfPaddingBlockAtEnd + FOOTER_PADDING) {
+        if (maxSize < newNextOffset + sizeOfPaddingBlockAtEnd + VARIABLE_SUBHEADER_OVERHEAD - SIGNATURE_SIZE - PAYLOAD_DESCRIPTION_FIELD_SIZE) {
             // There's not enough space for this string.
             return false;
         }
@@ -159,27 +157,18 @@ class ColumnTextSubheader extends Subheader {
         return columnTextSubheaderIndex;
     }
 
-    @Override
-    int size() {
-        int size = nextOffset + sizeOfPaddingBlockAtEnd + FOOTER_PADDING;
-        assert size <= maxSize : "wrote too much";
-        return size;
-    }
-
     /**
      * The number of bytes of data in this subheader without signature or FOOTER_PADDING.
      *
      * @return The number of bytes of data in this subheader
      */
+    @Override
     int sizeOfData() {
         return nextOffset + sizeOfPaddingBlockAtEnd - SIGNATURE_SIZE;
     }
 
     @Override
-    void writeSubheader(byte[] page, int subheaderOffset) {
-
-        write8(page, subheaderOffset, SIGNATURE_COLUMN_TEXT); // signature
-        write8(page, subheaderOffset + 8, sizeOfData()); // amount of data
+    void writeVariableSizedPayload(byte[] page, int subheaderOffset) {
 
         write2(page, subheaderOffset + 16, (short) 0); // unknown, maybe padding
         write2(page, subheaderOffset + 18, (short) 0); // unknown, maybe padding
@@ -213,10 +202,6 @@ class ColumnTextSubheader extends Subheader {
             write4(page, subheaderOffset + nextOffset, 1);
             write4(page, subheaderOffset + nextOffset + 4, sizeOfPaddingBlockAtEnd);
         }
-
-        // There is 12 bytes of padding at the end.
-        write4(page, subheaderOffset + nextOffset + sizeOfPaddingBlockAtEnd, 0);
-        write8(page, subheaderOffset + nextOffset + sizeOfPaddingBlockAtEnd + 4, 0);
     }
 
     /**
@@ -234,15 +219,5 @@ class ColumnTextSubheader extends Subheader {
     @Override
     long signature() {
         return SIGNATURE_COLUMN_TEXT;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_B;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }

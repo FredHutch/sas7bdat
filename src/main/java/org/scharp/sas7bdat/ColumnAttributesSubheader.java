@@ -9,23 +9,20 @@ import static org.scharp.sas7bdat.WriteUtil.write8;
 /**
  * A subheader that contains some attributes for all columns
  */
-class ColumnAttributesSubheader extends Subheader {
+class ColumnAttributesSubheader extends VariableSizeSubheader {
     private static final byte COLUMN_TYPE_NUMERIC = 1;
     private static final byte COLUMN_TYPE_CHARACTER = 2;
-
-    /** The number of bytes of blank data at the end of a subheader */
-    private static final int FOOTER_PADDING = 12;
 
     /** The number of bytes of each column entry in a subheader */
     private static final int SIZE_OF_ENTRY = 16;
 
     /** The byte offset of the data for the first column */
-    private static final int OFFSET_OF_FIRST_ENTRY = 16;
+    private static final int OFFSET_OF_FIRST_ENTRY = SIGNATURE_SIZE + PAYLOAD_DESCRIPTION_FIELD_SIZE;
 
     /**
      * The number of bytes required to have a subheader with a single variable.
      */
-    final static int MIN_SIZE = OFFSET_OF_FIRST_ENTRY + SIZE_OF_ENTRY + FOOTER_PADDING;
+    final static int MIN_SIZE = VARIABLE_SUBHEADER_OVERHEAD + SIZE_OF_ENTRY;
 
     private final int totalVariablesInSubheader;
     private final List<Variable> variables;
@@ -50,7 +47,7 @@ class ColumnAttributesSubheader extends Subheader {
         assert maxLength <= Short.MAX_VALUE : "maxLength is too large: " + maxLength;
 
         final int variablesRemaining = variablesLayout.totalVariables() - offset;
-        final int variablesInMaxLength = (maxLength - (OFFSET_OF_FIRST_ENTRY + FOOTER_PADDING)) / SIZE_OF_ENTRY;
+        final int variablesInMaxLength = (maxLength - VARIABLE_SUBHEADER_OVERHEAD) / SIZE_OF_ENTRY;
         totalVariablesInSubheader = Math.min(variablesRemaining, variablesInMaxLength);
 
         // Copy the variables and their physical offsets.
@@ -65,7 +62,7 @@ class ColumnAttributesSubheader extends Subheader {
      * @return The number of bytes of data in this subheader
      */
     int sizeOfData() {
-        return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY - SIGNATURE_SIZE;
+        return variables.size() * SIZE_OF_ENTRY + PAYLOAD_DESCRIPTION_FIELD_SIZE;
     }
 
     /**
@@ -78,17 +75,7 @@ class ColumnAttributesSubheader extends Subheader {
     }
 
     @Override
-    int size() {
-        return OFFSET_OF_FIRST_ENTRY + variables.size() * SIZE_OF_ENTRY + FOOTER_PADDING;
-    }
-
-    @Override
-    void writeSubheader(byte[] page, int subheaderOffset) {
-        write8(page, subheaderOffset, SIGNATURE_COLUMN_ATTRS); // signature
-
-        int lengthInSubheader = sizeOfData();
-        assert lengthInSubheader <= Short.MAX_VALUE;
-        write8(page, subheaderOffset + 8, lengthInSubheader);
+    void writeVariableSizedPayload(byte[] page, int subheaderOffset) {
 
         int offsetWithinSubheader = OFFSET_OF_FIRST_ENTRY;
         int i = 0;
@@ -117,26 +104,10 @@ class ColumnAttributesSubheader extends Subheader {
             offsetWithinSubheader += SIZE_OF_ENTRY;
             i++;
         }
-
-        // There is some padding at the end.
-        write4(page, subheaderOffset + offsetWithinSubheader, 0);
-        write8(page, subheaderOffset + offsetWithinSubheader + 4, 0);
-
-        assert size() == offsetWithinSubheader + FOOTER_PADDING;
     }
 
     @Override
     long signature() {
         return SIGNATURE_COLUMN_ATTRS;
-    }
-
-    @Override
-    byte typeCode() {
-        return SUBHEADER_TYPE_B;
-    }
-
-    @Override
-    byte compressionCode() {
-        return COMPRESSION_UNCOMPRESSED;
     }
 }
