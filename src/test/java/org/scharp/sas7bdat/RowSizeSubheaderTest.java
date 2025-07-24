@@ -103,13 +103,18 @@ public class RowSizeSubheaderTest {
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
+
+        // Add some ColumnListSubheader, since their size is included in the RowSizeSubheader.
+        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
+        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 1));
+
         pageLayout.finalizeMetadata();
 
         final byte[] expectedSubheaderData = new byte[] {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature
 
             -16, 0, 0, 0, 0, 0, 0, 0, // unknown
-            10, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
+            12, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             17, 48, 34, 0, 0, 0, 0, 0, // unknown
 
@@ -121,7 +126,7 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the first page.
             2, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the second page.
 
-            0, 0, 0, 0, 0, 0, 0, 0, // unknown
+            58, 0, 0, 0, 0, 0, 0, 0, // unknown (aggregate size of ColumnListSubheader payload)
             26, 0, 0, 0, 0, 0, 0, 0, // aggregate variable name length
             50, 3, 0, 0, 0, 0, 0, 0, // page size
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
@@ -183,10 +188,10 @@ public class RowSizeSubheaderTest {
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
             2, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            4, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
             2, 0, 0, 0, 0, 0, 0, 0, // page of first observation
-            4, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
+            6, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
 
             -80, 1, 0, 0, 0, 0, 0, 0, // page of last observation
             19, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
