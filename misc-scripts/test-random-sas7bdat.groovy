@@ -678,9 +678,9 @@ class TestRandomSas7Bdat {
                 writer.append "])\n"  // end of observation
 
                 // end of observations chunk
-                boolean isFinalObservation = currentObservationIndex == metadata.totalObservations - 1
-                if (observationsAreChunked &&
-                        (isFinalObservation || currentObservationIndex % CHUNK_SIZE == CHUNK_SIZE - 1)) {
+                boolean isFinalObservation        = currentObservationIndex == metadata.totalObservations - 1
+                boolean isFinalObservationInChunk = currentObservationIndex % CHUNK_SIZE == CHUNK_SIZE - 1
+                if (observationsAreChunked && (isFinalObservation || isFinalObservationInChunk)) {
                     writer.writeLine "}).call()"
                 }
 
