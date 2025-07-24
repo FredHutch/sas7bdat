@@ -1,5 +1,6 @@
 package org.scharp.sas7bdat;
 
+import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
 import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write4;
 import static org.scharp.sas7bdat.WriteUtil.write8;
@@ -21,10 +22,6 @@ class RowSizeSubheader extends FixedSizeSubheader {
     private final int maxVariableLabelLength;
 
     private final int maxObservationsPerDataPage;
-
-    private static int divideAndRoundUp(int dividend, int divisor) {
-        return (dividend + divisor - 1) / divisor;
-    }
 
     /**
      * Creates a Row Size Subheader

@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
+
 public final class Sas7bdatExporter implements AutoCloseable {
 
     private final OutputStream outputStream;
@@ -18,10 +20,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
     private int totalObservationsWritten;
     private Sas7bdatPage currentPage;
-
-    private static int divideAndRoundUp(int dividend, int divisor) {
-        return (dividend + divisor - 1) / divisor;
-    }
 
     /**
      * Writes the header and metadata pages.

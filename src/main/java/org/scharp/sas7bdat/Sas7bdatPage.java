@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
 import static org.scharp.sas7bdat.WriteUtil.write2;
 import static org.scharp.sas7bdat.WriteUtil.write8;
 
@@ -53,10 +54,6 @@ class Sas7bdatPage {
         offsetOfNextSubheaderIndexEntry = DATA_PAGE_HEADER_SIZE;
         endOfDataSection = pageSize;
         maxObservations = -1;
-    }
-
-    private static int divideAndRoundUp(int dividend, int divisor) {
-        return (dividend + divisor - 1) / divisor;
     }
 
     private boolean subheadersAreFinalized() {
