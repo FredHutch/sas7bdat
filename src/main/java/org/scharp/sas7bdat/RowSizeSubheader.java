@@ -22,7 +22,9 @@ class RowSizeSubheader extends FixedSizeSubheader {
 
     private final int maxObservationsPerDataPage;
 
-    private int totalPagesInDataset;
+    private static int divideAndRoundUp(int dividend, int divisor) {
+        return (dividend + divisor - 1) / divisor;
+    }
 
     /**
      * Creates a Row Size Subheader
@@ -76,10 +78,6 @@ class RowSizeSubheader extends FixedSizeSubheader {
     private void writeRecordLocation(byte[] page, int offset, long pageIndex, long recordIndex) {
         write8(page, offset, pageIndex);
         write8(page, offset + 8, recordIndex);
-    }
-
-    void setTotalPagesInDataset(int totalPagesInDataset) {
-        this.totalPagesInDataset = totalPagesInDataset;
     }
 
     @Override
@@ -275,14 +273,20 @@ class RowSizeSubheader extends FixedSizeSubheader {
             // of the possible range, then SAS won't load the dataset.  However,
             // SAS still loads the dataset if it's legal but incorrect.
             // I don't know what this is used for.
+            final int totalPagesInDataset;
             final int lastRecordIndex;
             if (totalObservationsInDataset == totalObservationsOnMixedPage) {
                 // There are no data pages, so the last data record is the last index on the mixed page.
+                totalPagesInDataset = subheaderInformation.maxMetadataPageNumber;
                 lastRecordIndex = finalMetadataPage.subheaders().size() + totalObservationsOnMixedPage;
             } else {
+                // The number of data pages is how many it takes to hold the observations not on the mixed page.
+                int totalObservationsOnAllDataPages = totalObservationsInDataset - totalObservationsOnMixedPage;
+                int totalDataPages = divideAndRoundUp(totalObservationsOnAllDataPages, maxObservationsPerDataPage);
+                totalPagesInDataset = subheaderInformation.maxMetadataPageNumber + totalDataPages;
+
                 // The last index on the last page is however many are left over after removing all
                 // the whole pages.
-                int totalObservationsOnAllDataPages = totalObservationsInDataset - totalObservationsOnMixedPage;
                 int lastIndex = totalObservationsOnAllDataPages % maxObservationsPerDataPage;
                 if (lastIndex == 0) {
                     // This happens when the all data pages are completely full.

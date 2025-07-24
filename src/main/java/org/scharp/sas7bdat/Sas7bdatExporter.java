@@ -168,7 +168,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
             }
             totalPagesInDataset = totalNumberOfMetadataPages + totalNumberOfDataPages;
         }
-        rowSizeSubheader.setTotalPagesInDataset(totalPagesInDataset);
 
         // Write the file header.
         {
