@@ -2,6 +2,7 @@ package org.scharp.sas7bdat;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -261,10 +262,12 @@ public class RowSizeSubheaderTest {
         // Get the subheader with a non-zero offset.
         int offset = 10;
         byte[] actualSubheaderData = new byte[size + offset];
+        Arrays.fill(actualSubheaderData, (byte) 0xDC);
         rowSizeSubheader.writeSubheader(actualSubheaderData, offset);
 
         // Determine the expected return value.
         byte[] expectedArray = new byte[expectedSubheaderData.length + offset];
+        Arrays.fill(expectedArray, 0, offset, (byte) 0xDC);
         System.arraycopy(expectedSubheaderData, 0, expectedArray, offset, expectedSubheaderData.length);
 
         // Confirm that writeSubheader() wrote the data to the expected location.
