@@ -444,39 +444,52 @@ class TestRandomSas7bdat {
 
                     def observation = []
                     while ((token = parser.nextToken()) != JsonToken.END_ARRAY) {
+                        def variable = metadata.variables[observation.size()]
+                        def value = null
                         switch (token) {
                         case JsonToken.VALUE_NUMBER_FLOAT:
-                            observation << parser.getDoubleValue()
+                            value = parser.getDoubleValue()
+                            if (variable.type() == VariableType.CHARACTER) {
+                                "Double value ${value} is not legal for a CHARACTER variable."
+                                System.exit(1)
+                            }
                             break
 
                         case JsonToken.VALUE_NUMBER_INT:
-                            observation << parser.getIntValue()
+                            value = parser.getIntValue()
+                            if (variable.type() == VariableType.CHARACTER) {
+                                println "Integer value ${value} is not legal for a CHARACTER variable."
+                                System.exit(1)
+                            }
                             break
 
                         case JsonToken.VALUE_STRING:
-                            def variable = metadata.variables[observation.size()]
-                            if (variable.type() == VariableType.CHARACTER) {
-                                observation << parser.getText()
-                            } else {
-                                def value = parser.getText()
+                            value = parser.getText()
+                            if (variable.type() == VariableType.NUMERIC) {
                                 if (!value.startsWith("MissingValue.")) {
-                                    throw new IllegalArgumentException(
-                                        "JSON is malformed: String value \"$value\" given to NUMERIC variable ${variable.name()}")
+                                    println "ERROR: JSON is malformed: String value \"$value\" given to NUMERIC variable ${variable.name()}"
+                                    System.exit(1)
                                 }
 
                                 // Get corresponding MissingValue
-                                observation << MissingValue.valueOf(value.replace("MissingValue.", ""))
+                                value = MissingValue.valueOf(value.replace("MissingValue.", ""))
                             }
                             break
 
                         case JsonToken.VALUE_NULL:
-                            observation << null
+                            value = null
+                            if (variable.type() == VariableType.CHARACTER) {
+                                println "ERROR: null value is not legal for a CHARACTER variable."
+                                System.exit(1)
+                            }
                             break
 
                         default:
                             println "ERROR: unexpected value in observation $token"
                             System.exit(1)
                         }
+
+                        observation << value
                     }
 
                     // Provide the observation to the caller.
