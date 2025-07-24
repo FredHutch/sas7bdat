@@ -210,7 +210,7 @@ public class RowSizeSubheaderTest {
 
             0, 0, // column text subheader index of dataset label
             16, 0, // offset of dataset label
-            13, 0, // length of dataset type label
+            13, 0, // length of dataset label
 
             0, 0, // column text subheader index of dataset type
             8, 0, // offset of dataset type
@@ -395,7 +395,7 @@ public class RowSizeSubheaderTest {
 
             0, 0, // column text subheader index of dataset label
             0, 0, // offset of dataset label
-            0, 0, // length of dataset type label
+            0, 0, // length of dataset label
 
             0, 0, // column text subheader index of dataset type
             0, 0, // offset of dataset type
@@ -582,7 +582,7 @@ public class RowSizeSubheaderTest {
 
             0, 0, // column text subheader index of dataset label
             16, 0, // offset of dataset label
-            13, 0, // length of dataset type label
+            13, 0, // length of dataset label
 
             0, 0, // column text subheader index of dataset type
             8, 0, // offset of dataset type
@@ -766,7 +766,7 @@ public class RowSizeSubheaderTest {
 
             0, 0, // column text subheader index of dataset label
             16, 0, // offset of dataset label
-            12, 0, // length of dataset type label
+            12, 0, // length of dataset label
 
             0, 0, // column text subheader index of dataset type
             8, 0, // offset of dataset type
