@@ -1,0 +1,63 @@
+{
+    "testDescription" : "A dataset with both character and numeric variables to test re-ordering and padding",
+
+    "name": "",
+    "label": "",
+    "type": "",
+    "creationDate": "2025-07-24T14:20:00",
+    "variables": [
+        {
+            "name": "CHAR1",
+            "type": "CHARACTER",
+            "label": "",
+            "length": 17,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "NUM1",
+            "type": "NUMERIC",
+            "label": "",
+            "length": 8,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "CHAR2",
+            "type": "CHARACTER",
+            "label": "",
+            "length": 8,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "CHAR3",
+            "type": "CHARACTER",
+            "label": "",
+            "length": 1,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "NUM2",
+            "type": "NUMERIC",
+            "label": "",
+            "length": 8,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "NUM3",
+            "type": "NUMERIC",
+            "label": "",
+            "length": 8,
+            "outputFormat": { "name": "", "width": 0, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        }
+    ],
+    "observations": [
+        ["first",  1, "one",   "1", 10, 100],
+        ["second", 2, "two",   "2", 20, 200],
+        ["third",  3, "three", "3", 30, 300]
+    ]
+}
