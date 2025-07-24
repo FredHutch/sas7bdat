@@ -17,7 +17,7 @@ import java.nio.file.*
 import java.util.regex.Pattern
 import java.lang.reflect.Constructor
 
-class TestRandomSas7Bdat {
+class TestRandomSas7bdat {
 
     private static final Class Sas7bdatExporter
     private static final Class Sas7bdatMetadata
@@ -31,7 +31,7 @@ class TestRandomSas7Bdat {
 
     // Make sure the library has been compiled.
     // It should be relative to this script's location.
-    private static final Path scriptPath = Paths.get(TestRandomSas7Bdat.protectionDomain.codeSource.location.path)
+    private static final Path scriptPath = Paths.get(TestRandomSas7bdat.protectionDomain.codeSource.location.path)
     static {
         def jarFile
         def targetDir = scriptPath.parent.parent.resolve("target")
@@ -43,7 +43,7 @@ class TestRandomSas7Bdat {
             System.exit(1)
         }
 
-        TestRandomSas7Bdat.classLoader.rootLoader.addURL(new URL(jarFile.toUri().toString()))
+        TestRandomSas7bdat.classLoader.rootLoader.addURL(new URL(jarFile.toUri().toString()))
         Sas7bdatExporter = Class.forName("org.scharp.sas7bdat.Sas7bdatExporter")
         Sas7bdatMetadata = Class.forName("org.scharp.sas7bdat.Sas7bdatMetadata")
         Variable         = Class.forName("org.scharp.sas7bdat.Variable")
@@ -917,7 +917,7 @@ class TestRandomSas7Bdat {
         }
     }
 
-    static def checkSas7BdatFile(Path sas7BdatPath, Path testCaseFile, boolean isFromRandomSas) {
+    static def checkSas7bdatFile(Path sas7BdatPath, Path testCaseFile, boolean isFromRandomSas) {
 
         def trimBlanks = { String string -> string.replaceAll(~/^ +| +$/, '') } // strip leading and trailing blanks
         def trimTrailingBlanks = { String string -> string.replaceAll(~/ +$/, '') } // strip trailing blanks
@@ -1150,7 +1150,7 @@ class TestRandomSas7Bdat {
 
             // Confirm that random.sas creates an equivalent dataset to the one we expect to write.
             // Otherwise the troubleshooting tool is not so useful.
-            checkSas7BdatFile(sas7BdatPath, testCaseFile, true)
+            checkSas7bdatFile(sas7BdatPath, testCaseFile, true)
         } else {
             new File("random.sas").delete() // delete any stale random.sas that exists to avoid confusion
         }
@@ -1176,7 +1176,7 @@ class TestRandomSas7Bdat {
         datasetExporter.close()
 
         // Confirm that SAS reads the file in the way we expected it to be created.
-        checkSas7BdatFile(sas7BdatPath, testCaseFile, false)
+        checkSas7bdatFile(sas7BdatPath, testCaseFile, false)
     }
 
     /**
@@ -1304,8 +1304,8 @@ class TestRandomSas7Bdat {
                     // exact same dataset that this script generated.
                     def randomGroovy = Path.of("random.groovy")
                     def sas7BdatPath = Path.of("random.sas7bdat")
-                    def savedSas7BdatPath = Path.of("random-selftest.sas7bdat")
-                    Files.move(sas7BdatPath, savedSas7BdatPath, StandardCopyOption.REPLACE_EXISTING)
+                    def savedSas7bdatPath = Path.of("random-selftest.sas7bdat")
+                    Files.move(sas7BdatPath, savedSas7bdatPath, StandardCopyOption.REPLACE_EXISTING)
 
                     // If the randomly generated dataset is too large, then no random.groovy is generated.
                     if (!Files.exists(randomGroovy)) {
@@ -1330,13 +1330,13 @@ class TestRandomSas7Bdat {
                     }
 
                     // Confirm that random.groovy generated the same file as this script.
-                    if (Files.readAllBytes(sas7BdatPath) != Files.readAllBytes(savedSas7BdatPath)) {
+                    if (Files.readAllBytes(sas7BdatPath) != Files.readAllBytes(savedSas7bdatPath)) {
                         println "ERROR: random.groovy generated a different file than this script"
                         System.exit(1)
                     }
 
                     // Cleanup the extra sas7bdat file.
-                    Files.delete(savedSas7BdatPath)
+                    Files.delete(savedSas7bdatPath)
                 }
             }
         }
