@@ -4,7 +4,7 @@
 // and reads them with SAS to make sure that they were generated properly.
 ///////////////////////////////////////////////////////////////////////////////
 
-@Grab('org.apache.commons:commons-csv:1.10.0')
+@Grab('org.apache.commons:commons-csv:1.14.0')
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
