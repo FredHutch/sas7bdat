@@ -1,7 +1,14 @@
 package org.scharp.sas7bdat;
 
 /**
- * A representation of a "missing value" in a SAS7BDAT data set.
+ * A representation of a missing numeric value in a SAS7BDAT data set.  (Missing character values are represented as the
+ * empty string).
+ * <p>
+ * SAS supports multiple of ways of specifying that a numeric variable's value is missing in an observation.  This can
+ * be used to encode <i>why</i> a value is missing.  For example, it could be that the value is unknown, or that the
+ * subject declined to report a value.  If you don't need to specify multiple ways that a value is missing, use
+ * {@link MissingValue#STANDARD}.
+ * </p>
  */
 public enum MissingValue {
     /**
@@ -156,6 +163,11 @@ public enum MissingValue {
         return rawLongBits;
     }
 
+    /**
+     * Gets the string representation of this missing value, formatted as SAS format it.
+     *
+     * @return The string representation of this missing value.
+     */
     public String toString() {
         return stringValue;
     }

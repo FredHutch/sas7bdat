@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * A class for executing the sample code that's within the package JavaDoc.
+ * A class for executing the sample code that's within the JavaDoc.
  */
 public class Sas7bdatTest {
 

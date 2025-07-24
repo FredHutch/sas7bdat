@@ -9,10 +9,49 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A class that represents the metadata (creation date, variables, etc.) of a SAS7BDAT file.
+ * A representation of a SAS7BDAT file's metadata (creation date, variables, etc.).
  * <p>
- * Instances of this class are immutable.
+ * Instances of this class are immutable.  They are created with a {@link Sas7bdatMetadata.Builder}:
  * </p>
+ * <pre>
+ * Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+ *     datasetName("WEATHER").
+ *     datasetLabel("Daily temperatures in cities across the U.S.A.").
+ *     variables(
+ *         List.of(
+ *             Variable.builder().
+ *                 name("CITY").
+ *                 type(VariableType.CHARACTER).
+ *                 length(20).
+ *                 label("Name of city").
+ *                 outputFormat(new Format("$CHAR", 18)).
+ *                 build(),
+ *
+ *             Variable.builder().
+ *                 name("STATE").
+ *                 type(VariableType.CHARACTER).
+ *                 length(2).
+ *                 label("Postal abbreviation of state").
+ *                 outputFormat(new Format("$CHAR", 2)).
+ *                 build(),
+ *
+ *             Variable.builder().
+ *                 name("HIGH").
+ *                 type(VariableType.NUMERIC).
+ *                 length(8).
+ *                 label("Average daily high in F").
+ *                 outputFormat(new Format("", 5)).
+ *                 build(),
+ *
+ *             Variable.builder().
+ *                 name("LOW").
+ *                 type(VariableType.NUMERIC).
+ *                 length(8).
+ *                 label("Average daily low in F").
+ *                 outputFormat(new Format("", 5)).
+ *                 build()
+ *     )).build();
+ * </pre>
  */
 public final class Sas7bdatMetadata {
     private final LocalDateTime creationTime;
@@ -49,7 +88,7 @@ public final class Sas7bdatMetadata {
          * @param creationTime
          *     The SAS7BDAT's new creation time.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code creationTime} is {@code null}.
@@ -85,7 +124,7 @@ public final class Sas7bdatMetadata {
          * @param datasetName
          *     The SAS7BDAT's dataset name.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code datasetName} is {@code null}.
@@ -108,7 +147,7 @@ public final class Sas7bdatMetadata {
          * @param datasetType
          *     The SAS7BDAT's dataset type.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code datasetType} is {@code null}.
@@ -131,7 +170,7 @@ public final class Sas7bdatMetadata {
          * @param datasetLabel
          *     The SAS7BDAT's dataset label.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code datasetLabel} is {@code null}.
@@ -156,7 +195,7 @@ public final class Sas7bdatMetadata {
          *     copied, so subsequent changes to the list do not impact this builder or the resulting
          *     {@code Sas7bdatMetadata}.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code variables} is {@code null} or contains a {@code null} entry.
@@ -199,7 +238,7 @@ public final class Sas7bdatMetadata {
         /**
          * Builds the immutable {@code Sas7bdatMetadata} with the configured options.
          *
-         * @return a {@code Sas7bdatMetadata}
+         * @return A {@code Sas7bdatMetadata}
          *
          * @throws IllegalStateException
          *     if the variables hasn't been set explicitly.
@@ -217,7 +256,7 @@ public final class Sas7bdatMetadata {
      * Creates a new Sas7bdatMetadata builder initialized with the current time as the creation time, a dataset type of
      * "DATA", no name, no label, and no variables.
      * <p>
-     * The variables must be set before invoking {@link Builder#build build}
+     * The variables must be set before invoking {@link Builder#build build()}.
      * </p>
      *
      * @return A new builder.
@@ -232,11 +271,11 @@ public final class Sas7bdatMetadata {
      * @param creationTime
      *     The creation time
      * @param datasetName
-     *     the name of the dataset
+     *     The name of the data set
      * @param datasetType
-     *     The dataset type
+     *     The data set type
      * @param datasetLabel
-     *     The dataset's label
+     *     The data set's label
      * @param variables
      *     A list of variables.  Builder ensures that the client has no references to it.
      */
@@ -252,7 +291,7 @@ public final class Sas7bdatMetadata {
     /**
      * Gets the time and date at which the associated SAS7BDAT was created.
      *
-     * @return a local date time.
+     * @return A local date time.
      */
     public LocalDateTime creationTime() {
         return creationTime;
@@ -264,7 +303,7 @@ public final class Sas7bdatMetadata {
      * This usually matches the SAS7BDAT's base file name (without the path and without the file extension).
      * </p>
      *
-     * @return the dataset name. This is at most 64 bytes when encoded in UTF-8. This is never {@code null}.
+     * @return The data set name. This is at most 64 bytes when encoded in UTF-8. This is never {@code null}.
      */
     public String datasetName() {
         return datasetName;
@@ -273,28 +312,28 @@ public final class Sas7bdatMetadata {
     /**
      * Gets the SAS7BDAT's dataset type.
      *
-     * @return the dataset type.  This is never {@code null}.
+     * @return The data set type.  This is never {@code null}.
      */
     public String datasetType() {
         return datasetType;
     }
 
     /**
-     * Gets the SAS7BDAT's dataset label.
+     * Gets the SAS7BDAT's data set label.
      *
-     * @return the dataset label.  This is never {@code null}.
+     * @return The data set label.  This is never {@code null}.
      */
     public String datasetLabel() {
         return datasetLabel;
     }
 
     /**
-     * Gets associated SAS7BDAT's variables.
+     * Gets the associated SAS7BDAT's variables.
      * <p>
-     * This returned list is not modifiable.
+     * The returned list is not modifiable.
      * </p>
      *
-     * @return the dataset's variables, in order.  This is never {@code null}.
+     * @return The data set's variables, in order.  This is never {@code null}.
      */
     public List<Variable> variables() {
         return Collections.unmodifiableList(variables);

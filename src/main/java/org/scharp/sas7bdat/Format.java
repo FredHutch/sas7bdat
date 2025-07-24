@@ -12,7 +12,7 @@ import java.util.Objects;
  * </p>
  *
  * <p>
- * This class supports {@code equals()} and {@code hashCode()} in a way that makes them suitable for use in a HashMap.
+ * This class supports {@code equals()} and {@code hashCode()} so that its instances suitable for use in a HashMap.
  * </p>
  *
  * <p>
@@ -110,21 +110,27 @@ public final class Format {
     }
 
     /**
-     * @return The name of this format. This may be the empty string but never {@code null}.
+     * Gets the name of this format.  For example "COMMA", "$CHAR", "DOLLAR", or "".
+     *
+     * @return This format's name. This may be the empty string but never {@code null}.
      */
     public String name() {
         return name;
     }
 
     /**
-     * @return The width of this format. If this is zero, then no explicit width is set.
+     * Gets this format's width. If this is zero, then no explicit width is set.
+     *
+     * @return The width of this format.
      */
     public short width() {
         return width;
     }
 
     /**
-     * @return The number of digits. If this is zero, then no explicit number of digits is set.
+     * Gets this format's number of digits. If this is zero, then no explicit number of digits is set.
+     *
+     * @return The number of digits in this format.
      */
     public short numberOfDigits() {
         return numberOfDigits;
@@ -169,7 +175,7 @@ public final class Format {
     }
 
     /**
-     * Shows this format as a string in the same way that SAS would.
+     * Gets this format as a string rendered the way that SAS would render it.
      *
      * <p>
      * For example "$ASCII4." or "BESTD5.2".

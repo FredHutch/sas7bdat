@@ -10,6 +10,134 @@ import java.util.List;
 
 import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
 
+/**
+ * <p>
+ * The general usage paradigm for generate a SAS7BDAT file is to construct an in-memory representation of the SAS7BDAT
+ * metadata information (a {@link Sas7bdatMetadata}) and then use {@code Sas7bdatExporter} to write rows of data
+ * (referred to as "observations" in SAS) that are described by the metadata.
+ * </p>
+ *
+ * <p>
+ * The following code sample demonstrates how to generate a SAS7BDAT using hard-coded data that can fit into memory.
+ * </p>
+ *
+ * <pre>
+ * private static void exportDataset(Path targetLocation) throws IOException {
+ *
+ *     Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+ *         datasetName("WEATHER").
+ *         datasetLabel("Daily temperatures in cities across the U.S.A.").
+ *         variables(
+ *             List.of(
+ *                 Variable.builder().
+ *                     name("CITY").
+ *                     type(VariableType.CHARACTER).
+ *                     length(20).
+ *                     label("Name of city").
+ *                     outputFormat(new Format("$CHAR", 18)).
+ *                     build(),
+ *
+ *                 Variable.builder().
+ *                     name("STATE").
+ *                     type(VariableType.CHARACTER).
+ *                     length(2).
+ *                     label("Postal abbreviation of state").
+ *                     outputFormat(new Format("$CHAR", 2)).
+ *                     build(),
+ *
+ *                 Variable.builder().
+ *                     name("HIGH").
+ *                     type(VariableType.NUMERIC).
+ *                     length(8).
+ *                     label("Average daily high in F").
+ *                     outputFormat(new Format("", 5)).
+ *                     build(),
+ *
+ *                 Variable.builder().
+ *                     name("LOW").
+ *                     type(VariableType.NUMERIC).
+ *                     length(8).
+ *                     label("Average daily low in F").
+ *                     outputFormat(new Format("", 5)).
+ *                     build()
+ *         )).build();
+ *
+ *     List&lt;List&lt;Object>> observations = List.of(
+ *         List.of("Atlanta", "GA", 72, 53),
+ *         List.of("Austin", "TX", 80, 5),
+ *         List.of("Baltimore", "MD", 65, 45),
+ *         List.of("Birmingham", "AL", 74, 53),
+ *         List.of("Boston", "MA", 59, MissingValue.STANDARD),
+ *         List.of("Buffalo", "NY", 56, 40),
+ *         // ...
+ *         List.of("Virginia Beach", "VA", 68, 52),
+ *         List.of("Washington", "DC", 68, 52));
+ *
+ *     // Export the data set a SAS7BDAT file.
+ *     Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
+ * }
+ * </pre>
+ *
+ * <p>
+ * To export a SAS7BDAT without holding all rows in memory, you can construct as {@code Sas7bdatExporter} and write each
+ * observation in sequence.  However, you must know the number of observations that you intend to write. This looks
+ * like:
+ * </p>
+ *
+ * <pre>
+ * private static void exportDataset(Path targetLocation) throws IOException {
+ *
+ *     Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+ *         datasetName("WEATHER").
+ *         datasetLabel("Daily temperatures in cities across the U.S.A.").
+ *         variables(
+ *             List.of(
+ *                 Variable.builder().
+ *                     name("CITY").
+ *                     type(VariableType.CHARACTER).
+ *                     length(20).
+ *                     label("Name of city").
+ *                     outputFormat(new Format("$CHAR", 18)).
+ *                     build(),
+ *
+ *                 Variable.builder().
+ *                     name("STATE").
+ *                     type(VariableType.CHARACTER).
+ *                     length(2).
+ *                     label("Postal abbreviation of state").
+ *                     outputFormat(new Format("$CHAR", 2)).
+ *                     build(),
+ *
+ *                 Variable.builder().
+ *                     name("HIGH").
+ *                     type(VariableType.NUMERIC).
+ *                     length(8).
+ *                     label("Average daily high in F").
+ *                     outputFormat(new Format("", 5)).
+ *                     build(),
+ *
+ *                 Variable.builder().
+ *                     name("LOW").
+ *                     type(VariableType.NUMERIC).
+ *                     length(8).
+ *                     label("Average daily low in F").
+ *                     outputFormat(new Format("", 5)).
+ *                     build()
+ *         )).build();
+ *
+ *     <b>int totalObservations = 8;
+ *     try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
+ *         exporter.writeObservation(List.of("Atlanta", "GA", 72, 53));
+ *         exporter.writeObservation(List.of("Baltimore", "MD", 65, 45));
+ *         exporter.writeObservation(List.of("Birmingham", "AL", 74, 53));
+ *         exporter.writeObservation(List.of("Boston", "MA", 59, MissingValue.STANDARD));
+ *         exporter.writeObservation(List.of("Buffalo", "NY", 56, 40));
+ *         exporter.writeObservation(List.of("Virginia Beach", "VA", 68, 52));
+ *         exporter.writeObservation(List.of("Washington", "DC", 68, 52));
+ *     }</b>
+ * </pre>
+ */
+// Note: This is called "Exporter" instead of "Writer" because it doesn't extend the Writer class as so is not a Writer.
 public final class Sas7bdatExporter implements AutoCloseable {
 
     private final OutputStream outputStream;

@@ -7,10 +7,22 @@ import java.util.Objects;
 /**
  * A variable or column in a SAS7BDAT file.
  * <p>
- * Instances of this class are immutable.
+ * Instances of this class are immutable.  They are created with a {@link Variable.Builder}:
  * </p>
+ *
+ * <pre>
+ * Variable cityVariable = Variable.builder().
+ *     name("CITY").
+ *     type(VariableType.CHARACTER).
+ *     length(20).
+ *     label("Name of city").
+ *     outputFormat(new Format("$CHAR", 18)).
+ *     build();
+ * </pre>
+ *
  * <p>
- * This class supports {@code equals()} and {@code hashCode()} in a way that makes them suitable for use in a HashMap.
+ * This class supports {@code equals()} and {@code hashCode()} so that its instances suitable for use in a
+ * {@code HashMap}.
  * </p>
  */
 public final class Variable {
@@ -52,7 +64,7 @@ public final class Variable {
          * @param type
          *     The variable's new type.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code type} is {@code null}.
@@ -69,7 +81,7 @@ public final class Variable {
          * @param name
          *     The variable's new name.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code name} is {@code null}.
@@ -93,7 +105,7 @@ public final class Variable {
          * @param length
          *     The length of the new variable.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws IllegalArgumentException
          *     if {@code length} is less than 1 or greater than 32,767.
@@ -119,7 +131,7 @@ public final class Variable {
          * @param label
          *     The variable's new label.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code label} is {@code null}.
@@ -141,7 +153,7 @@ public final class Variable {
          * @param outputFormat
          *     The variable's new output format. This cannot be {@code null}, but it can be {@code Format.UNSPECIFIED}.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code outputFormat} is {@code null}.
@@ -163,7 +175,7 @@ public final class Variable {
          * @param inputFormat
          *     The variable's new input format. This cannot be {@code null}, but it can be {@code Format.UNSPECIFIED}.
          *
-         * @return this builder
+         * @return This builder
          *
          * @throws NullPointerException
          *     if {@code inputFormat} is {@code null}.
@@ -239,7 +251,7 @@ public final class Variable {
     /**
      * Creates a new Variable builder with a blank label and an unspecified input format and output format.
      * <p>
-     * You must set the name, type, and length before invoking {@link Builder#build build}.
+     * You must set the name, type, and length before invoking {@link Builder#build() build()}.
      * </p>
      *
      * @return A new builder.
@@ -275,44 +287,56 @@ public final class Variable {
     }
 
     /**
-     * @return this variable's type (character or numeric). This is never {@code null}.
+     * Gets this variable's type (character or numeric).
+     *
+     * @return This variable's type. This is never {@code null}.
      */
     public VariableType type() {
         return type;
     }
 
     /**
-     * @return this variable's name. This is never {@code null}.
+     * Gets this variable's name.
+     *
+     * @return This variable's name. This is never {@code null}.
      */
     public String name() {
         return name;
     }
 
     /**
-     * @return this variable's label. This may be the empty string but never {@code null}.
+     * Gets this variable's label.
+     *
+     * @return This variable's label. This may be the empty string but never {@code null}.
      */
     public String label() {
         return label;
     }
 
     /**
-     * @return The number of bytes that values of this variable can occupy within an observation.
+     * Gets this variable's length, which is number of bytes that values of this variable can occupy within an
+     * observation.
+     *
+     * @return This variable's length.
      */
     public int length() {
         return length;
     }
 
     /**
-     * @return The format to use when rendering values for display. This is never {@code null}. SAS refers to this as
-     *     the "FORMAT".
+     * Gets the format to use when rendering this variable's values for display. SAS refers to this as the "FORMAT".
+     *
+     * @return This variable's output format. This is never {@code null}.
      */
     public Format outputFormat() {
         return outputFormat;
     }
 
     /**
-     * @return The format to use when reading values into a SAS program. This is never {@code null}. SAS refers to this
-     *     as the "INFORMAT".
+     * Gets the format to use when rendering this variable's values into a SAS program. SAS refers to this as the
+     * "INFORMAT".
+     *
+     * @return The variable's input format. This is never {@code null}.
      */
     public Format inputFormat() {
         return inputFormat;
@@ -324,7 +348,7 @@ public final class Variable {
      * This method is supported for the benefit of hash tables such as those provided by {@link HashMap}.
      * </p>
      *
-     * @return this variable's hash code
+     * @return This variable's hash code.
      */
     @Override
     public int hashCode() {
