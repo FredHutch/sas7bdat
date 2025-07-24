@@ -711,11 +711,11 @@ class TestRandomSas7bdat {
     static String formatDataline(variables, observation) {
         StringBuilder stringBuilder = new StringBuilder()
         variables.eachWithIndex { variable, i ->
+            def value = observation[i]
             if (variable.type() == VariableType.CHARACTER) {
                 // Quote any values that contain commas, using '' to quote a quote character.
-                stringBuilder << (observation[i].contains(',') ? "'${observation[i].replace("'", "''")}'" : observation[i])
+                stringBuilder << (value.contains(',') ? "'${value.replace("'", "''")}'" : value)
             } else {
-                def value = observation[i]
                 if (value == null) {
                     // MISSING numerics may be formatted as blank, so there's no need to write them.
                 } else if (value.class == MissingValue) {
