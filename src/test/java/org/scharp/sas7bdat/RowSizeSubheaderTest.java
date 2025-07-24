@@ -98,11 +98,16 @@ public class RowSizeSubheaderTest {
         pageLayout.columnText.add("dataset label");
         pageLayout.columnText.noMoreText();
 
-        // Add ColumnFormatSubheader, one on the first page, two on the second page.
+        // Add ColumnFormatSubheader, two on the first page, three on the second page, 1 on the third.
+        // This tests the ColumnFormatSubheader counting logic.
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(0), pageLayout.columnText));
-        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(1), pageLayout.columnText));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));  // new page
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(2), pageLayout.columnText));
+        pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(3), pageLayout.columnText));
+        pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(3), pageLayout.columnText));
+        pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));   // new page
+        pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(0), pageLayout.columnText));
 
         // Add some ColumnListSubheader, since their size is included in the RowSizeSubheader.
         pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
@@ -114,7 +119,7 @@ public class RowSizeSubheaderTest {
             -9, -9, -9, -9, 0, 0, 0, 0,  // signature
 
             -16, 0, 0, 0, 0, 0, 0, 0, // unknown
-            12, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
+            17, 0, 0, 0, 0, 0, 0, 0, // unknown (subheaders + 2)
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
             17, 48, 34, 0, 0, 0, 0, 0, // unknown
 
@@ -123,8 +128,8 @@ public class RowSizeSubheaderTest {
             0, 0, 0, 0, 0, 0, 0, 0, // number of deleted observations
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
 
-            1, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the first page.
-            2, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the second page.
+            2, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the first page.
+            3, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the second page.
 
             58, 0, 0, 0, 0, 0, 0, 0, // unknown (aggregate size of ColumnListSubheader payload)
             26, 0, 0, 0, 0, 0, 0, 0, // aggregate variable name length
@@ -187,13 +192,13 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            2, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            4, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            3, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
+            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
 
-            2, 0, 0, 0, 0, 0, 0, 0, // page of first observation
-            6, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
+            3, 0, 0, 0, 0, 0, 0, 0, // page of first observation
+            5, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
 
-            -80, 1, 0, 0, 0, 0, 0, 0, // page of last observation
+            -79, 1, 0, 0, 0, 0, 0, 0, // page of last observation
             19, 0, 0, 0, 0, 0, 0, 0, // block index in page with last observation
 
             1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
