@@ -192,8 +192,8 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            3, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            3, 0, 0, 0, 0, 0, 0, 0, // page with final subheader
+            3, 0, 0, 0, 0, 0, 0, 0, // block number of final subheader on page
 
             3, 0, 0, 0, 0, 0, 0, 0, // page of first observation
             5, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
@@ -566,8 +566,8 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            3, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            1, 0, 0, 0, 0, 0, 0, 0, // page with final subheader
+            3, 0, 0, 0, 0, 0, 0, 0, // block number of final subheader on page
 
             2, 0, 0, 0, 0, 0, 0, 0, // page of first observation
             1, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
@@ -750,8 +750,8 @@ public class RowSizeSubheaderTest {
             1, 0, 0, 0, 0, 0, 0, 0, // page index of ColumnSizeSubheader
             2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with ColumnSizeSubheader
 
-            1, 0, 0, 0, 0, 0, 0, 0, // page index of first ColumnFormatSubheader
-            2, 0, 0, 0, 0, 0, 0, 0, // subheader in page with first ColumnFormatSubheader
+            1, 0, 0, 0, 0, 0, 0, 0, // page with final subheader
+            2, 0, 0, 0, 0, 0, 0, 0, // block number of final subheader on page
 
             1, 0, 0, 0, 0, 0, 0, 0, // page of first observation
             4, 0, 0, 0, 0, 0, 0, 0, // block index in page with first observation
