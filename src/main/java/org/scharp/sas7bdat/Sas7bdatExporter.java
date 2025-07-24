@@ -19,9 +19,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
     private int totalObservationsWritten;
     private Sas7bdatPage currentPage;
 
-    private int totalPagesAllocated; // TODO: only to assert at the end
-    private int totalPagesInDataset;
-
     private static int divideAndRoundUp(int dividend, int divisor) {
         return (dividend + divisor - 1) / divisor;
     }
@@ -150,7 +147,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         Sas7bdatPage mixedPage = pageLayout.finalizeMetadata();
 
         // Calculate how many pages will be needed in the dataset.
-        final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
+        final int totalPagesInDataset;
         {
             final int maxObservationsOnMixedPage = mixedPage.maxObservations();
             final int totalNumberOfDataPages;
@@ -166,6 +163,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
                 // observationsOnAllDataPages / observationsPerDataPage rounded up
                 totalNumberOfDataPages = divideAndRoundUp(observationsOnAllDataPages, maxObservationsPerDataPage);
             }
+
+            final int totalNumberOfMetadataPages = pageLayout.completeMetadataPages.size();
             totalPagesInDataset = totalNumberOfMetadataPages + totalNumberOfDataPages;
         }
 
@@ -190,7 +189,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
         }
 
         totalObservationsWritten = 0;
-        totalPagesAllocated = totalNumberOfMetadataPages;
         currentPage = mixedPage;
     }
 
@@ -349,7 +347,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
             writePage(currentPage);
 
             // Start a new data page.
-            totalPagesAllocated++;
             currentPage = new Sas7bdatPage(pageSequenceGenerator, currentPage.pageSize(), variablesLayout);
             currentPage.finalizeSubheaders(); // a data page has no subheaders
 
@@ -421,8 +418,6 @@ public final class Sas7bdatExporter implements AutoCloseable {
             currentPage = null;
 
             outputStream.close();
-
-            assert totalPagesAllocated == totalPagesInDataset : "wrote " + totalPagesAllocated + " out of " + totalPagesInDataset + " pages.";
         }
     }
 
