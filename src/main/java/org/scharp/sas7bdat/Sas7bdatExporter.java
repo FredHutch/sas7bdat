@@ -73,7 +73,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  *         List.of("Virginia Beach", "VA", 68, 52),
  *         List.of("Washington", "DC", 68, 52));
  *
- *     // Export the data set a SAS7BDAT file.
+ *     // Export the data set to a SAS7BDAT file.
  *     Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
  * }
  * </pre>
