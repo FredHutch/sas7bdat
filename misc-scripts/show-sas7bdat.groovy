@@ -1,10 +1,12 @@
 #!/usr/bin/env groovy
-
-import java.nio.charset.StandardCharsets
-
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2025 Fred Hutch Cancer Center
+// Licensed under the MIT License - see LICENSE file for details
 ///////////////////////////////////////////////////////////////////////////////
 // This script prints the structure of a SAS7BDAT file.
 ///////////////////////////////////////////////////////////////////////////////
+
+import java.nio.charset.StandardCharsets
 
 class SubheaderSignature {
     static final long ROW_SIZE = 0x00000000F7F7F7F7L
