@@ -15,7 +15,7 @@
  *
  * <p>
  * In SAS, a row of data is called an "observation". Observations that share an identical structure are organized into
- * "data sets". Zero or more SAS data sets are organized into a SAS library, which typically corresponds to all SAS7BDAT
+ * "datasets". Zero or more SAS datasets are organized into a SAS library, which typically corresponds to all SAS7BDAT
  * files within a directory, although other library formats do exist.
  * </p>
  *
@@ -28,7 +28,7 @@
  * <p>
  * SAS is loosely typed. It has only two types: "numeric" and "character". Numeric data is always persisted as double
  * precision floating point values. Character data is persisted as an array of bytes using a character coding that must
- * be managed by the programmer.  All of the size limits on strings are in bytes, not characters.  SAS data sets
+ * be managed by the programmer.  All of the size limits on strings are in bytes, not characters.  SAS datasets
  * typically use ASCII or WINDOWS-1252, so this distinction not usually significant.  This library is hard-coded to use
  * UTF-8.
  * </p>
@@ -40,7 +40,7 @@
  * example, if a SAS programmer wanted to create the equivalent of an {@code enum}, they could do so with a user-defined
  * format. For example, they might create an enum for "smoking status" and format 1 as "Never Smoked", 2 as "Quit", and
  * 3 as "Active Smoker". The name of this format can be persisted in an SAS7BDAT, but the formatting cannot. So any code
- * which processes the data set will only see that the data has the SMOKER format and has data "1.0", "2.0", and "3.0"
+ * which processes the dataset will only see that the data has the SMOKER format and has data "1.0", "2.0", and "3.0"
  * (remember, all numeric values are double-precision floating point).
  * </p>
  *

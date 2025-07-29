@@ -2,13 +2,13 @@ This file contains a high-level design of the library and some implementation no
 
 Purpose
 -------
-The purpose of this library is to allow JVM-based applications to export data sets in SAS7BDAT format so that they can be read by SAS programs.
-As such, it only needs to support one valid form for any given data set, which was chosen to be 64-bit, UNIX, little-endian, UTF-8.
-Since SAS7BDAT files are used for information exchange between corporations, I presume that SAS running on a different architecture will be able to read these data sets.
+The purpose of this library is to allow JVM-based applications to export datasets in SAS7BDAT format so that they can be read by SAS programs.
+As such, it only needs to support one valid form for any given dataset, which was chosen to be 64-bit, UNIX, little-endian, UTF-8.
+Since SAS7BDAT files are used for information exchange between corporations, I presume that SAS running on a different architecture will be able to read these datasets.
 
 Class Structure and Responsibilities
 ------------------------------------
-The Metadata, Variable, and Format classes are immutable POJOs for describing the shape of the data set.
+The Metadata, Variable, and Format classes are immutable POJOs for describing the shape of the dataset.
 They are responsible for validating their input, every instance of these classes should only contain legal values.
 
 The `Sas7bdatExporter` class is responsible for writing the SAS7BDAT file.
@@ -21,13 +21,13 @@ The `FixedSizeSubheader` classes all have a constant size.
 The size of a `VariableSizeSubheader` changes depending on its content.
 The `TerminalSubheader` has no size, it's not really a subheader but a way for a SAS7BDAT to indicate when there are no more subheaders on a page.
 
-Each of the subheaders contains metadata for the data set.
+Each of the subheaders contains metadata for the dataset.
 The different subclasses contain partially overlapping information and some subheaders refer to other subheaders.
 When one subheader needs access to information in a different subheader, it is provided a `Sas7bdatPageLayout` class, which can be used to iterate over all of a document's subheaders.
 Each subheader holds all of its information in a structured form until its write() method is invoked, at which time the subheader is serialized the way SAS expects.
 
 There are dependency cycles in the subheaders, a subheader may depend on information in another subheader, which depends on information from the first subheader.
-To handle this, it's `Sas7bdatExporter`'s responsibility to construct all subheaders in a data set before any of them are written.
+To handle this, it's `Sas7bdatExporter`'s responsibility to construct all subheaders in a dataset before any of them are written.
 Each subheader has a lazy implementation; they don't read information from other subheaders until their write() method is invoked.
 
 Testing Strategy
@@ -55,11 +55,22 @@ Due to limitation of SAS's CSV export, it can't test the following:
 3. variations on formats
 
 `test-random-sas7bdat.groovy` has two major modes.
-In the first mode, it generates a data set at random, writes it with `Sas7bdatExporter` and confirms that SAS can read what intended from the SAS7BDAT.
-It also writes a SAS program that generates an identical data set, so that it can be compared with what `Sas7bdatExporter` wrote.
+In the first mode, it generates a dataset at random, writes it with `Sas7bdatExporter` and confirms that SAS can read what intended from the SAS7BDAT.
+It also writes a SAS program that generates an identical dataset, so that it can be compared with what `Sas7bdatExporter` wrote.
 It can do this in a loop.
 By experience, if a bug hasn't been found in 100 iteration, then `test-random-sas7bdat.groovy` won't ever find it.
 
-In the second mode, `test-random-sas7bdat.groovy` tests a data set that is defined in a JSON file.
-This can re-test a data set that previously failed, generating it with `Sas7bdatExporter` and reading it with SAS.
+In the second mode, `test-random-sas7bdat.groovy` tests a dataset that is defined in a JSON file.
+This can re-test a dataset that previously failed, generating it with `Sas7bdatExporter` and reading it with SAS.
 There are several such datasets in the test-data directory.
+
+Naming Conventions
+------------------
+For most terms, the SAS name was preferred so that the programmer can more easily search for how SAS treats the named entity.
+However, since this is a Java API for people with little SAS experience, some terms were chosen against SAS conventions because they made more sense in Java.
+
+| Term          | Rational                                                                                                                                                                                                                                                           |
+|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| dataset       | SAS calls this a "data set".  In Java methods, the word "set" looked more like a verb than a noun.  The clincher was that `Sas7bdatMetadata.Builder.dataSetLabel()` looked like you were setting data or setting a label on data, not setting the dataset's label. |
+| output format | SAS calls this "FORMAT".  We used "output format" for clarity and symmetry with "input format".                                                                                                                                                                    |
+| input format  | SAS calls this "INFORMAT".  We used input format for clarity.                                                                                                                                                                                                      |

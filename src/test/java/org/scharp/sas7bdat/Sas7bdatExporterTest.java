@@ -164,7 +164,7 @@ public class Sas7bdatExporterTest {
                 observations.add(List.of(missingValue.toString(), "", "", "", missingValue));
             }
 
-            // Write a data set.
+            // Write a dataset.
             Sas7bdatExporter.exportDataset(targetFile, metadata, observations);
 
             // Read the dataset with parso to confirm that it was written correctly.
@@ -340,7 +340,7 @@ public class Sas7bdatExporterTest {
                 variables(List.of(variable1, variable2, variable3, variable4, variable5)).
                 build();
 
-            // Write a data set using a streaming interface.
+            // Write a dataset using a streaming interface.
             final int totalObservations = 1_000_000;
             try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
                 for (int i = 0; i < totalObservations; i++) {
@@ -462,7 +462,7 @@ public class Sas7bdatExporterTest {
                 variables(List.of(variable1, variable2, variable3, variable4, variable5)).
                 build();
 
-            // Write a data set using a streaming interface.
+            // Write a dataset using a streaming interface.
             final int totalObservations = 1_000;
             try (Sas7bdatExporter exporter = new Sas7bdatExporter(outputStream, metadata, totalObservations)) {
                 for (int i = 0; i < totalObservations; i++) {
@@ -541,7 +541,7 @@ public class Sas7bdatExporterTest {
                 "The constructor was told to expect 100 observation(s) but only 10 were written.",
                 ioException.getSuppressed()[0].getMessage());
 
-            // The data set is corrupt, so there's no need to check its contents.
+            // The dataset is corrupt, so there's no need to check its contents.
 
         } finally {
             // Always clean up
@@ -571,7 +571,7 @@ public class Sas7bdatExporterTest {
                 "The constructor was told to expect 100 observation(s) but only 99 were written.",
                 exception.getMessage());
 
-            // The data set is corrupt, so there's no need to check its contents.
+            // The dataset is corrupt, so there's no need to check its contents.
 
         } finally {
             // Always clean up
@@ -601,8 +601,8 @@ public class Sas7bdatExporterTest {
                 assertEquals("wrote more observations than promised in the constructor", exception.getMessage());
             }
 
-            // The data set should be well-formed because the exception in writeObservation should not
-            // have changed any state and then close() should have closed the data set with the original
+            // The dataset should be well-formed because the exception in writeObservation should not
+            // have changed any state and then close() should have closed the dataset with the original
             // observations.
 
             // Read the dataset with parso to confirm that it was written correctly.

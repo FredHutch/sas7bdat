@@ -108,7 +108,7 @@ public final class Variable {
          * <p>
          * Keep in mind that SAS7BDAT is a fixed-width format.  So if you set the length to a large number, like 2000,
          * because you're unsure how long string values can be, the value will occupy 2000 bytes in every row, with the
-         * unused space set to a space character.  If you do this on a data set with many observations, you may end up
+         * unused space set to a space character.  If you do this on a dataset with many observations, you may end up
          * with a very large SAS7BDAT file.
          * </p>
          *

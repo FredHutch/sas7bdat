@@ -4,7 +4,7 @@ A Java library for writing SAS7BDAT datasets that can be read by SAS.
 
 Quick Start
 -----------
-The following code shows how to use the library to create a SAS7BDAT file for a hard-coded data set.
+The following code shows how to use the library to create a SAS7BDAT file for a hard-coded dataset.
 
     Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
         datasetName("WEATHER").
@@ -55,7 +55,7 @@ The following code shows how to use the library to create a SAS7BDAT file for a 
         List.of("Virginia Beach", "VA", 68, 52),
         List.of("Washington", "DC", 68, 52));
 
-    // Export the data set to a SAS7BDAT file.
+    // Export the dataset to a SAS7BDAT file.
     Path targetLocation = Path.of(...)
     Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
 

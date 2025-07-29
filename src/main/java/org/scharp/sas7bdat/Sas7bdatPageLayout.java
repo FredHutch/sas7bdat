@@ -79,15 +79,15 @@ class Sas7bdatPageLayout {
     }
 
     /**
-     * An interface that defines a callback when iterating over all subheaders in the data set.
+     * An interface that defines a callback when iterating over all subheaders in the dataset.
      */
     @FunctionalInterface
     interface NextSubheader {
         /**
-         * A callback when iterating over all subheaders in the data set.
+         * A callback when iterating over all subheaders in the dataset.
          *
          * @param subheader
-         *     The next subheader in the data set.
+         *     The next subheader in the dataset.
          * @param pageNumberOfSubheader
          *     The page number where {@code subheader} is located.  1 is the first page number.
          * @param positionInPage
@@ -97,7 +97,7 @@ class Sas7bdatPageLayout {
     }
 
     /**
-     * Iterates over all subheaders in the data set, invoking a callback for each subheader.
+     * Iterates over all subheaders in the dataset, invoking a callback for each subheader.
      *
      * @param nextSubheader
      *     A callback interface

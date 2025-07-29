@@ -468,7 +468,7 @@ public class RowSizeSubheaderTest {
     }
 
     /**
-     * Tests the values that RowSizeSubheader when a data set has no observation on a metadata page but still has data
+     * Tests the values that RowSizeSubheader when a dataset has no observation on a metadata page but still has data
      * pages.
      */
     @Test

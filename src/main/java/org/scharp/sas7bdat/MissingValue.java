@@ -5,7 +5,7 @@
 package org.scharp.sas7bdat;
 
 /**
- * A representation of a missing numeric value in a SAS7BDAT data set.  (Missing character values are represented as the
+ * A representation of a missing numeric value in a SAS7BDAT dataset.  (Missing character values are represented as the
  * empty string).
  * <p>
  * SAS supports multiple of ways of specifying that a numeric variable's value is missing in an observation.  This can

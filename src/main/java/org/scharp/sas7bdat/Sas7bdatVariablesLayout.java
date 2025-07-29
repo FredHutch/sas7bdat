@@ -181,7 +181,7 @@ class Sas7bdatVariablesLayout {
      * Returns the row offset of each variable's data as a list of Integers.
      * <p>
      * The list is given in the same order as the variables. Note that the offsets may not be monotonically increasing
-     * as the physical order of the variable's values do not necessarily match the logical order within the data set.
+     * as the physical order of the variable's values do not necessarily match the logical order within the dataset.
      *
      * @return An unmodifiable list of integers
      */

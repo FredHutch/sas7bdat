@@ -275,11 +275,11 @@ public final class Sas7bdatMetadata {
      * @param creationTime
      *     The creation time
      * @param datasetName
-     *     The name of the data set
+     *     The name of the dataset
      * @param datasetType
-     *     The data set type
+     *     The dataset's type
      * @param datasetLabel
-     *     The data set's label
+     *     The dataset's label
      * @param variables
      *     A list of variables.  Builder ensures that the client has no references to it.
      */
@@ -307,7 +307,7 @@ public final class Sas7bdatMetadata {
      * This usually matches the SAS7BDAT's base file name (without the path and without the file extension).
      * </p>
      *
-     * @return The data set name. This is at most 64 bytes when encoded in UTF-8. This is never {@code null}.
+     * @return The dataset name. This is at most 64 bytes when encoded in UTF-8. This is never {@code null}.
      */
     public String datasetName() {
         return datasetName;
@@ -316,16 +316,16 @@ public final class Sas7bdatMetadata {
     /**
      * Gets the SAS7BDAT's dataset type.
      *
-     * @return The data set type.  This is never {@code null}.
+     * @return The dataset type.  This is never {@code null}.
      */
     public String datasetType() {
         return datasetType;
     }
 
     /**
-     * Gets the SAS7BDAT's data set label.
+     * Gets the SAS7BDAT's dataset label.
      *
-     * @return The data set label.  This is never {@code null}.
+     * @return The dataset label.  This is never {@code null}.
      */
     public String datasetLabel() {
         return datasetLabel;
@@ -337,7 +337,7 @@ public final class Sas7bdatMetadata {
      * The returned list is not modifiable.
      * </p>
      *
-     * @return The data set's variables, in order.  This is never {@code null}.
+     * @return The dataset's variables, in order.  This is never {@code null}.
      */
     public List<Variable> variables() {
         return Collections.unmodifiableList(variables);

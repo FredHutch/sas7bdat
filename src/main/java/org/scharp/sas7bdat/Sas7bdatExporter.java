@@ -77,7 +77,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  *         List.of("Virginia Beach", "VA", 68, 52),
  *         List.of("Washington", "DC", 68, 52));
  *
- *     // Export the data set to a SAS7BDAT file.
+ *     // Export the dataset to a SAS7BDAT file.
  *     Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
  * }
  * </pre>
@@ -554,7 +554,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
     /**
      * Writes a SAS7BDAT file with the given metadata and observations to the file system.
      * <p>
-     * If your data set is too large to hold in memory, then you should use {@link Sas7bdatExporter#Sas7bdatExporter}
+     * If your dataset is too large to hold in memory, then you should use {@link Sas7bdatExporter#Sas7bdatExporter}
      * constructor and stream the observations using {@link Sas7bdatExporter#writeObservation writeObservation}.
      * </p>
      *
@@ -562,7 +562,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     The path to the file to which the SAS7BDAT should be written. If the file doesn't exist, then it will be
      *     created.  If the file does exist, then its contents will be replaced.
      * @param metadata
-     *     The data set's metadata.
+     *     The dataset's metadata.
      * @param observations
      *     A list of observations. Each element in this list is a list of objects that represents an observation (row).
      *     The objects in the row must be given in the same order as the variables are given in {@code metadata}.  For

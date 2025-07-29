@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>A library for writing SAS7BDAT data sets.</description>
+    <description>A library for writing SAS7BDAT datasets.</description>
     <url>https://github.com/FredHutch/sas7bdat</url>
 
     <licenses>
