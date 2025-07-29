@@ -62,6 +62,7 @@ The following code shows how to use the library to create a SAS7BDAT file for a 
 Limitations
 -----------
 * The SAS7BDAT is a 64-bit, UNIX, little-endian.
-* The strings are encoded in UTF-8.
+* The strings are always encoded in UTF-8.
+* Requires Java 17 or later.
 * Compression is not supported.
 * Reading SAS7BDAT files is not supported (use the parso library instead).
