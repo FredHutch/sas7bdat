@@ -49,6 +49,37 @@
 
     <build>
         <plugins>
+
+            <!-- Attach source to the "jar-no-fork" goal so that the sas7bdat-#.#.#-sources.jar is built -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Attach javadoc to the "jar" goal so that the sas7bdat-#.#.#-javadoc.jar is built -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Enable a "gpg:sign" goal that signs compiled artifacts per Maven Central's requirements -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
