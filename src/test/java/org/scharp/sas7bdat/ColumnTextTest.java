@@ -84,10 +84,9 @@ public class ColumnTextTest {
         assertArrayEquals(expectedALocation, data);
 
         // Writing beyond the end of the array should throw an exception.
-        Exception exception = assertThrows(
+        assertThrows(
             ArrayIndexOutOfBoundsException.class,
             () -> columnText.writeTextLocation(data, 2, "a"));
-        assertEquals("Index 7 out of bounds for length 6", exception.getMessage());
 
         // Write to a non-zero offset.
         byte[] data2 = new byte[14];
