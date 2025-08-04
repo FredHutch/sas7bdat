@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -164,6 +165,14 @@ public class Sas7bdatExporterTest {
                 observations.add(List.of(missingValue.toString(), "", "", "", missingValue));
             }
 
+            // Add local dates
+            for (LocalDate date : List.of(
+                LocalDate.of(1960, 1, 1),
+                LocalDate.of(1959, 12, 31),
+                LocalDate.of(2020, 1, 1))) {
+                observations.add(List.of(date.toString(), "", "", "", date));
+            }
+
             // Write a dataset.
             Sas7bdatExporter.exportDataset(targetFile, metadata, observations);
 
@@ -192,11 +201,20 @@ public class Sas7bdatExporterTest {
                         assertArrayEquals(
                             new Object[] { "Value #" + i + " for Var #1!", "Var #2$", "Text3", "A", Long.valueOf(i) },
                             row);
-                    } else {
+                    } else if (i < 1000 + MissingValue.values().length) {
                         // missing value tests
                         assertArrayEquals(
                             new Object[] { MissingValue.values()[i - 1000].toString(), null, null, null, null },
                             row);
+                    } else {
+                        // LocalDate tests
+                        if (i == 1000 + MissingValue.values().length) {
+                            assertArrayEquals(new Object[] { "1960-01-01", null, null, null, 0L }, row);
+                        } else if (i == 1000 + MissingValue.values().length + 1) {
+                            assertArrayEquals(new Object[] { "1959-12-31", null, null, null, -1L }, row);
+                        } else {
+                            assertArrayEquals(new Object[] { "2020-01-01", null, null, null, 365L * 60 + 15 }, row);
+                        }
                     }
                     i++;
                 }
@@ -1038,7 +1056,7 @@ public class Sas7bdatExporterTest {
                     () -> sas7bdatExporter.writeObservation(List.of("ok", "100")));
                 assertEquals(
                     "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                        "(NUMERIC values must be null, of type org.scharp.sas7bdat.MissingValue, or of type java.lang.Number)",
+                        "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, or java.lang.Number)",
                     exception.getMessage());
 
                 // The exception should not have corrupted the state of the exporter,
