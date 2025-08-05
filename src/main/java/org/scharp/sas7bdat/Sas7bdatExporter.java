@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -434,18 +435,54 @@ public final class Sas7bdatExporter implements AutoCloseable {
      * </p>
      *
      * @param observation
-     *     The observation to write to the SAS7BDAT, given as a list of objects. The objects in the row must be given in
-     *     the same order as the variables were given in the {@code Sas7bdatMetadata} that was given to this exporter's
-     *     constructor.  For any variable whose type is {@link VariableType#CHARACTER}, the values must be given as a
-     *     {@link String}.  For any variable whose type is {@link VariableType#NUMERIC}, the values must be given as a
-     *     {@link Number} or {@code null}, which indicates a missing numeric value.
+     *     The observation to write to the SAS7BDAT, given as a list of objects. The objects in the list must be given
+     *     in the same order as the variables were given in the {@code Sas7bdatMetadata} that was given to this
+     *     exporter's constructor.  The values must be legal for the corresponding variable's type, as shown in the
+     *     following table:
+     *     <table>
+     *         <caption>Legal Values for a Variable</caption>
+     *         <thead>
+     *             <tr>
+     *                 <th>Variable Type</th>
+     *                 <th>Value</th>
+     *                 <th>Written As</th>
+     *             </tr>
+     *         </thead>
+     *         <tbody>
+     *             <tr>
+     *                 <td>{@code VariableType.CHARACTER}</td>
+     *                 <td>a {@link String}</td>
+     *                 <td>The string, encoded in UTF-8, padded with blanks to the variable's length</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@code null} reference</td>
+     *                 <td>The standard missing value</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link Number}</td>
+     *                 <td>The return value of {@link Number#doubleValue() doubleValue()}</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link MissingValue}</td>
+     *                 <td>The correct encoding of the missing value</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link LocalDate}</td>
+     *                 <td>A SAS date, the number of days between 1960-01-01 and the value</td>
+     *             </tr>
+     *         </tbody>
+     *     </table>
      *     <p>
      *     The observation and its data are immediately copied, so subsequent modifications to it don't change the
      *     SAS7BDAT that is exported.
      *     </p>
      *
      * @throws NullPointerException
-     *     If {@code observation} is {@code null}, or if a {@code null} value is given to a variable whose type is
+     *     If {@code observation} is {@code null}, or if a {@code null} value is given for a variable whose type is
      *     {@code VariableType.CHARACTER}.
      * @throws IllegalStateException
      *     If writing this observation would exceed the {@code totalObservationsInDataset} argument given in the
@@ -554,8 +591,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
     /**
      * Writes a SAS7BDAT file with the given metadata and observations to the file system.
      * <p>
-     * If your dataset is too large to hold in memory, then you should use {@link Sas7bdatExporter#Sas7bdatExporter}
-     * constructor and stream the observations using {@link Sas7bdatExporter#writeObservation writeObservation}.
+     * If your dataset is too large to hold in memory, then you should use the
+     * {@link Sas7bdatExporter#Sas7bdatExporter(Path, Sas7bdatMetadata, int)} constructor and stream the observations
+     * using {@link Sas7bdatExporter#writeObservation writeObservation}.
      * </p>
      *
      * @param targetLocation
@@ -565,10 +603,45 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     The dataset's metadata.
      * @param observations
      *     A list of observations. Each element in this list is a list of objects that represents an observation (row).
-     *     The objects in the row must be given in the same order as the variables are given in {@code metadata}.  For
-     *     any variable whose type is {@link VariableType#CHARACTER}, the values must be given as a {@link String}.  For
-     *     any variable whose type is {@link VariableType#NUMERIC}, the values must be given as a {@link Number} or
-     *     {@code null}, which indicates a missing numeric value.
+     *     The objects in the row must be given in the same order as the variables are given in {@code metadata}. The
+     *     values must be legal for the corresponding variable's type, as shown in the following table:
+     *     <table>
+     *         <caption>Legal Values for a Variable</caption>
+     *         <thead>
+     *             <tr>
+     *                 <th>Variable Type</th>
+     *                 <th>Value</th>
+     *                 <th>Written As</th>
+     *             </tr>
+     *         </thead>
+     *         <tbody>
+     *             <tr>
+     *                 <td>{@code VariableType.CHARACTER}</td>
+     *                 <td>a {@link String}</td>
+     *                 <td>The string, encoded in UTF-8, padded with blanks to the variable's length</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@code null} reference</td>
+     *                 <td>The standard missing value</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link Number}</td>
+     *                 <td>The return value of {@link Number#doubleValue() doubleValue()}</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link MissingValue}</td>
+     *                 <td>The correct encoding of the missing value</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link LocalDate}</td>
+     *                 <td>A SAS date, the number of days between 1960-01-01 and the value</td>
+     *             </tr>
+     *         </tbody>
+     *     </table>
      *
      * @throws IOException
      *     If a file I/O error prevents the dataset from being written.

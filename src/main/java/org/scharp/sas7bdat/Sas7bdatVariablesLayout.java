@@ -5,6 +5,8 @@
 package org.scharp.sas7bdat;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,7 +78,7 @@ class Sas7bdatVariablesLayout {
      *     If {@code observation} has a {@code null} value is given to a variable whose type is
      *     {@code VariableType.CHARACTER}.
      * @throws IllegalArgumentException
-     *     if {@code observation} doesn't contain values that conform to the {@code variables} that was given to this
+     *     if {@code observation} doesn't contain values that conforms to the {@code variables} that was given to this
      *     object's constructor.
      */
     void writeObservation(byte[] buffer, int offsetOfObservation, List<Object> observation) {
@@ -115,7 +117,8 @@ class Sas7bdatVariablesLayout {
                             variable.name() + ", which has a length of " + variable.length());
                 }
             } else {
-                // NUMERIC types accept null, MissingValue, and Number objects.
+                // NUMERIC types accept null, MissingValue, Number, and LocalDate objects.
+                // Note: This can be replaced with Pattern Matching for switch in Java 21.
                 final long valueBits;
                 if (value == null) {
                     valueBits = MissingValue.STANDARD.rawLongBits();
@@ -126,12 +129,20 @@ class Sas7bdatVariablesLayout {
                 } else if (value instanceof Number numberValue) {
                     valueBits = Double.doubleToRawLongBits(numberValue.doubleValue());
 
+                } else if (value instanceof LocalDate localDate) {
+                    // SAS dates are numeric values given as the number of days since 1960-01-01.
+                    long daysSinceSasEpochLong = LocalDate.of(1960, 1, 1).until(localDate, ChronoUnit.DAYS);
+                    double daysSinceSasEpochDouble = Long.valueOf(daysSinceSasEpochLong).doubleValue();
+                    valueBits = Double.doubleToRawLongBits(daysSinceSasEpochDouble);
+
                 } else {
                     throw new IllegalArgumentException(
                         "A " + value.getClass().getTypeName() + " was given as a value to the variable named " +
                             variable.name() + ", which has a NUMERIC type " +
-                            "(NUMERIC values must be null, of type " + MissingValue.class.getCanonicalName() +
-                            ", or of type " + Number.class.getCanonicalName() + ")");
+                            "(NUMERIC values must be null or of type " +
+                            MissingValue.class.getCanonicalName() + ", " +
+                            LocalDate.class.getCanonicalName() + ", or " +
+                            Number.class.getCanonicalName() + ")");
                 }
 
                 valueBytes = new byte[] {

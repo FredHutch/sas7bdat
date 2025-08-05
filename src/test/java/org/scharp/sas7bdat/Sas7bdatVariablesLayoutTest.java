@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -245,6 +246,51 @@ public class Sas7bdatVariablesLayoutTest {
                 0, 0, 0, 0, 0, -26, -1, -1, // .X
                 0, 0, 0, 0, 0, -27, -1, -1, // .Y
                 0, 0, 0, 0, 0, -28, -1, -1, // .Z
+            },
+            actualData);
+
+        // Test LocalDate
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(0, LocalDate.of(1960, 1, 1), 1, LocalDate.of(1960, 1, 2)));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, 0, 0, 0, // 0
+                0, 0, 0, 0, 0, 0, 0, 0, // 1960-01-01
+                0, 0, 0, 0, 0, 0, -16, 63, // 1
+                0, 0, 0, 0, 0, 0, -16, 63, // 1960-01-02
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(31, LocalDate.of(1960, 2, 1), 152, LocalDate.of(1960, 6, 1)));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, 0, 63, 64, // 31
+                0, 0, 0, 0, 0, 0, 63, 64, // 1960-02-01
+                0, 0, 0, 0, 0, 0, 99, 64, // 152
+                0, 0, 0, 0, 0, 0, 99, 64, // 1960-06-01
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(-1, LocalDate.of(1959, 12, 31), -365, LocalDate.of(1959, 1, 1)));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, 0, -16, -65, // -1
+                0, 0, 0, 0, 0, 0, -16, -65, // 1959-12-13
+                0, 0, 0, 0, 0, -48, 118, -64, // -365
+                0, 0, 0, 0, 0, -48, 118, -64, // 1959-01-01
+            },
+            actualData);
+
+        variablesLayout.writeObservation(actualData, 0,
+            List.of(14650, LocalDate.of(2000, 2, 10), 51367, LocalDate.of(2100, 8, 21)));
+        assertArrayEquals(
+            new byte[] {
+                0, 0, 0, 0, 0, -99, -52, 64, // 14650
+                0, 0, 0, 0, 0, -99, -52, 64, // 2002-02-10
+                0, 0, 0, 0, -32, 20, -23, 64, // 51367
+                0, 0, 0, 0, -32, 20, -23, 64, // 2100-08-21
             },
             actualData);
     }
@@ -523,7 +569,7 @@ public class Sas7bdatVariablesLayoutTest {
             () -> variablesLayout.writeObservation(actualData, 0, List.of("ok", "100")));
         assertEquals(
             "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                "(NUMERIC values must be null, of type org.scharp.sas7bdat.MissingValue, or of type java.lang.Number)",
+                "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, or java.lang.Number)",
             exception.getMessage());
 
         // The exception should not have corrupted the state of the variables layout,
