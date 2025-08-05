@@ -15,10 +15,12 @@ import org.apache.commons.csv.CSVRecord
 import com.fasterxml.jackson.core.*
 
 import java.time.*
+import java.time.temporal.*
 import java.nio.charset.StandardCharsets
 import java.nio.file.*
 import java.util.regex.Pattern
 import java.lang.reflect.Constructor
+import java.math.*
 
 class TestRandomSas7bdat {
 
@@ -275,10 +277,19 @@ class TestRandomSas7bdat {
                             def value = randomStringGenerator.nextRandomString(variable.length(), ~/^[^ ].*|$/)
                             generator.writeString(value)
                         } else {
-                            // TODO: more variations in number values
                             randomNumber = randomNumberGenerator.nextInt(100)
-                            if (randomNumber < 95) { // 95% chance of an Integer
+                            if (randomNumber < 50) { // 50% chance of an Integer
                                 generator.writeNumber(randomNumberGenerator.nextInt())
+
+                            } else if (randomNumber < 90) { // 40% chance of a Long
+                                generator.writeNumber(randomNumberGenerator.nextLong())
+
+                            } else if (randomNumber < 95) { // 5% chance of a LocalDate
+                                def minDate = LocalDate.of(1920, 1, 1)
+                                def maxDate = LocalDate.of(2100, 1, 1)
+                                def daysInSupportedRange = minDate.until(maxDate, ChronoUnit.DAYS)
+                                def date = minDate.plusDays(randomNumberGenerator.nextLong(daysInSupportedRange))
+                                generator.writeString(date.toString())
 
                             } else if (randomNumber < 99) { // 4% chance of a MissingValue
                                 def value = randomElement(MissingValue.values().toList())
@@ -451,7 +462,7 @@ class TestRandomSas7bdat {
                         def value = null
                         switch (token) {
                         case JsonToken.VALUE_NUMBER_FLOAT:
-                            value = parser.getDoubleValue()
+                            value = parser.getNumberValue() // smallest-fit Number (Float, Double, BigDecimal)
                             if (variable.type() == VariableType.CHARACTER) {
                                 "Double value ${value} is not legal for a CHARACTER variable."
                                 System.exit(1)
@@ -459,7 +470,7 @@ class TestRandomSas7bdat {
                             break
 
                         case JsonToken.VALUE_NUMBER_INT:
-                            value = parser.getIntValue()
+                            value = parser.getNumberValue() // smallest-fit Number (Integer, Long, BigInteger)
                             if (variable.type() == VariableType.CHARACTER) {
                                 println "Integer value ${value} is not legal for a CHARACTER variable."
                                 System.exit(1)
@@ -469,13 +480,19 @@ class TestRandomSas7bdat {
                         case JsonToken.VALUE_STRING:
                             value = parser.getText()
                             if (variable.type() == VariableType.NUMERIC) {
-                                if (!value.startsWith("MissingValue.")) {
+                                // Numeric value classes which can't be represented in JSON is given as a String
+                                // that must be parsed into the correct value.
+                                if (value.startsWith("MissingValue.")) {
+                                    // Get corresponding MissingValue
+                                    value = MissingValue.valueOf(value.replace("MissingValue.", ""))
+                                } else if (value =~ ~/\d{4}-\d{2}-\d{2}/) {
+                                    // Get corresponding LocalDate
+                                    value = LocalDate.parse(value)
+                                } else {
+                                    // This isn't a known non-Number representation.
                                     println "ERROR: JSON is malformed: String value \"$value\" given to NUMERIC variable ${variable.name()}"
                                     System.exit(1)
                                 }
-
-                                // Get corresponding MissingValue
-                                value = MissingValue.valueOf(value.replace("MissingValue.", ""))
                             }
                             break
 
@@ -553,6 +570,7 @@ class TestRandomSas7bdat {
                 |
                 |import java.nio.file.Path
                 |import java.nio.file.Files
+                |import java.time.LocalDate
                 |import java.time.LocalDateTime
                 |import java.lang.reflect.Constructor
                 |
@@ -679,6 +697,9 @@ class TestRandomSas7bdat {
                         }  else if (value.class == MissingValue) {
                             groovyLiteral = 'MissingValue.' + value.name()
 
+                        }  else if (value instanceof LocalDate) {
+                            groovyLiteral = "LocalDate.parse('$value')"
+
                         } else {
                             // Numeric types format themselves
                             groovyLiteral = value.toString()
@@ -724,6 +745,22 @@ class TestRandomSas7bdat {
                 } else if (value.class == MissingValue) {
                     // MissingValue.toString() formats correctly for SAS.
                     stringBuilder << value.toString()
+
+                } else if (value instanceof LocalDate) {
+                    // A LocalDate is formatted a number, days since 1960-01-01.
+                    def sasEpoch = LocalDate.of(1960, 1, 1)
+                    def sasDate = sasEpoch.until(value, ChronoUnit.DAYS)
+                    def number = BigDecimal.valueOf(sasDate)
+                    number = number.movePointRight(variable.inputFormat().numberOfDigits())
+                    def string = number.toPlainString()
+
+                    // The NEGPAREN uses parentheses around the number instead of leading minus sign to indicate
+                    // a negative value.
+                    if (variable.inputFormat().name() == 'NEGPAREN') {
+                        string = string.replaceAll(~/-(.+)/, '($1)')
+                    }
+
+                    stringBuilder << string
 
                 } else {
                     // Other numeric are formatted according to their input format.
@@ -1063,48 +1100,66 @@ class TestRandomSas7bdat {
                     return
                 }
 
-                // convert ints to strings and strip trailing whitespace for comparison with CSV
-                // null values are necessarily MISSING NUMERICs and are represented as a period.
-                //
-                // Note: The idea of converting the observation into a list of strings predates
-                // being able to run in constant memory, when it was easy to add all expected
-                // observations into a list and then remove them as they were found.  This enabled
-                // better reporting when an observation unexpectedly was missing/added.  Now that
-                // this is not done, it might be better to compare the values in their native form.
-                def stringizedObservation = []
-                for (int columnIndex = 0; columnIndex < observation.size(); columnIndex++) {
-                    def value = observation[columnIndex]
-                    if (expectedMetadata.variables[columnIndex].type() == VariableType.CHARACTER) {
-                        // Strip trailing whitespace from CHARACTER values
-                        stringizedObservation << trimTrailingBlanks(value)
-                    } else {
-                        // For decimals, format according to the variable's output format.
-                        if (value == null) {
-                            stringizedObservation << '.' // MISSING VALUE is formatted as "."
-
-                        } else if (value.class == MissingValue) {
-                            // In a CSV export, with the exception of ".", a missing value is formatted as
-                            // SAS formats it without the "." prefix.  For example, MissingValue.A, which
-                            // SAS normally formats as ".A", is written as "A" in the CSV export.
-                            stringizedObservation << value.toString().replaceAll(~/.(.)/, '$1')
-
-                        } else {
-                            def format = expectedMetadata.variables[columnIndex].outputFormat()
-                            def number = new BigDecimal(value.toString())
-                            number = number.movePointLeft(format.numberOfDigits())
-                            stringizedObservation << number.toPlainString()
-                        }
-                    }
-                }
                 CSVRecord record = csvIterator.next()
 
                 for (int columnIndex = 0; columnIndex < observation.size(); columnIndex++) {
-                    def actualValue = record[columnIndex]
-                    def expectedValue = stringizedObservation[columnIndex]
-                    if (actualValue != expectedValue) {
-                        errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
-                                     |       Expected = $expectedValue
-                                     |       Actual   = $actualValue""".trim().stripMargin()
+                    def csvValue = record[columnIndex]
+                    def expectedValue = observation[columnIndex]
+
+                    if (expectedMetadata.variables[columnIndex].type() == VariableType.CHARACTER) {
+                        // Strip trailing whitespace from CHARACTER values to match what SAS does.
+                        expectedValue = trimTrailingBlanks(expectedValue)
+                        if (csvValue != expectedValue) {
+                            errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                         |       Expected = $expectedValue
+                                         |       Actual   = $csvValue""".trim().stripMargin()
+                        }
+                    } else {
+                        // A helper routine that compares what's in the CSV to an expected value.
+                        def compareNumericValue = (BigDecimal csvNumber, BigDecimal expectedNumber) -> {
+                            def format = expectedMetadata.variables[columnIndex].outputFormat()
+                            expectedNumber = expectedNumber.movePointLeft(format.numberOfDigits())
+
+                            // When SAS prints the value, it seems to only print 8 digits of precision.
+                            // For example 3043709873365155987 is rendered as 3.04371E18.
+                            // To compare the CSV to the expected value, we round our value to the same precision.
+                            def roundingContext = new MathContext(csvNumber.precision())
+                            def roundedNumber   = expectedNumber.round(roundingContext)
+                            if (roundedNumber != csvNumber) {
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                             |       Expected = $expectedValue
+                                             |       Actual   = $csvValue""".trim().stripMargin()
+                            }
+                        }
+
+                        if (expectedValue == null) {
+                            expectedValue = '.' // MISSING VALUE is formatted as "."
+                            if (csvValue != expectedValue) {
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                             |       Expected = $expectedValue
+                                             |       Actual   = $csvValue""".trim().stripMargin()
+                            }
+
+                        } else if (expectedValue.class == MissingValue) {
+                            // In a CSV export, with the exception of ".", a missing value is formatted as
+                            // SAS formats it without the "." prefix.  For example, MissingValue.A, which
+                            // SAS normally formats as ".A", is written as "A" in the CSV export.
+                            expectedValue = expectedValue.toString().replaceAll(~/.(.)/, '$1')
+                            if (csvValue != expectedValue) {
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                             |       Expected = $expectedValue
+                                             |       Actual   = $csvValue""".trim().stripMargin()
+                            }
+
+                        } else if (expectedValue instanceof LocalDate) {
+                            // The FORMAT for dates is probably to express it numerically.
+                            def sasEpoch = LocalDate.of(1960, 1, 1)
+                            def sasDate = sasEpoch.until(expectedValue, ChronoUnit.DAYS)
+
+                            compareNumericValue(new BigDecimal(csvValue), BigDecimal.valueOf(sasDate))
+                        } else {
+                            compareNumericValue(new BigDecimal(csvValue), new BigDecimal(expectedValue.toString()))
+                        }
                     }
                 }
 
