@@ -8,6 +8,72 @@
 
 import java.nio.charset.StandardCharsets
 
+class Header {
+    // The file starts at the header.
+    final int bitSize
+    final int headerSize
+    final int pageSize
+    final int totalPages
+
+    Header(int bitSize, int headerSize, int pageSize, int totalPages) {
+        this.bitSize    = bitSize
+        this.headerSize = headerSize
+        this.pageSize   = pageSize
+        this.totalPages = totalPages
+    }
+
+    private static int toggleEndian(int i) {
+        ((i >> 24) & 0x000000FF) |
+            ((i >> 8) & 0x0000FF00) |
+            ((i << 8) & 0x00FF0000) |
+            ((i << 24) & 0xFF000000)
+    }
+
+    private static short toggleEndian(short s) {
+        ((s >> 8) & 0x00FF) | (s << 8)
+    }
+
+    static Header parse(sas7bdatFile, InputStream inputStream) {
+        try {
+            // Read the "alignment" field, which indicates if the file is 32-bits or 64-bits.
+            // This script only processes 64-bit SAS files.
+            inputStream.skipNBytes(32)
+            byte alignment = inputStream.readByte()
+            int bitSize
+            switch (alignment) {
+                case 0x22:
+                    bitSize = 32
+                    break
+
+                case 0x33:
+                    bitSize = 64
+                    break
+
+                default:
+                    println "ERROR: $sas7bdatFile has an alignment that this script can't handle: $alignment"
+                    System.exit(1)
+            }
+
+            int headerSizeOffset = bitSize == 32 ? 196 : 200
+            inputStream.skipNBytes(headerSizeOffset - 33)
+            int headerSize = toggleEndian(inputStream.readInt())
+            int pageSize = toggleEndian(inputStream.readInt())
+            int totalPages = toggleEndian(inputStream.readInt())
+
+            // Jump to the end of the header, which should be the first metadata page.
+            int currentOffset = headerSizeOffset + 4 + 4 + 4
+            inputStream.skipNBytes(headerSize - currentOffset)
+
+            return new Header(bitSize, headerSize, pageSize, totalPages)
+
+        } catch (EOFException exception) {
+            println "ERROR: $sas7bdatFile is too small to have a legal header"
+            System.exit(1)
+        }
+    }
+}
+
+
 class SubheaderSignature {
     static final long ROW_SIZE = 0x00000000F7F7F7F7L
     static final long COLUMN_SIZE = 0x00000000F6F6F6F6L
@@ -96,18 +162,6 @@ static String columnTypeToString(byte columnType) {
             break
     }
     return '%s (%#x)'.formatted(label, columnType)
-}
-
-
-static int toggleEndian(int i) {
-    ((i >> 24) & 0x000000FF) |
-            ((i >> 8) & 0x0000FF00) |
-            ((i << 8) & 0x00FF0000) |
-            ((i << 24) & 0xFF000000)
-}
-
-static short toggleEndian(short s) {
-    ((s >> 8) & 0x00FF) | (s << 8)
 }
 
 static String formatOffset(offset) {
@@ -592,64 +646,27 @@ if (!sas7BdatFile.exists()) {
 
 sas7BdatFile.withDataInputStream { inputStream ->
     // The file starts at the header.
-    int bitSize
-    int headerSize
-    int pageSize
-    int totalPages
-    try {
-        // Read the "alignment" field, which indicates if the file is 32-bits or 64-bits.
-        // This script only processes 64-bit SAS files.
-        inputStream.skipNBytes(32)
-        byte alignment = inputStream.readByte()
-        switch (alignment) {
-            case 0x22:
-                bitSize = 32
-                break
-
-            case 0x33:
-                bitSize = 64
-                break
-
-            default:
-                println "ERROR: $sas7BdatFile has an alignment that this script can't handle: $alignment"
-                System.exit(1)
-        }
-
-        headerSizeOffset = bitSize == 32 ? 196 : 200
-        inputStream.skipNBytes(headerSizeOffset - 33)
-        headerSize = toggleEndian(inputStream.readInt())
-        pageSize = toggleEndian(inputStream.readInt())
-        totalPages = toggleEndian(inputStream.readInt())
-
-        // Jump to the end of the header, which should be the first metadata page.
-        int currentOffset = headerSizeOffset + 4 + 4 + 4
-        inputStream.skipNBytes(headerSize - currentOffset)
-
-    } catch (EOFException exception) {
-        println "ERROR: $sas7BdatFile is too small to have a legal header"
-        System.exit(1)
-    }
-
+    Header header = Header.parse(sas7BdatFile, inputStream)
     println "${formatOffset(0)} Header"
-    println "  ${formatOffset(200)} Header Size = $headerSize (${'%#X'.formatted(headerSize)})"
-    println "  ${formatOffset(204)} Page Size   = $pageSize (${'%#X'.formatted(pageSize)})"
-    println "  ${formatOffset(208)} Total Pages = $totalPages"
+    println "  ${formatOffset(200)} Header Size = $header.headerSize (${'%#X'.formatted(header.headerSize)})"
+    println "  ${formatOffset(204)} Page Size   = $header.pageSize (${'%#X'.formatted(header.pageSize)})"
+    println "  ${formatOffset(208)} Total Pages = $header.totalPages"
 
-    int fileOffset = headerSize
+    int fileOffset = header.headerSize
 
     // Keep reading pages until we've processed the entire file.
     ParsedState parsedState = new ParsedState()
     int pageNumber = 1
-    byte[] page = new byte[pageSize]
+    byte[] page = new byte[header.pageSize]
     int bytesRead = inputStream.read(page)
-    while (bytesRead == pageSize) {
+    while (bytesRead == header.pageSize) {
         println "\n${formatOffset(fileOffset)} Page $pageNumber"
-        printPage(fileOffset, bitSize, page, parsedState)
+        printPage(fileOffset, header.bitSize, page, parsedState)
 
         // Read the next page
         Arrays.fill(page, (byte) 0)
         bytesRead = inputStream.read(page)
-        fileOffset += pageSize
+        fileOffset += header.pageSize
         pageNumber++
     }
 
