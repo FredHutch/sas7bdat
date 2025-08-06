@@ -110,61 +110,127 @@ static short toggleEndian(short s) {
     ((s >> 8) & 0x00FF) | (s << 8)
 }
 
-static short readShort(byte[] data, long offset) {
-    ((0xFF00) & data[offset + 1] << 8) | (0x00FF & data[offset])
-}
-
-static int readUnsignedShort(byte[] data, long offset) {
-    readShort(data, offset) & 0xFFFF
-}
-
-static int readInt(byte[] data, long offset) {
-    (0xFF000000 & (data[offset + 3] << 24)) |
-            (0x00FF0000 & (data[offset + 2] << 16)) |
-            (0x0000FF00 & (data[offset + 1] << 8)) |
-            (0x000000FF & (data[offset + 0]))
-}
-
-static long readLong(byte[] data, long offset) {
-    (0xFF00000000000000L & (data[offset + 7] << 56)) |
-            (0x00FF000000000000L & (data[offset + 6] << 48)) |
-            (0x0000FF0000000000L & (data[offset + 5] << 40)) |
-            (0x000000FF00000000L & (data[offset + 4] << 32)) |
-            (0x00000000FF000000L & (data[offset + 3] << 24)) |
-            (0x0000000000FF0000L & (data[offset + 2] << 16)) |
-            (0x000000000000FF00L & (data[offset + 1] << 8)) |
-            (0x00000000000000FFL & (data[offset + 0]))
-}
-
 static String formatOffset(offset) {
     "(0x%X)".formatted(offset)
 }
 
-static void printSubheaderField(fileOffset, String text, value) {
-    String spacer = text.length() < 40 ? ' '.repeat(40 - text.length()) : ''
-    println "    ${formatOffset(fileOffset)} $text$spacer= $value"
-}
+class PageReader {
 
-static void printSubheaderField8(byte[] page, fileOffset, long pageOffset, String text) {
-    long value = readLong(page, pageOffset)
-    printSubheaderField(fileOffset + pageOffset, text, value)
-}
+    /**
+     * The bit size of the SAS7BDAT file.  32 or 64.
+     */
+    final int bitSize
 
-static void printSubheaderField4(byte[] page, fileOffset, long pageOffset, String text) {
-    int value = readInt(page, pageOffset)
-    printSubheaderField(fileOffset + pageOffset, text, "0x%X".formatted(value))
-}
+    /**
+     * The offset into the file of the zeroth byte in the page array.
+     */
+    final int fileOffset
 
-static void printSubheaderField2(byte[] page, fileOffset, long pageOffset, String text) {
-    short value = readShort(page, pageOffset)
-    printSubheaderField(fileOffset + pageOffset, text, value)
-}
+    /**
+     * The page read into a byte array
+     */
+    final byte[] page
 
-static void printSubheaderFieldU2(byte[] page, fileOffset, long pageOffset, String text) {
-    int value = readUnsignedShort(page, pageOffset)
-    printSubheaderField(fileOffset + pageOffset, text, value)
-}
+    PageReader(int bitSize, int fileOffset, byte[] page) {
+        this.bitSize    = bitSize
+        this.fileOffset = fileOffset
+        this.page       = page
+    }
 
+    byte readByte(long offset32, long offset64) {
+        if (bitSize == 32) {
+            return page[offset32]
+        } else {
+            return page[offset64]
+        }
+    }
+
+    short readShort(long offset32, long offset64) {
+        if (bitSize == 32) {
+            return ((0xFF00) & page[offset32 + 1] << 8) | (0x00FF & page[offset32])
+        } else {
+            return ((0xFF00) & page[offset64 + 1] << 8) | (0x00FF & page[offset64])
+        }
+    }
+
+    int readUnsignedShort(long offset32, long offset64) {
+        readShort(offset32, offset64) & 0xFFFF
+    }
+
+    int readInt(long offset32, long offset64) {
+        if (bitSize == 32) {
+            return (0xFF000000 & (page[offset32 + 3] << 24)) |
+                   (0x00FF0000 & (page[offset32 + 2] << 16)) |
+                   (0x0000FF00 & (page[offset32 + 1] << 8))  |
+                   (0x000000FF & (page[offset32 + 0]))
+        } else {
+            return (0xFF000000 & (page[offset64 + 3] << 24)) |
+                   (0x00FF0000 & (page[offset64 + 2] << 16)) |
+                   (0x0000FF00 & (page[offset64 + 1] << 8))  |
+                   (0x000000FF & (page[offset64 + 0]))
+        }
+    }
+
+    long readLong(long offset32, long offset64) {
+        if (bitSize == 32) {
+            return (0xFF000000L & (page[offset32 + 3] << 24)) |
+                   (0x00FF0000L & (page[offset32 + 2] << 16)) |
+                   (0x0000FF00L & (page[offset32 + 1] << 8)) |
+                   (0x000000FFL & (page[offset32 + 0]))
+        } else {
+            return (0xFF00000000000000L & (page[offset64 + 7] << 56)) |
+                   (0x00FF000000000000L & (page[offset64 + 6] << 48)) |
+                   (0x0000FF0000000000L & (page[offset64 + 5] << 40)) |
+                   (0x000000FF00000000L & (page[offset64 + 4] << 32)) |
+                   (0x00000000FF000000L & (page[offset64 + 3] << 24)) |
+                   (0x0000000000FF0000L & (page[offset64 + 2] << 16)) |
+                   (0x000000000000FF00L & (page[offset64 + 1] << 8)) |
+                   (0x00000000000000FFL & (page[offset64 + 0]))
+        }
+    }
+
+    long readSignature(long offset32, long offset64) {
+        // Read the 4|8 byte signature in a way that will exactly match a SubheaderSignature.
+        // The logic below does nothing for 64-bit but sets the upper 4 bytes to 0xFF on 32-bit except for
+        // two special cases: ROW_SIZE and COLUMN_SIZE.
+        long signature = readLong(offset32, offset64)
+        if (bitSize == 32 && (signature & 0xFF000000L) == 0xFF000000L) {
+            signature = 0xFFFFFFFF00000000L | signature
+        }
+        return signature
+    }
+
+
+    String formatOffset(long offset32, long offset64) {
+        int pageOffset = bitSize == 32 ? offset32 : offset64
+        return "(0x%X)".formatted(fileOffset + pageOffset)
+    }
+
+    void printSubheaderField(long offset32, long offset64, String text, value) {
+        String spacer = text.length() < 40 ? ' '.repeat(40 - text.length()) : ''
+        println "    ${formatOffset(offset32, offset64)} $text$spacer= $value"
+    }
+
+    void printSubheaderField8(long offset32, long offset64, String text) {
+        long value = readLong(offset32, offset64)
+        printSubheaderField(offset32, offset64, text, value)
+    }
+
+    void printSubheaderField4(long offset32, long offset64, String text) {
+        int value = readInt(offset32, offset64)
+        printSubheaderField(offset32, offset64, text, "0x%X".formatted(value))
+    }
+
+    void printSubheaderField2(long offset32, long offset64, String text) {
+        short value = readShort(offset32, offset64)
+        printSubheaderField(offset32, offset64, text, value)
+    }
+
+    void printSubheaderFieldU2(long offset32, long offset64, String text) {
+        int value = readUnsignedShort(offset32, offset64)
+        printSubheaderField(offset32, offset64, text, value)
+    }
+}
 
 class ColumnText {
     List<byte[]> columnTextSubheaders = []
@@ -174,11 +240,11 @@ class ColumnText {
         columnTextSubheaders.add(columnTextSubheader)
     }
 
-    String getText(int textSubheaderIndex, int textSubheaderOffset, int textLength) {
+    String getText(int bitSize, int textSubheaderIndex, int textSubheaderOffset, int textLength) {
         String text
         if (0 <= textSubheaderIndex && textSubheaderIndex < columnTextSubheaders.size()) {
             byte[] columnTextSubheader = columnTextSubheaders[textSubheaderIndex]
-            int offsetInColumnTextSubheader = textSubheaderOffset + 8 // offset doesn't include signature
+            int offsetInColumnTextSubheader = textSubheaderOffset + (bitSize == 32 ? 4 : 8) // offset doesn't include signature
             if (0 <= offsetInColumnTextSubheader && offsetInColumnTextSubheader + textLength <= columnTextSubheader.length) {
                 text = new String(columnTextSubheader, offsetInColumnTextSubheader, textLength, StandardCharsets.UTF_8)
             }
@@ -187,21 +253,21 @@ class ColumnText {
     }
 }
 
-static void printColumnText(ColumnText columnText, byte[] page, long fileOffset, long subheaderOffset, String textLabel) {
+static void printColumnText(ColumnText columnText, pageReader, long offset32, long offset64, String textLabel) {
     // Determine the location of the text.
-    short textSubheaderIndex = readShort(page, subheaderOffset + 0)
-    short textSubheaderOffset = readShort(page, subheaderOffset + 2)
-    short length = readShort(page, subheaderOffset + 4)
+    short textSubheaderIndex  = pageReader.readShort(offset32 + 0, offset64 + 0)
+    short textSubheaderOffset = pageReader.readShort(offset32 + 2, offset64 + 2)
+    short length              = pageReader.readShort(offset32 + 4, offset64 + 4)
 
     // Read text from the Column Text subheader.
-    String text = columnText.getText(textSubheaderIndex, textSubheaderOffset, length)
+    String text = columnText.getText(pageReader.bitSize, textSubheaderIndex, textSubheaderOffset, length)
 
     // Print the text.
     String displayedText = text != null ? "\"$text\"" : '<malformed>'
     println "    $textLabel = ${displayedText}"
-    println "      ${formatOffset(fileOffset + subheaderOffset + 0)} $textLabel Text Subheader Index     = ${textSubheaderIndex}"
-    println "      ${formatOffset(fileOffset + subheaderOffset + 2)} $textLabel Offset In Text Subheader = ${textSubheaderOffset}"
-    println "      ${formatOffset(fileOffset + subheaderOffset + 4)} $textLabel Length                   = ${length}"
+    println "      ${pageReader.formatOffset(offset32 + 0, offset64 + 0)} $textLabel Text Subheader Index     = ${textSubheaderIndex}"
+    println "      ${pageReader.formatOffset(offset32 + 2, offset64 + 2)} $textLabel Offset In Text Subheader = ${textSubheaderOffset}"
+    println "      ${pageReader.formatOffset(offset32 + 4, offset64 + 4)} $textLabel Length                   = ${length}"
 }
 
 static def toPrintingChar(byte ch) {
@@ -209,7 +275,7 @@ static def toPrintingChar(byte ch) {
     (char) (32 <= ch && ch <= 126 ? ch : '.')
 }
 
-def hexdumpCv(int fileOffset, byte[] page, int pageOffset, int length) {
+def hexdumpCv(int fileOffset, byte[] page, long pageOffset, long length) {
     // Dump the data in lines of 16 bytes
     for (int lineOffset = pageOffset; lineOffset < pageOffset + length; lineOffset += 16) {
         int totalBytesRemaining = pageOffset + length - lineOffset
@@ -258,29 +324,31 @@ class ParsedState {
     int lastRecordNumber = 0
 }
 
-void printPage(int fileOffset, byte[] page, ParsedState parsedState) {
+void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState) {
+    def pageReader = new PageReader(bitSize, fileOffset, page)
+    int SIGNATURE_SIZE = bitSize == 32 ? 4 : 8
     try {
-        long unknownField = readLong(page, 24)
-        short pageType = readShort(page, 32)
-        int totalBlocks = readUnsignedShort(page, 34) // treat as "unsigned short"
-        short totalSubheaders = readShort(page, 36)
+        long unknownField = pageReader.readLong(12, 24)
+        short pageType = pageReader.readShort(16, 32)
+        int totalBlocks = pageReader.readUnsignedShort(18, 34) // treat as "unsigned short"
+        short totalSubheaders = pageReader.readShort(20, 36)
 
-        println "  ${formatOffset(fileOffset + 24)} Offset 24        = $unknownField"
-        println "  ${formatOffset(fileOffset + 32)} Type             = ${PageType.toString(pageType)}"
-        println "  ${formatOffset(fileOffset + 34)} Total Blocks     = $totalBlocks"
-        println "  ${formatOffset(fileOffset + 36)} Total Subheaders = ${totalSubheaders < 0 ? "$totalSubheaders <--- malformed" : totalSubheaders}"
+        println "  ${pageReader.formatOffset(12, 24)} Offset 24        = $unknownField"
+        println "  ${pageReader.formatOffset(16, 32)} Type             = ${PageType.toString(pageType)}"
+        println "  ${pageReader.formatOffset(18, 34)} Total Blocks     = $totalBlocks"
+        println "  ${pageReader.formatOffset(20, 36)} Total Subheaders = ${totalSubheaders < 0 ? "$totalSubheaders <--- malformed" : totalSubheaders}"
 
         // Read each subheader
-        int indexOffset = 40
+        int indexOffset = bitSize == 32 ? 24 : 40
         if (0 < totalSubheaders) {
             for (int i = 0; i < totalSubheaders; i++) {
-                long subheaderOffset = readLong(page, indexOffset + i * 24 + 0)
-                long subheaderLength = readLong(page, indexOffset + i * 24 + 8)
-                byte compressionCode = page[indexOffset + i * 24 + 16]
-                byte typeCode = page[indexOffset + i * 24 + 17]
+                long subheaderOffset = pageReader.readLong(indexOffset + i * 12 + 0,  indexOffset + i * 24 + 0)
+                long subheaderLength = pageReader.readLong(indexOffset + i * 12 + 4,  indexOffset + i * 24 + 8)
+                byte compressionCode = pageReader.readByte(indexOffset + i * 12 + 8, indexOffset + i * 24 + 16)
+                byte typeCode        = pageReader.readByte(indexOffset + i * 12 + 9, indexOffset + i * 24 + 17)
 
                 // The "deleted" subheaders don't have any length, so they also don't have a signature.
-                long subheaderSignature = (subheaderLength == 0) ? 0 : readLong(page, subheaderOffset)
+                long subheaderSignature = (subheaderLength == 0) ? 0 : pageReader.readSignature(subheaderOffset, subheaderOffset)
                 println "\n  ${formatOffset(fileOffset + subheaderOffset)} ${SubheaderSignature.toString(subheaderSignature)} Subheader (length=$subheaderLength, compression=$compressionCode, type=$typeCode)"
 
                 // Ignore subheaders that are marked as deleted.
@@ -288,74 +356,75 @@ void printPage(int fileOffset, byte[] page, ParsedState parsedState) {
                 if (compressionCode != COMPRESSION_CODE_DELETED) {
                     switch (subheaderSignature) {
                         case SubheaderSignature.ROW_SIZE:
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 8, "Unknown Field At offset 8")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 16, "Unknown Field At offset 16")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 24, "Unknown Field At offset 24")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 32, "Unknown Field At offset 32")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 40, "Row Length")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 48, "Total Rows")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 72, "Total Column Subheaders On First Page")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 80, "Total Column Subheaders On Second Page")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 88, "Unknown Field At offset 88")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 96, "Aggregate Variable Name Size")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 104, "Page Size")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 120, "Max Row Count On Mixed Page")
-                            printSubheaderField4(page, fileOffset, subheaderOffset + 440, "Page Sequence Number")
-                            printSubheaderField4(page, fileOffset, subheaderOffset + 512, "Unknown Field At offset 512")
-                            printSubheaderField4(page, fileOffset, subheaderOffset + 520, "Unknown Field At offset 520")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 528, "Total Metadata Pages")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 536, "Subheaders On Last Metadata Page")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 544, "First Data Record, Page Index")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 552, "First Data Record, Record Index")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 560, "Last Data Record, Page Index")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 568, "Last Data Record, Record Index")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 576, "First Column Subheader, Page Index")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 584, "First Column Subheader, Record Index")
-                            printSubheaderField4(page, fileOffset, subheaderOffset + 672, "Unknown Field At offset 672")
-                            printSubheaderField4(page, fileOffset, subheaderOffset + 676, "Unknown Field At offset 676")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 678, "Dataset Label, Text Subheader Index")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 680, "Dataset Label, Offset")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 682, "Dataset Label, Length")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 684, "Dataset Type, Text Subheader Index")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 686, "Dataset Type, Offset")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 688, "Dataset Type, Length")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 696, "Unknown Field At offset 696")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 698, "Unknown Field At offset 698")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 700, "Unknown Field At offset 700")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 702, "Unknown Field At offset 702")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 704, "Unknown Field At offset 704")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 706, "Unknown Field At offset 706")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 744, "Unknown Field At offset 744")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 746, "Unknown Field At offset 746")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 748, "Total ColumnText subheaders")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 750, "Max Variable Name Size")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 752, "Max Variable Label Size")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 766, "Max Observations On Data Page")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 776, "Total Observations")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 792, "Unknown Field At offset 792")
+                            pageReader.printSubheaderField8(subheaderOffset + 4, subheaderOffset + 8,   "Unknown Field At offset 8")
+                            pageReader.printSubheaderField8(subheaderOffset + 8, subheaderOffset + 16,  "Unknown Field At offset 16")
+                            pageReader.printSubheaderField8(subheaderOffset + 12, subheaderOffset + 24, "Unknown Field At offset 24")
+                            pageReader.printSubheaderField8(subheaderOffset + 16, subheaderOffset + 32, "Unknown Field At offset 32")
+                            pageReader.printSubheaderField8(subheaderOffset + 20, subheaderOffset + 40, "Row Length")
+                            pageReader.printSubheaderField8(subheaderOffset + 24, subheaderOffset + 48, "Total Rows")
+                            pageReader.printSubheaderField8(subheaderOffset + 36, subheaderOffset + 72, "Total Column Subheaders On First Page")
+                            pageReader.printSubheaderField8(subheaderOffset + 40, subheaderOffset + 80, "Total Column Subheaders On Second Page")
+                            pageReader.printSubheaderField8(subheaderOffset + 44, subheaderOffset + 88, "Unknown Field At offset 88")
+                            pageReader.printSubheaderField8(subheaderOffset + 48, subheaderOffset + 96, "Aggregate Variable Name Size") // 64 is wrong offset?
+                            pageReader.printSubheaderField8(subheaderOffset + 52, subheaderOffset + 104, "Page Size")
+                            pageReader.printSubheaderField8(subheaderOffset + 60, subheaderOffset + 120, "Max Row Count On Mixed Page")
+                            pageReader.printSubheaderField4(subheaderOffset + 220, subheaderOffset + 440, "Page Sequence Number")
+                            pageReader.printSubheaderField4(subheaderOffset + 264, subheaderOffset + 512, "Unknown Field At offset 512")
+                            pageReader.printSubheaderField4(subheaderOffset + 268, subheaderOffset + 520, "Unknown Field At offset 520")
+                            pageReader.printSubheaderField8(subheaderOffset + 272, subheaderOffset + 528, "Total Metadata Pages")
+                            pageReader.printSubheaderField8(subheaderOffset + 276, subheaderOffset + 536, "Subheaders On Last Metadata Page")
+                            pageReader.printSubheaderField8(subheaderOffset + 280, subheaderOffset + 544, "First Data Record, Page Index")
+                            pageReader.printSubheaderField8(subheaderOffset + 284, subheaderOffset + 552, "First Data Record, Record Index")
+                            pageReader.printSubheaderField8(subheaderOffset + 288, subheaderOffset + 560, "Last Data Record, Page Index")
+                            pageReader.printSubheaderField8(subheaderOffset + 292, subheaderOffset + 568, "Last Data Record, Record Index")
+                            pageReader.printSubheaderField8(subheaderOffset + 296, subheaderOffset + 576, "First Column Subheader, Page Index")
+                            pageReader.printSubheaderField8(subheaderOffset + 300, subheaderOffset + 584, "First Column Subheader, Record Index")
+                            pageReader.printSubheaderField4(subheaderOffset + 344, subheaderOffset + 672, "Unknown Field At offset 672") // should be compression offset
+                            pageReader.printSubheaderField4(subheaderOffset + 348, subheaderOffset + 676, "Unknown Field At offset 676") // should be compression offset
+                            pageReader.printSubheaderField2(subheaderOffset + 350, subheaderOffset + 678, "Dataset Label, Text Subheader Index")
+                            pageReader.printSubheaderField2(subheaderOffset + 352, subheaderOffset + 680, "Dataset Label, Offset")
+                            pageReader.printSubheaderField2(subheaderOffset + 354, subheaderOffset + 682, "Dataset Label, Length")
+                            pageReader.printSubheaderField2(subheaderOffset + 356, subheaderOffset + 684, "Dataset Type, Text Subheader Index")
+                            pageReader.printSubheaderField2(subheaderOffset + 358, subheaderOffset + 686, "Dataset Type, Offset")
+                            pageReader.printSubheaderField8(subheaderOffset + 360, subheaderOffset + 688, "Dataset Type, Length")
+                            pageReader.printSubheaderField2(subheaderOffset + 368, subheaderOffset + 696, "Unknown Field At offset 696")
+                            pageReader.printSubheaderField2(subheaderOffset + 370, subheaderOffset + 698, "Unknown Field At offset 698")
+                            pageReader.printSubheaderField2(subheaderOffset + 372, subheaderOffset + 700, "Unknown Field At offset 700")
+                            pageReader.printSubheaderField2(subheaderOffset + 374, subheaderOffset + 702, "Unknown Field At offset 702")
+                            pageReader.printSubheaderField2(subheaderOffset + 376, subheaderOffset + 704, "Unknown Field At offset 704")
+                            pageReader.printSubheaderField2(subheaderOffset + 378, subheaderOffset + 706, "Unknown Field At offset 706")
+                            pageReader.printSubheaderField2(subheaderOffset + 416, subheaderOffset + 744, "Unknown Field At offset 744")
+                            pageReader.printSubheaderField2(subheaderOffset + 418, subheaderOffset + 746, "Unknown Field At offset 746")
+                            pageReader.printSubheaderField2(subheaderOffset + 420, subheaderOffset + 748, "Total ColumnText subheaders")
+                            pageReader.printSubheaderField2(subheaderOffset + 422, subheaderOffset + 750, "Max Variable Name Size")
+                            pageReader.printSubheaderField2(subheaderOffset + 424, subheaderOffset + 752, "Max Variable Label Size")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 438, subheaderOffset + 766, "Max Observations On Data Page")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 444, subheaderOffset + 776, "Total Observations")
+                            pageReader.printSubheaderField8(subheaderOffset + 464, subheaderOffset + 792, "Unknown Field At offset 792")
 
-                            parsedState.rowSizeInBytes = readLong(page, subheaderOffset + 40)
+                            parsedState.rowSizeInBytes = pageReader.readLong(subheaderOffset + 20, subheaderOffset + 40)
                             break
 
                         case SubheaderSignature.COLUMN_SIZE:
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 8, "Total Variables")
+                            pageReader.printSubheaderField8(subheaderOffset + 4, subheaderOffset + 8, "Total Variables")
                             break
 
                         case SubheaderSignature.SUBHEADER_COUNTS:
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 8, "Max Variable-Sized Subheader Body Size")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 16, "Unknown Field At Offset 16")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 24, "Unknown Field At Offset 24")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 32, "Unknown Field At Offset 32")
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 112, "Unknown Field At Offset 112")
+                            pageReader.printSubheaderField8(subheaderOffset + 4,  subheaderOffset + 8, "Max Variable-Sized Subheader Body Size")
+                            pageReader.printSubheaderField8(subheaderOffset + 8,  subheaderOffset + 16, "Unknown Field At Offset 16")
+                            pageReader.printSubheaderField8(subheaderOffset + 12, subheaderOffset + 24, "Unknown Field At Offset 24")
+                            pageReader.printSubheaderField8(subheaderOffset + 16, subheaderOffset + 32, "Unknown Field At Offset 32")
+                            pageReader.printSubheaderField8(subheaderOffset + 60, subheaderOffset + 112, "Unknown Field At Offset 112")
 
                             for (int j = 0; j < 12; j++) {
-                                long vectorOffset = subheaderOffset + 120 + j * 40
-                                int signature = readLong(page, vectorOffset)
-                                println("    ${formatOffset(fileOffset + vectorOffset)} Counts for ${SubheaderSignature.toString(signature)} Subheader")
-                                printSubheaderField8(page, fileOffset, vectorOffset + 8, "Page Of First Appearance")
-                                printSubheaderField8(page, fileOffset, vectorOffset + 16, "Position Of First Appearance")
-                                printSubheaderField8(page, fileOffset, vectorOffset + 24, "Page Of Last Appearance")
-                                printSubheaderField8(page, fileOffset, vectorOffset + 32, "Position Of Last Appearance")
+                                long vectorOffset32 = subheaderOffset +  64 + j * 20
+                                long vectorOffset64 = subheaderOffset + 120 + j * 40
+                                int signature = pageReader.readLong(vectorOffset32, vectorOffset64)
+                                println("    ${pageReader.formatOffset(vectorOffset32, vectorOffset64)} Counts for ${SubheaderSignature.toString(signature)} Subheader")
+                                pageReader.printSubheaderField8(vectorOffset32 + 4,  vectorOffset64 + 8, "Page Of First Appearance")
+                                pageReader.printSubheaderField8(vectorOffset32 + 8,  vectorOffset64 + 16, "Position Of First Appearance")
+                                pageReader.printSubheaderField8(vectorOffset32 + 12, vectorOffset64 + 24, "Page Of Last Appearance")
+                                pageReader.printSubheaderField8(vectorOffset32 + 16, vectorOffset64 + 32, "Position Of Last Appearance")
                             }
                             break
 
@@ -363,90 +432,94 @@ void printPage(int fileOffset, byte[] page, ParsedState parsedState) {
                             parsedState.lastColumnFormat++
                             println "    (Variable #$parsedState.lastColumnFormat)"
 
-                            printColumnText(parsedState.columnText, page, fileOffset, subheaderOffset + 40, "Output Format Name")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 24, "Output Format Width")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 26, "Output Format Precision")
+                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 28, subheaderOffset + 40, "Output Format Name")
+                            pageReader.printSubheaderField2(subheaderOffset + 26, subheaderOffset + 24, "Output Format Width")
+                            pageReader.printSubheaderField2(subheaderOffset + 18, subheaderOffset + 26, "Output Format Precision")
 
-                            printColumnText(parsedState.columnText, page, fileOffset, subheaderOffset + 46, "Input Format Name")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 28, "Input Format Width")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 30, "Input Format Precision")
+                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 34, subheaderOffset + 46, "Input Format Name")
+                            pageReader.printSubheaderField2(subheaderOffset + 20, subheaderOffset + 28, "Input Format Width")
+                            pageReader.printSubheaderField2(subheaderOffset + 22, subheaderOffset + 30, "Input Format Precision")
 
-                            printColumnText(parsedState.columnText, page, fileOffset, subheaderOffset + 52, "Label")
+                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 40, subheaderOffset + 52, "Label")
                             break
 
                         case SubheaderSignature.COLUMN_MASK:
                             break
 
                         case SubheaderSignature.COLUMN_ATTRS:
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 8, "Length Remaining In Subheader")
-                            int totalVariables = (readShort(page, subheaderOffset + 8) - 8) / 16
+                            pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Length Remaining In Subheader")
+                            int totalVariables = (pageReader.readShort(subheaderOffset + 4, subheaderOffset + 8) - SIGNATURE_SIZE) / 16
                             for (int variableIndex = 0; variableIndex < totalVariables; variableIndex++) {
-                                int vectorOffset = subheaderOffset + 16 + variableIndex * 16
-                                long columnOffsetInDataRow = readLong(page, vectorOffset + 0)
-                                int columnLength = readInt(page, vectorOffset + 8)
-                                short nameFlag = readShort(page, vectorOffset + 12)
-                                byte columnType = page[vectorOffset + 14]
+                                int vectorOffset32 = subheaderOffset + 12 + variableIndex * 12
+                                int vectorOffset64 = subheaderOffset + 16 + variableIndex * 16
+                                long columnOffsetInDataRow = pageReader.readLong(vectorOffset32 + 0, vectorOffset64 + 0)
+                                int columnLength           = pageReader.readInt(vectorOffset32 + 4, vectorOffset64 + 8)
+                                short nameFlag             = pageReader.readShort(vectorOffset32 + 8, vectorOffset64 + 12)
+                                byte columnType            = pageReader.readByte(vectorOffset32 + 10, vectorOffset64 + 14)
 
                                 parsedState.lastColumnAttribute++
-                                println "    ${formatOffset(fileOffset + vectorOffset)} Variable #${parsedState.lastColumnAttribute}"
-                                println "      ${formatOffset(fileOffset + vectorOffset + 0)} Offset In Data Row = ${columnOffsetInDataRow}"
-                                println "      ${formatOffset(fileOffset + vectorOffset + 8)} Length In Data Row = ${columnLength}"
-                                println "      ${formatOffset(fileOffset + vectorOffset + 12)} Name Flag          = ${"%#x".formatted(nameFlag)}"
-                                println "      ${formatOffset(fileOffset + vectorOffset + 14)} Column Type        = ${columnTypeToString(columnType)}"
+                                println "    ${pageReader.formatOffset(vectorOffset32, vectorOffset64)} Variable #${parsedState.lastColumnAttribute}"
+                                println "      ${pageReader.formatOffset(vectorOffset32 +  0, vectorOffset64 +  0)} Offset In Data Row = ${columnOffsetInDataRow}"
+                                println "      ${pageReader.formatOffset(vectorOffset32 +  4, vectorOffset64 +  8)} Length In Data Row = ${columnLength}"
+                                println "      ${pageReader.formatOffset(vectorOffset32 +  8, vectorOffset64 + 12)} Name Flag          = ${"%#x".formatted(nameFlag)}"
+                                println "      ${pageReader.formatOffset(vectorOffset32 + 10, vectorOffset64 + 14)} Column Type        = ${columnTypeToString(columnType)}"
                             }
                             break
 
                         case SubheaderSignature.COLUMN_TEXT:
                             // The variable names, labels, and formats are all concatenated into column texts.
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 8, "Size Of Subheader")
+                            pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Size Of Subheader")
 
                             // Print the text like hexdump -Cv
                             println "    Text:"
-                            int textOffset = subheaderOffset + 16
-                            hexdumpCv(fileOffset, page, textOffset, (int) subheaderLength - 16)
+                            int textOffset = bitSize == 32 ? 8 : 16
+                            hexdumpCv(fileOffset, page, subheaderOffset + textOffset, subheaderLength - textOffset)
 
                             // Save the text for later use.
                             parsedState.columnText.add(page, subheaderOffset, subheaderLength)
                             break
 
                         case SubheaderSignature.COLUMN_LIST:
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 8, "Size of Body")
-                            printSubheaderField2(page, fileOffset, subheaderOffset + 10, "Unknown Field at offset 10")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 16, "Unknown Field at offset 16")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 18, "Unknown Field at offset 18")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 20, "Unknown Field at offset 20")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 22, "Unknown Field at offset 22")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 24, "Total Variables")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 26, "Total Columns")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 28, "Unknown Field at offset 28")
-                            printSubheaderFieldU2(page, fileOffset, subheaderOffset + 30, "Unknown Field at offset 30")
+                            pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Size of Body")
+                            pageReader.printSubheaderField2(subheaderOffset + 6, subheaderOffset + 10, "Unknown Field at offset 10")
+                            // TODO: 16-24 should be a Long.  The 32-bit values are repeated because of this
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 12, subheaderOffset + 16, "Unknown Field at offset 16")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 14, subheaderOffset + 18, "Unknown Field at offset 18")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 16, subheaderOffset + 20, "Unknown Field at offset 20")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 18, subheaderOffset + 22, "Unknown Field at offset 22")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 16, subheaderOffset + 24, "Total Variables")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 18, subheaderOffset + 26, "Total Columns")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 20, subheaderOffset + 28, "Unknown Field at offset 28")
+                            pageReader.printSubheaderFieldU2(subheaderOffset + 22, subheaderOffset + 30, "Unknown Field at offset 30")
 
-                            int totalColumns = readUnsignedShort(page, subheaderOffset + 26)
+                            int totalColumns = pageReader.readUnsignedShort(subheaderOffset + 18, subheaderOffset + 26)
                             for (int columnIndex = 0; columnIndex < totalColumns; columnIndex++) {
-                                int vectorOffset = subheaderOffset + 38 + columnIndex * 2
-                                if (subheaderLength < vectorOffset - subheaderOffset + 2) {
+                                int vectorOffset32 = subheaderOffset + 30 + columnIndex * 2
+                                int vectorOffset64 = subheaderOffset + 38 + columnIndex * 2
+                                if (subheaderLength < vectorOffset64 - subheaderOffset + 2) {
                                     println "     <subheader ends unexpectedly>"
                                     break
                                 }
-                                printSubheaderField2(page, fileOffset, vectorOffset, "Column #${columnIndex + 1} Value")
+                                pageReader.printSubheaderField2(vectorOffset32, vectorOffset64, "Column #${columnIndex + 1} Value")
                             }
                             break
 
                         case SubheaderSignature.COLUMN_NAME:
-                            printSubheaderField8(page, fileOffset, subheaderOffset + 8, "Length Remaining In Subheader")
-                            int totalVariables = readShort(page, subheaderOffset + 8) / 8 - 1
+                            pageReader.printSubheaderField8(subheaderOffset + 4, subheaderOffset + 8, "Length Remaining In Subheader")
+                            int totalVariables = pageReader.readShort(subheaderOffset + 4, subheaderOffset + 8) / 8 - 1
                             for (int variableIndex = 0; variableIndex < totalVariables; variableIndex++) {
-                                int vectorOffset = subheaderOffset + 16 + variableIndex * 8
-                                short textSubheaderIndex = readShort(page, vectorOffset + 0)
-                                short textSubheaderOffset = readShort(page, vectorOffset + 2)
-                                short nameLength = readShort(page, vectorOffset + 4)
+                                int vectorOffset32 = subheaderOffset + 12 + variableIndex * 8
+                                int vectorOffset64 = subheaderOffset + 16 + variableIndex * 8
+                                short textSubheaderIndex  = pageReader.readShort(vectorOffset32 + 0, vectorOffset64 + 0)
+                                short textSubheaderOffset = pageReader.readShort(vectorOffset32 + 2, vectorOffset64 + 2)
+                                short nameLength          = pageReader.readShort(vectorOffset32 + 4, vectorOffset64 + 4)
 
                                 // Read the name from the column text blocks.
-                                String name = parsedState.columnText.getText(textSubheaderIndex, textSubheaderOffset, nameLength)
+                                String name = parsedState.columnText.getText(bitSize, textSubheaderIndex, textSubheaderOffset, nameLength)
 
                                 parsedState.totalVariableNameSubheaders++
                                 String displayedName = name ? "\"$name\"" : '<malformed>'
-                                println "    ${formatOffset(fileOffset + vectorOffset)} Variable #${parsedState.totalVariableNameSubheaders}: $displayedName"
+                                println "    ${pageReader.formatOffset(vectorOffset32, vectorOffset64)} Variable #${parsedState.totalVariableNameSubheaders}: $displayedName"
                                 println "      Text Subheader Index      = ${textSubheaderIndex}"
                                 println "      Offset In Text Subheader  = ${textSubheaderOffset}"
                                 println "      Name Length               = ${nameLength}"
@@ -520,6 +593,7 @@ if (!sas7BdatFile.exists()) {
 
 sas7BdatFile.withDataInputStream { inputStream ->
     // The file starts at the header.
+    int bitSize
     int headerSize
     int pageSize
     int totalPages
@@ -528,15 +602,30 @@ sas7BdatFile.withDataInputStream { inputStream ->
         // This script only processes 64-bit SAS files.
         inputStream.skipNBytes(32)
         byte alignment = inputStream.readByte()
-        if (alignment != 0x33) {
-            println "ERROR: $sas7BdatFile has an alignment that this script can't handle: $alignment"
-            System.exit(1)
+        switch (alignment) {
+            case 0x22:
+                bitSize = 32
+                break
+
+            case 0x33:
+                bitSize = 64
+                break
+
+            default:
+                println "ERROR: $sas7BdatFile has an alignment that this script can't handle: $alignment"
+                System.exit(1)
         }
 
-        inputStream.skipNBytes(200 - 33)
+        headerSizeOffset = bitSize == 32 ? 196 : 200
+        inputStream.skipNBytes(headerSizeOffset - 33)
         headerSize = toggleEndian(inputStream.readInt())
         pageSize = toggleEndian(inputStream.readInt())
         totalPages = toggleEndian(inputStream.readInt())
+
+        // Jump to the end of the header, which should be the first metadata page.
+        int currentOffset = headerSizeOffset + 4 + 4 + 4
+        inputStream.skipNBytes(headerSize - currentOffset)
+
     } catch (EOFException exception) {
         println "ERROR: $sas7BdatFile is too small to have a legal header"
         System.exit(1)
@@ -547,9 +636,6 @@ sas7BdatFile.withDataInputStream { inputStream ->
     println "  ${formatOffset(204)} Page Size   = $pageSize (${'%#X'.formatted(pageSize)})"
     println "  ${formatOffset(208)} Total Pages = $totalPages"
 
-    // Jump to the end of the header, which should be the first metadata page.
-    int currentOffset = 200 + 4 + 4 + 4
-    inputStream.skipNBytes(headerSize - currentOffset)
     int fileOffset = headerSize
 
     // Keep reading pages until we've processed the entire file.
@@ -559,7 +645,7 @@ sas7BdatFile.withDataInputStream { inputStream ->
     int bytesRead = inputStream.read(page)
     while (bytesRead == pageSize) {
         println "\n${formatOffset(fileOffset)} Page $pageNumber"
-        printPage(fileOffset, page, parsedState)
+        printPage(fileOffset, bitSize, page, parsedState)
 
         // Read the next page
         Arrays.fill(page, (byte) 0)
