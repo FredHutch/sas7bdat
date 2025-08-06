@@ -731,6 +731,28 @@ class TestRandomSas7bdat {
         groovyScript.setExecutable(true)
     }
 
+    static String formatNumericForDataline(variable, BigDecimal number) {
+        // Make sure that the number has at least as many digits to the right of the decimal point
+        // as described by the input format.
+        // Note that 0 means "unspecified"
+        def numberOfDigits = variable.inputFormat().numberOfDigits()
+        if (numberOfDigits != 0) {
+            if (number.scale() < numberOfDigits) { // number is missing digits
+                number = number.setScale(numberOfDigits, RoundingMode.UNNECESSARY)
+            }
+        }
+
+        def string = number.toPlainString()
+
+        // The NEGPAREN uses parentheses around the number instead of leading minus sign to indicate
+        // a negative value.
+        if (variable.inputFormat().name() == 'NEGPAREN') {
+            string = string.replaceAll(~/-(.+)/, '($1)')
+        }
+
+        return string
+    }
+
     // Format an observation as a dataline
     static String formatDataline(variables, observation) {
         StringBuilder stringBuilder = new StringBuilder()
@@ -751,32 +773,14 @@ class TestRandomSas7bdat {
                     def sasEpoch = LocalDate.of(1960, 1, 1)
                     def sasDate = sasEpoch.until(value, ChronoUnit.DAYS)
                     def number = BigDecimal.valueOf(sasDate)
-                    number = number.movePointRight(variable.inputFormat().numberOfDigits())
-                    def string = number.toPlainString()
 
-                    // The NEGPAREN uses parentheses around the number instead of leading minus sign to indicate
-                    // a negative value.
-                    if (variable.inputFormat().name() == 'NEGPAREN') {
-                        string = string.replaceAll(~/-(.+)/, '($1)')
-                    }
-
-                    stringBuilder << string
+                    stringBuilder << formatNumericForDataline(variable, number)
 
                 } else {
-                    // Other numeric are formatted according to their input format.
-                    // If the number of digits is 2, then SAS divides the representation in the datalines by 100,
-                    // so we must multiply it by 100 to preserve the number.
+                    // Other numeric values are formatted according to their variable's input format.
                     def number = new BigDecimal(value.toString())
-                    number = number.movePointRight(variable.inputFormat().numberOfDigits())
-                    def string = number.toPlainString()
 
-                    // The NEGPAREN uses parentheses around the number instead of leading minus sign to indicate
-                    // a negative value.
-                    if (variable.inputFormat().name() == 'NEGPAREN') {
-                        string = string.replaceAll(~/-(.+)/, '($1)')
-                    }
-
-                    stringBuilder << string
+                    stringBuilder << formatNumericForDataline(variable, number)
                 }
             }
 
@@ -1116,9 +1120,27 @@ class TestRandomSas7bdat {
                         }
                     } else {
                         // A helper routine that compares what's in the CSV to an expected value.
-                        def compareNumericValue = (BigDecimal csvNumber, BigDecimal expectedNumber) -> {
-                            def format = expectedMetadata.variables[columnIndex].outputFormat()
-                            expectedNumber = expectedNumber.movePointLeft(format.numberOfDigits())
+                        def compareCsvValueToNumericValue = (BigDecimal expectedNumber) -> {
+
+                            // Parse the string in the CSV as a BigDecimal, if possible
+                            def csvNumber
+                            try {
+                                csvNumber = new BigDecimal(csvValue)
+                            } catch (NumberFormatException ignored) {
+                                // The value in the CSV isn't a number.
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                             |       Expected = $expectedValue ($expectedNumber)
+                                             |       Actual   = $csvValue""".trim().stripMargin()
+                                return
+                            }
+
+                            // The CSV export usually rounds the values to two decimal places.
+                            // Strangely, it doesn't do this always.  I haven't figured out when it when
+                            // it doesn't round, but it seems to be related to size of the dataset and
+                            // the position of the value within the dataset, but not the value itself.
+                            if (csvNumber.scale() == 2) {
+                                expectedNumber = expectedNumber.setScale(2, RoundingMode.HALF_UP)
+                            }
 
                             // When SAS prints the value, it seems to only print 8 digits of precision.
                             // For example 3043709873365155987 is rendered as 3.04371E18.
@@ -1127,7 +1149,7 @@ class TestRandomSas7bdat {
                             def roundedNumber   = expectedNumber.round(roundingContext)
                             if (roundedNumber != csvNumber) {
                                 errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
-                                             |       Expected = $expectedValue
+                                             |       Expected = $expectedValue ($roundedNumber)
                                              |       Actual   = $csvValue""".trim().stripMargin()
                             }
                         }
@@ -1156,9 +1178,14 @@ class TestRandomSas7bdat {
                             def sasEpoch = LocalDate.of(1960, 1, 1)
                             def sasDate = sasEpoch.until(expectedValue, ChronoUnit.DAYS)
 
-                            compareNumericValue(new BigDecimal(csvValue), BigDecimal.valueOf(sasDate))
+                            compareCsvValueToNumericValue(BigDecimal.valueOf(sasDate))
+
+                        } else if (expectedValue instanceof Number) {
+                            compareCsvValueToNumericValue(new BigDecimal(expectedValue.toString()))
+
                         } else {
-                            compareNumericValue(new BigDecimal(csvValue), new BigDecimal(expectedValue.toString()))
+                            errors << """|BUG: unsupported class when checking $dataCsv at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                         |     Value = $expectedValue ($expectedValue.class.canonicalName)""".trim().stripMargin()
                         }
                     }
                 }
