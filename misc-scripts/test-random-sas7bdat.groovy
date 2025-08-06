@@ -288,8 +288,8 @@ class TestRandomSas7bdat {
                                 def minDate = LocalDate.of(1920, 1, 1)
                                 def maxDate = LocalDate.of(2100, 1, 1)
                                 def daysInSupportedRange = minDate.until(maxDate, ChronoUnit.DAYS)
-                                def date = minDate.plusDays(randomNumberGenerator.nextLong(daysInSupportedRange))
-                                generator.writeString(date.toString())
+                                def randomDate = minDate.plusDays(randomNumberGenerator.nextLong(daysInSupportedRange))
+                                generator.writeString(randomDate.toString())
 
                             } else if (randomNumber < 99) { // 4% chance of a MissingValue
                                 def value = randomElement(MissingValue.values().toList())
