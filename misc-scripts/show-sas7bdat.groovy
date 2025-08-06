@@ -241,15 +241,14 @@ class ColumnText {
     }
 
     String getText(int bitSize, int textSubheaderIndex, int textSubheaderOffset, int textLength) {
-        String text
         if (0 <= textSubheaderIndex && textSubheaderIndex < columnTextSubheaders.size()) {
             byte[] columnTextSubheader = columnTextSubheaders[textSubheaderIndex]
             int offsetInColumnTextSubheader = textSubheaderOffset + (bitSize == 32 ? 4 : 8) // offset doesn't include signature
             if (0 <= offsetInColumnTextSubheader && offsetInColumnTextSubheader + textLength <= columnTextSubheader.length) {
-                text = new String(columnTextSubheader, offsetInColumnTextSubheader, textLength, StandardCharsets.UTF_8)
+                return new String(columnTextSubheader, offsetInColumnTextSubheader, textLength, StandardCharsets.UTF_8)
             }
         }
-        return text
+        return null
     }
 }
 
