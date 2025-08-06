@@ -278,11 +278,20 @@ class TestRandomSas7bdat {
                             generator.writeString(value)
                         } else {
                             randomNumber = randomNumberGenerator.nextInt(100)
-                            if (randomNumber < 50) { // 50% chance of an Integer
+                            if (randomNumber < 30) { // 30% chance of an Integer
                                 generator.writeNumber(randomNumberGenerator.nextInt())
 
-                            } else if (randomNumber < 90) { // 40% chance of a Long
+                            } else if (randomNumber < 50) { // 20% chance of a Long
                                 generator.writeNumber(randomNumberGenerator.nextLong())
+
+                            } else if (randomNumber < 55) { // 5% chance of a Short
+                                generator.writeNumber(Short.valueOf((short) randomNumberGenerator.nextInt()))
+
+                            } else if (randomNumber < 60) { // 5% chance of a Float
+                                generator.writeNumber(Float.valueOf((float) randomNumberGenerator.nextDouble()))
+
+                            } else if (randomNumber < 90) { // 30% chance of a Double
+                                generator.writeNumber(randomNumberGenerator.nextDouble())
 
                             } else if (randomNumber < 95) { // 5% chance of a LocalDate
                                 def minDate = LocalDate.of(1920, 1, 1)
