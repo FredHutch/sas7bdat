@@ -634,7 +634,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
             }
         }
 
-        if (pageType == PageType.DATA || pageType == PageType.MIXED) {
+        if (pageType != PageType.METADATA) {
 
             // Print any delayed information from the metadata that was not known at the
             // time it was parsed.
