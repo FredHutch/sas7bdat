@@ -432,8 +432,9 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             pageReader.printSubheaderField8(subheaderOffset + 292, subheaderOffset + 568, "Last Data Record, Record Index")
                             pageReader.printSubheaderField8(subheaderOffset + 296, subheaderOffset + 576, "First Column Subheader, Page Index")
                             pageReader.printSubheaderField8(subheaderOffset + 300, subheaderOffset + 584, "First Column Subheader, Record Index")
-                            pageReader.printSubheaderField4(subheaderOffset + 344, subheaderOffset + 672, "Unknown Field At offset 344|672") // should be compression offset
-                            pageReader.printSubheaderField4(subheaderOffset + 348, subheaderOffset + 676, "Unknown Field At offset 348|676") // should be compression offset
+                            pageReader.printSubheaderField2(subheaderOffset + 350, subheaderOffset + 672, "Compression, Text Subheader Index")
+                            pageReader.printSubheaderField2(subheaderOffset + 352, subheaderOffset + 674, "Compression, Offset")
+                            pageReader.printSubheaderField2(subheaderOffset + 354, subheaderOffset + 676, "Compression, Length")
                             pageReader.printSubheaderField2(subheaderOffset + 350, subheaderOffset + 678, "Dataset Label, Text Subheader Index")
                             pageReader.printSubheaderField2(subheaderOffset + 352, subheaderOffset + 680, "Dataset Label, Offset")
                             pageReader.printSubheaderField2(subheaderOffset + 354, subheaderOffset + 682, "Dataset Label, Length")
