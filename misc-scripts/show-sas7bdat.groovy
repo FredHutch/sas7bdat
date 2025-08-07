@@ -404,7 +404,6 @@ static String getDisplayText(ColumnText columnText, int bitSize, int textSubhead
 
 void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState) {
     def pageReader = new PageReader(bitSize, fileOffset, page)
-    int SIGNATURE_SIZE = bitSize == 32 ? 4 : 8
     try {
         long unknownField = pageReader.readLong(12, 24)
         short pageType = pageReader.readShort(16, 32)
@@ -535,7 +534,8 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
 
                         case SubheaderSignature.COLUMN_ATTRS:
                             int payloadSize = pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Length Remaining In Subheader")
-                            int totalVariables = (payloadSize - SIGNATURE_SIZE) / 16
+                            int payloadSizeFieldSize = bitSize == 32 ? 4 : 8
+                            int totalVariables = (payloadSize - payloadSizeFieldSize) / 16
                             for (int variableIndex = 0; variableIndex < totalVariables; variableIndex++) {
                                 int vectorOffset32 = subheaderOffset + 12 + variableIndex * 12
                                 int vectorOffset64 = subheaderOffset + 16 + variableIndex * 16
