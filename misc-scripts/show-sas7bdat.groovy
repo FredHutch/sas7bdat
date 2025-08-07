@@ -391,6 +391,10 @@ class ParsedState {
     int datasetTypeIndex
     int datasetTypeOffset
     int datasetTypeLength
+
+    int unknownStringIndex
+    int unknownStringOffset
+    int unknownStringLength
 }
 
 static String getDisplayText(ColumnText columnText, int bitSize, int textSubheaderIndex, int textSubheaderOffset, int textLength) {
@@ -467,6 +471,10 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             parsedState.datasetTypeIndex  = pageReader.printSubheaderField2(subheaderOffset + 356, subheaderOffset + 684, "Dataset Type, Text Subheader Index")
                             parsedState.datasetTypeOffset = pageReader.printSubheaderField2(subheaderOffset + 358, subheaderOffset + 686, "Dataset Type, Offset")
                             parsedState.datasetTypeLength = pageReader.printSubheaderField2(subheaderOffset + 360, subheaderOffset + 688, "Dataset Type, Length")
+
+                            parsedState.unknownStringIndex  = pageReader.printSubheaderField2(subheaderOffset + 362, subheaderOffset + 690, "Unknown Field At offset 362|690")
+                            parsedState.unknownStringOffset = pageReader.printSubheaderField2(subheaderOffset + 364, subheaderOffset + 692, "Unknown Field At offset 364|692")
+                            parsedState.unknownStringLength = pageReader.printSubheaderField2(subheaderOffset + 366, subheaderOffset + 694, "Unknown Field At offset 366|694")
 
                             pageReader.printSubheaderField2(subheaderOffset + 368, subheaderOffset + 696, "Unknown Field At offset 368|696")
                             pageReader.printSubheaderField2(subheaderOffset + 370, subheaderOffset + 698, "Unknown Field At offset 370|698")
@@ -655,9 +663,17 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                     parsedState.datasetLabelOffset,
                     parsedState.datasetLabelLength)
 
-                println "  Compression:   $displayedCompression"
-                println "  Dataset Type:  $displayedDatasetType"
-                println "  Dataset Label: $displayedDatasetLabel"
+                String displayedUnknownString = getDisplayText(
+                    parsedState.columnText,
+                    bitSize,
+                    parsedState.unknownStringIndex,
+                    parsedState.unknownStringOffset,
+                    parsedState.unknownStringLength)
+
+                println "  Compression:    $displayedCompression"
+                println "  Dataset Type:   $displayedDatasetType"
+                println "  Dataset Label:  $displayedDatasetLabel"
+                println "  Unknown String: $displayedUnknownString"
             }
 
             // Print the data
