@@ -534,11 +534,12 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
 
                         case SubheaderSignature.COLUMN_ATTRS:
                             int payloadSize = pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Length Remaining In Subheader")
-                            int payloadSizeFieldSize = bitSize == 32 ? 4 : 8
-                            int totalVariables = (payloadSize - payloadSizeFieldSize) / 16
+                            int payloadSizeFieldSize = bitSize == 32 ?  4 : 8
+                            int attributesEntrySize  = bitSize == 32 ? 12 : 16
+                            int totalVariables = (payloadSize - payloadSizeFieldSize) / attributesEntrySize
                             for (int variableIndex = 0; variableIndex < totalVariables; variableIndex++) {
-                                int vectorOffset32 = subheaderOffset + 12 + variableIndex * 12
-                                int vectorOffset64 = subheaderOffset + 16 + variableIndex * 16
+                                int vectorOffset32 = subheaderOffset + 12 + variableIndex * attributesEntrySize
+                                int vectorOffset64 = subheaderOffset + 16 + variableIndex * attributesEntrySize
                                 long columnOffsetInDataRow = pageReader.readLong(vectorOffset32 + 0, vectorOffset64 + 0)
                                 int columnLength           = pageReader.readInt(vectorOffset32 + 4, vectorOffset64 + 8)
                                 short nameFlag             = pageReader.readShort(vectorOffset32 + 8, vectorOffset64 + 12)
