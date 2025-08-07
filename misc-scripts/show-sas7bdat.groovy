@@ -534,8 +534,8 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             break
 
                         case SubheaderSignature.COLUMN_ATTRS:
-                            pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Length Remaining In Subheader")
-                            int totalVariables = (pageReader.readShort(subheaderOffset + 4, subheaderOffset + 8) - SIGNATURE_SIZE) / 16
+                            int payloadSize = pageReader.printSubheaderField2(subheaderOffset + 4, subheaderOffset + 8, "Length Remaining In Subheader")
+                            int totalVariables = (payloadSize - SIGNATURE_SIZE) / 16
                             for (int variableIndex = 0; variableIndex < totalVariables; variableIndex++) {
                                 int vectorOffset32 = subheaderOffset + 12 + variableIndex * 12
                                 int vectorOffset64 = subheaderOffset + 16 + variableIndex * 16
