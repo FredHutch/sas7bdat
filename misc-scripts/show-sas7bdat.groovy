@@ -418,7 +418,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             pageReader.printSubheaderField8(subheaderOffset + 36, subheaderOffset + 72, "Total Column Subheaders On First Page")
                             pageReader.printSubheaderField8(subheaderOffset + 40, subheaderOffset + 80, "Total Column Subheaders On Second Page")
                             pageReader.printSubheaderField8(subheaderOffset + 44, subheaderOffset + 88, "Unknown Field At offset 88")
-                            pageReader.printSubheaderField8(subheaderOffset + 48, subheaderOffset + 96, "Aggregate Variable Name Size") // 64 is wrong offset?
+                            pageReader.printSubheaderField8(subheaderOffset + 48, subheaderOffset + 96, "Aggregate Variable Name Size")
                             pageReader.printSubheaderField8(subheaderOffset + 52, subheaderOffset + 104, "Page Size")
                             pageReader.printSubheaderField8(subheaderOffset + 60, subheaderOffset + 120, "Max Row Count On Mixed Page")
                             pageReader.printSubheaderField4(subheaderOffset + 220, subheaderOffset + 440, "Page Sequence Number")
