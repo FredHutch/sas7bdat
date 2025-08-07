@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 import java.nio.charset.StandardCharsets
+import java.time.*
 
 class Header {
     // The file starts at the header.
@@ -232,14 +233,14 @@ class PageReader {
                    (0x0000FF00L & (page[offset32 + 1] << 8)) |
                    (0x000000FFL & (page[offset32 + 0]))
         } else {
-            return (0xFF00000000000000L & (page[offset64 + 7] << 56)) |
-                   (0x00FF000000000000L & (page[offset64 + 6] << 48)) |
-                   (0x0000FF0000000000L & (page[offset64 + 5] << 40)) |
-                   (0x000000FF00000000L & (page[offset64 + 4] << 32)) |
-                   (0x00000000FF000000L & (page[offset64 + 3] << 24)) |
-                   (0x0000000000FF0000L & (page[offset64 + 2] << 16)) |
-                   (0x000000000000FF00L & (page[offset64 + 1] << 8)) |
-                   (0x00000000000000FFL & (page[offset64 + 0]))
+            return (0xFF00000000000000L & ((long) page[offset64 + 7] << 56)) |
+                   (0x00FF000000000000L & ((long) page[offset64 + 6] << 48)) |
+                   (0x0000FF0000000000L & ((long) page[offset64 + 5] << 40)) |
+                   (0x000000FF00000000L & ((long) page[offset64 + 4] << 32)) |
+                   (0x00000000FF000000L & ((long) page[offset64 + 3] << 24)) |
+                   (0x0000000000FF0000L & ((long) page[offset64 + 2] << 16)) |
+                   (0x000000000000FF00L & ((long) page[offset64 + 1] << 8)) |
+                   (0x00000000000000FFL & ((long) page[offset64 + 0]))
         }
     }
 
@@ -263,6 +264,14 @@ class PageReader {
     void printSubheaderField(long offset32, long offset64, String text, value) {
         String spacer = text.length() < 40 ? ' '.repeat(40 - text.length()) : ''
         println "    ${formatOffset(offset32, offset64)} $text$spacer= $value"
+    }
+
+    LocalDateTime printSubheaderTimestampField(long offset32, long offset64, String text) {
+        long longValue = readLong(offset32, offset64)
+        double doubleValue = Double.longBitsToDouble(longValue)
+        LocalDateTime timestamp = LocalDateTime.of(1960, 1, 1, 0, 0).plusSeconds(doubleValue.longValue())
+        printSubheaderField(offset32, offset64, text, "0x%X (%s)".formatted(longValue, timestamp))
+        return timestamp
     }
 
     long printSubheaderField8(long offset32, long offset64, String text) {
@@ -448,6 +457,11 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             pageReader.printSubheaderField8(subheaderOffset + 52, subheaderOffset + 104, "Page Size")
                             pageReader.printSubheaderField8(subheaderOffset + 60, subheaderOffset + 120, "Max Row Count On Mixed Page")
                             pageReader.printSubheaderField4(subheaderOffset + 220, subheaderOffset + 440, "Page Sequence Number")
+
+                            pageReader.printSubheaderField8(subheaderOffset + 252, subheaderOffset + 488, "Total Repairs")
+                            pageReader.printSubheaderTimestampField(subheaderOffset + 260, subheaderOffset + 496, "Timestamp of Repair (UTC)")
+                            pageReader.printSubheaderTimestampField(subheaderOffset + 268, subheaderOffset + 504, "Timestamp of Repair (Local)")
+
                             pageReader.printSubheaderField4(subheaderOffset + 264, subheaderOffset + 512, "Unknown Field At offset 264|512")
                             pageReader.printSubheaderField4(subheaderOffset + 268, subheaderOffset + 520, "Unknown Field At offset 268|520")
                             pageReader.printSubheaderField8(subheaderOffset + 272, subheaderOffset + 528, "Total Metadata Pages")
