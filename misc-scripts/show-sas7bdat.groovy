@@ -519,11 +519,11 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             parsedState.lastColumnFormat++
                             println "    (Variable #$parsedState.lastColumnFormat)"
 
-                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 28, subheaderOffset + 40, "Output Format Name")
+                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 34, subheaderOffset + 46, "Output Format Name")
                             pageReader.printSubheaderField2(subheaderOffset + 26, subheaderOffset + 24, "Output Format Width")
                             pageReader.printSubheaderField2(subheaderOffset + 18, subheaderOffset + 26, "Output Format Precision")
 
-                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 34, subheaderOffset + 46, "Input Format Name")
+                            printColumnText(parsedState.columnText, pageReader, subheaderOffset + 28, subheaderOffset + 40, "Input Format Name")
                             pageReader.printSubheaderField2(subheaderOffset + 20, subheaderOffset + 28, "Input Format Width")
                             pageReader.printSubheaderField2(subheaderOffset + 22, subheaderOffset + 30, "Input Format Precision")
 
