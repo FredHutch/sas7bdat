@@ -1119,11 +1119,12 @@ class TestRandomSas7bdat {
                     def csvValue = record[columnIndex]
                     def expectedValue = observation[columnIndex]
 
-                    if (expectedMetadata.variables[columnIndex].type() == VariableType.CHARACTER) {
+                    def variable = expectedMetadata.variables[columnIndex]
+                    if (variable.type() == VariableType.CHARACTER) {
                         // Strip trailing whitespace from CHARACTER values to match what SAS does.
                         expectedValue = trimTrailingBlanks(expectedValue)
                         if (csvValue != expectedValue) {
-                            errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                            errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                          |       Expected = $expectedValue
                                          |       Actual   = $csvValue""".trim().stripMargin()
                         }
@@ -1137,7 +1138,7 @@ class TestRandomSas7bdat {
                                 csvNumber = new BigDecimal(csvValue)
                             } catch (NumberFormatException ignored) {
                                 // The value in the CSV isn't a number.
-                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                              |       Expected = $expectedValue ($expectedNumber)
                                              |       Actual   = $csvValue""".trim().stripMargin()
                                 return
@@ -1157,7 +1158,7 @@ class TestRandomSas7bdat {
                             def roundingContext = new MathContext(csvNumber.precision())
                             def roundedNumber   = expectedNumber.round(roundingContext)
                             if (roundedNumber != csvNumber) {
-                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                              |       Expected = $expectedValue ($roundedNumber)
                                              |       Actual   = $csvValue""".trim().stripMargin()
                             }
@@ -1166,7 +1167,7 @@ class TestRandomSas7bdat {
                         if (expectedValue == null) {
                             expectedValue = '.' // MISSING VALUE is formatted as "."
                             if (csvValue != expectedValue) {
-                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                              |       Expected = $expectedValue
                                              |       Actual   = $csvValue""".trim().stripMargin()
                             }
@@ -1177,7 +1178,7 @@ class TestRandomSas7bdat {
                             // SAS normally formats as ".A", is written as "A" in the CSV export.
                             expectedValue = expectedValue.toString().replaceAll(~/.(.)/, '$1')
                             if (csvValue != expectedValue) {
-                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1}
+                                errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                              |       Expected = $expectedValue
                                              |       Actual   = $csvValue""".trim().stripMargin()
                             }
@@ -1193,7 +1194,7 @@ class TestRandomSas7bdat {
                             compareCsvValueToNumericValue(new BigDecimal(expectedValue.toString()))
 
                         } else {
-                            errors << """|BUG: unsupported class when checking $dataCsv at row ${rowIndex + 1}, column ${columnIndex + 1}
+                            errors << """|BUG: unsupported class when checking $dataCsv at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                          |     Value = $expectedValue ($expectedValue.class.canonicalName)""".trim().stripMargin()
                         }
                     }
