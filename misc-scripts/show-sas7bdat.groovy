@@ -414,9 +414,9 @@ class ParsedState {
     int lastRecordNumber = 0
 
     // Fields from Row Size subheader which are parsed before Column Text has been.
-    int compressionIndex
-    int compressionOffset
-    int compressionLength
+    int unknownStringIndex
+    int unknownStringOffset
+    int unknownStringLength
 
     int datasetLabelIndex
     int datasetLabelOffset
@@ -426,9 +426,9 @@ class ParsedState {
     int datasetTypeOffset
     int datasetTypeLength
 
-    int unknownStringIndex
-    int unknownStringOffset
-    int unknownStringLength
+    int compressionMethodIndex
+    int compressionMethodOffset
+    int compressionMethodLength
 }
 
 static String getDisplayText(ColumnText columnText, int bitSize, int textSubheaderIndex, int textSubheaderOffset, int textLength) {
@@ -498,9 +498,9 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             pageReader.printSubheaderField8(subheaderOffset, 296, 576, "First Column Subheader, Page Index")
                             pageReader.printSubheaderField8(subheaderOffset, 300, 584, "First Column Subheader, Record Index")
 
-                            parsedState.compressionIndex  = pageReader.printSubheaderField2(subheaderOffset, 344, 672, "Compression, Text Subheader Index")
-                            parsedState.compressionOffset = pageReader.printSubheaderField2(subheaderOffset, 346, 674, "Compression, Offset")
-                            parsedState.compressionLength = pageReader.printSubheaderField2(subheaderOffset, 348, 676, "Compression, Length")
+                            parsedState.unknownStringIndex  = pageReader.printSubheaderField2(subheaderOffset, 344, 672, "Unknown String, Text Subheader Index")
+                            parsedState.unknownStringOffset = pageReader.printSubheaderField2(subheaderOffset, 346, 674, "Unknown String, Offset")
+                            parsedState.unknownStringLength = pageReader.printSubheaderField2(subheaderOffset, 348, 676, "Unknown String, Length")
 
                             parsedState.datasetLabelIndex  = pageReader.printSubheaderField2(subheaderOffset, 350, 678, "Dataset Label, Text Subheader Index")
                             parsedState.datasetLabelOffset = pageReader.printSubheaderField2(subheaderOffset, 352, 680, "Dataset Label, Offset")
@@ -510,9 +510,9 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             parsedState.datasetTypeOffset = pageReader.printSubheaderField2(subheaderOffset, 358, 686, "Dataset Type, Offset")
                             parsedState.datasetTypeLength = pageReader.printSubheaderField2(subheaderOffset, 360, 688, "Dataset Type, Length")
 
-                            parsedState.unknownStringIndex  = pageReader.printSubheaderField2(subheaderOffset, 362, 690, "Unknown Field At offset 362|690")
-                            parsedState.unknownStringOffset = pageReader.printSubheaderField2(subheaderOffset, 364, 692, "Unknown Field At offset 364|692")
-                            parsedState.unknownStringLength = pageReader.printSubheaderField2(subheaderOffset, 366, 694, "Unknown Field At offset 366|694")
+                            parsedState.compressionMethodIndex  = pageReader.printSubheaderField2(subheaderOffset, 362, 690, "Compression, Text Subheader Index")
+                            parsedState.compressionMethodOffset = pageReader.printSubheaderField2(subheaderOffset, 364, 692, "Compression, Offset")
+                            parsedState.compressionMethodLength = pageReader.printSubheaderField2(subheaderOffset, 366, 694, "Compression, Length")
 
                             pageReader.printSubheaderField2(subheaderOffset, 368, 696, "Unknown Field At offset 368|696")
                             pageReader.printSubheaderField2(subheaderOffset, 370, 698, "Unknown Field At offset 370|698")
@@ -682,12 +682,12 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                 print "\n"
                 println "From Row Size Subheader:"
 
-                String displayedCompression = getDisplayText(
+                String displayedUnknownString = getDisplayText(
                     parsedState.columnText,
                     bitSize,
-                    parsedState.compressionIndex,
-                    parsedState.compressionOffset,
-                    parsedState.compressionLength)
+                    parsedState.unknownStringIndex,
+                    parsedState.unknownStringOffset,
+                    parsedState.unknownStringLength)
 
                 String displayedDatasetType = getDisplayText(
                     parsedState.columnText,
@@ -703,17 +703,17 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                     parsedState.datasetLabelOffset,
                     parsedState.datasetLabelLength)
 
-                String displayedUnknownString = getDisplayText(
+                String displayedCompressionMethod = getDisplayText(
                     parsedState.columnText,
                     bitSize,
-                    parsedState.unknownStringIndex,
-                    parsedState.unknownStringOffset,
-                    parsedState.unknownStringLength)
+                    parsedState.compressionMethodIndex,
+                    parsedState.compressionMethodOffset,
+                    parsedState.compressionMethodLength)
 
-                println "  Compression:    $displayedCompression"
-                println "  Dataset Type:   $displayedDatasetType"
-                println "  Dataset Label:  $displayedDatasetLabel"
-                println "  Unknown String: $displayedUnknownString"
+                println "  Unknown String:     $displayedUnknownString"
+                println "  Dataset Type:       $displayedDatasetType"
+                println "  Dataset Label:      $displayedDatasetLabel"
+                println "  Compression Method: $displayedCompressionMethod"
             }
 
             // Print the data
