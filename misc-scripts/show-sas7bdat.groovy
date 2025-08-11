@@ -572,7 +572,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             break
 
                         case SubheaderSignature.COLUMN_ATTRS:
-                            int payloadSize = pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Length Remaining In Subheader")
+                            int payloadSize = pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Subheader Payload Size")
                             int payloadSizeFieldSize = bitSize == 32 ?  4 : 8
                             int attributesEntrySize  = bitSize == 32 ? 12 : 16
                             int totalVariables = (payloadSize - payloadSizeFieldSize) / attributesEntrySize
@@ -595,7 +595,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
 
                         case SubheaderSignature.COLUMN_TEXT:
                             // The variable names, labels, and formats are all concatenated into column texts.
-                            pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Size Of Subheader")
+                            pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Subheader Payload Size")
 
                             // Print the text like hexdump -Cv
                             println "    Text:"
@@ -607,7 +607,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             break
 
                         case SubheaderSignature.COLUMN_LIST:
-                            pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Size of Body")
+                            pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Subheader Payload Size")
 
                             // The field at offset 4|8 should probably be two byte fields that takes up 4|8 bytes,
                             // but SAS puts some non-zero bytes after it.  I suspect this is uninitialized memory,
@@ -640,7 +640,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                             break
 
                         case SubheaderSignature.COLUMN_NAME:
-                            int payloadSize = pageReader.printSubheaderField8(subheaderOffset, 4, 8, "Length Remaining In Subheader")
+                            int payloadSize = pageReader.printSubheaderField8(subheaderOffset, 4, 8, "Subheader Payload Size")
                             int totalVariables = payloadSize / 8 - 1
                             for (int variableIndex = 0; variableIndex < totalVariables; variableIndex++) {
                                 int vectorOffset32 = subheaderOffset + 12 + variableIndex * 8
