@@ -1153,13 +1153,17 @@ class TestRandomSas7bdat {
                             }
 
                             // When SAS prints the value, it seems to only print 8 digits of precision.
-                            // For example 3043709873365155987 is rendered as 3.04371E18.
+                            // For example 6815000113499998060 is rendered as 6.815000114E18.
                             // To compare the CSV to the expected value, we round our value to the same precision.
-                            def roundingContext = new MathContext(csvNumber.precision())
-                            def roundedNumber   = expectedNumber.round(roundingContext)
-                            if (roundedNumber != csvNumber) {
+                            // It's not clear how SAS rounds the value, but it seems to round .499 up.
+                            // To account for this, we accept a range.
+                            def expectedNumberRoundedDown = expectedNumber.round(new MathContext(csvNumber.precision(), RoundingMode.DOWN))
+                            def expectedNumberRoundedUp   = expectedNumber.round(new MathContext(csvNumber.precision(), RoundingMode.UP))
+                            def minValue = Math.min(expectedNumberRoundedDown, expectedNumberRoundedUp)
+                            def maxValue = Math.max(expectedNumberRoundedDown, expectedNumberRoundedUp)
+                            if (csvNumber < minValue || maxValue < csvNumber) {
                                 errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
-                                             |       Expected = $expectedValue ($roundedNumber)
+                                             |       Expected = $expectedValue (in range $minValue - $maxValue)
                                              |       Actual   = $csvValue""".trim().stripMargin()
                             }
                         }
