@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /** Tests for {@link Sas7bdatExporter} */
 public class Sas7bdatExporterTest {
@@ -165,11 +166,14 @@ public class Sas7bdatExporterTest {
                 observations.add(List.of(missingValue.toString(), "", "", "", missingValue));
             }
 
-            // Add local dates
-            for (LocalDate date : List.of(
+            // Add dates and times
+            for (Object date : List.of(
                 LocalDate.of(1960, 1, 1),
                 LocalDate.of(1959, 12, 31),
-                LocalDate.of(2020, 1, 1))) {
+                LocalDate.of(2020, 1, 1),
+                LocalDateTime.of(1960, 1, 1, 0, 0, 0, 0),
+                LocalDateTime.of(1959, 12, 31, 23, 59, 59, 999_999_999),
+                LocalDateTime.of(2020, 7, 4, 9, 12, 13))) {
                 observations.add(List.of(date.toString(), "", "", "", date));
             }
 
@@ -207,13 +211,37 @@ public class Sas7bdatExporterTest {
                             new Object[] { MissingValue.values()[i - 1000].toString(), null, null, null, null },
                             row);
                     } else {
-                        // LocalDate tests
-                        if (i == 1000 + MissingValue.values().length) {
+                        // date/time tests
+                        int dateIndex = i - MissingValue.values().length - 1000;
+                        switch (i - MissingValue.values().length - 1000) {
+                        case 0:
                             assertArrayEquals(new Object[] { "1960-01-01", null, null, null, 0L }, row);
-                        } else if (i == 1000 + MissingValue.values().length + 1) {
+                            break;
+
+                        case 1:
                             assertArrayEquals(new Object[] { "1959-12-31", null, null, null, -1L }, row);
-                        } else {
+                            break;
+
+                        case 2:
                             assertArrayEquals(new Object[] { "2020-01-01", null, null, null, 365L * 60 + 15 }, row);
+                            break;
+
+                        case 3:
+                            assertArrayEquals(new Object[] { "1960-01-01T00:00", null, null, null, 0L }, row);
+                            break;
+
+                        case 4:
+                            assertArrayEquals(new Object[] { "1959-12-31T23:59:59.999999999", null, null, null, -1E-9 },
+                                row);
+                            break;
+
+                        case 5:
+                            assertArrayEquals(new Object[] { "2020-07-04T09:12:13", null, null, null, 1909473133L },
+                                row);
+                            break;
+
+                        default:
+                            fail("Unexpected row found at " + i + " (" + dateIndex + ")");
                         }
                     }
                     i++;
@@ -1056,7 +1084,7 @@ public class Sas7bdatExporterTest {
                     () -> sas7bdatExporter.writeObservation(List.of("ok", "100")));
                 assertEquals(
                     "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                        "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, or java.lang.Number)",
+                        "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, java.time.LocalDateTime, or java.lang.Number)",
                     exception.getMessage());
 
                 // The exception should not have corrupted the state of the exporter,

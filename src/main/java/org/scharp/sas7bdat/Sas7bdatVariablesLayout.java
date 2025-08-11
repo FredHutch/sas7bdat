@@ -6,7 +6,9 @@ package org.scharp.sas7bdat;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,6 +64,19 @@ class Sas7bdatVariablesLayout {
         }
 
         rowLength = rowOffset;
+    }
+
+    private static long daysBetween(Temporal epoch, Temporal dateTime) {
+        final long daysSinceSasEpochLong = epoch.until(dateTime, ChronoUnit.DAYS);
+        final double daysSinceSasEpochDouble = Long.valueOf(daysSinceSasEpochLong).doubleValue();
+        return Double.doubleToRawLongBits(daysSinceSasEpochDouble);
+    }
+
+    private static long secondsBetween(Temporal epoch, Temporal dateTime) {
+        // SAS timestamps support sub-second granularity.
+        final long nanoSecondsSinceSasEpochLong = epoch.until(dateTime, ChronoUnit.NANOS);
+        final double unitsSinceSasEpochDouble = Long.valueOf(nanoSecondsSinceSasEpochLong).doubleValue();
+        return Double.doubleToRawLongBits(unitsSinceSasEpochDouble / 1_000_000_000);
     }
 
     /**
@@ -131,9 +146,11 @@ class Sas7bdatVariablesLayout {
 
                 } else if (value instanceof LocalDate localDate) {
                     // SAS dates are numeric values given as the number of days since 1960-01-01.
-                    long daysSinceSasEpochLong = LocalDate.of(1960, 1, 1).until(localDate, ChronoUnit.DAYS);
-                    double daysSinceSasEpochDouble = Long.valueOf(daysSinceSasEpochLong).doubleValue();
-                    valueBits = Double.doubleToRawLongBits(daysSinceSasEpochDouble);
+                    valueBits = daysBetween(LocalDate.of(1960, 1, 1), localDate);
+
+                } else if (value instanceof LocalDateTime localDateTime) {
+                    // SAS timestamps are numeric values given as the number of seconds since 1960-01-01T00:00:00.
+                    valueBits = secondsBetween(LocalDateTime.of(1960, 1, 1, 0, 0), localDateTime);
 
                 } else {
                     throw new IllegalArgumentException(
@@ -141,7 +158,8 @@ class Sas7bdatVariablesLayout {
                             variable.name() + ", which has a NUMERIC type " +
                             "(NUMERIC values must be null or of type " +
                             MissingValue.class.getCanonicalName() + ", " +
-                            LocalDate.class.getCanonicalName() + ", or " +
+                            LocalDate.class.getCanonicalName() + ", " +
+                            LocalDateTime.class.getCanonicalName() + ", or " +
                             Number.class.getCanonicalName() + ")");
                 }
 
