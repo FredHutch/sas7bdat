@@ -151,7 +151,7 @@ class Sas7bdatVariablesLayout {
 
                 } else if (value instanceof LocalTime localTime) {
                     // SAS times are numeric values given as the number of seconds since midnight.
-                    valueBits = secondsBetween(LocalTime.of(0, 0, 0), localTime);
+                    valueBits = secondsBetween(LocalTime.MIDNIGHT, localTime);
 
                 } else if (value instanceof LocalDateTime localDateTime) {
                     // SAS timestamps are numeric values given as the number of seconds since 1960-01-01T00:00:00.
