@@ -854,6 +854,32 @@ public class Sas7bdatExporterTest {
     }
 
     @Test
+    public void testExportDatasetWithNullCharacterValue() throws IOException {
+        Path targetPath = Path.of("testExportDatasetWithNullCharacterValue.sas7bdat");
+        Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
+            variables(List.of(Variable.builder().name("TEXT").type(VariableType.CHARACTER).length(200).build())).
+            build();
+
+        List<List<Object>> observations = List.of(
+            Arrays.asList(new Object[] { "good value" }),
+            Arrays.asList(new Object[] { null }), // bad value
+            Arrays.asList(new Object[] { "good value" }));
+
+        try {
+            // Invoke the unit-under-test with an observation that contains null.
+            Exception exception = assertThrows(
+                NullPointerException.class,
+                () -> Sas7bdatExporter.exportDataset(targetPath, metadata, observations));
+            assertEquals("null given as a value to TEXT, which has a CHARACTER type", exception.getMessage());
+
+            // In this case, the file is created.  Perhaps it should have been deleted.
+            assertTrue(Files.exists(targetPath), "target file not created");
+        } finally {
+            Files.deleteIfExists(targetPath); // cleanup, just in case
+        }
+    }
+
+    @Test
     public void testExportDatasetWithNullObservationRow() throws IOException {
         Path targetPath = Path.of("testExportDatasetWithNullObservationRow.sas7bdat");
         Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().

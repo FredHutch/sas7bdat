@@ -668,8 +668,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      * @throws IOException
      *     If a file I/O error prevents the dataset from being written.
      * @throws NullPointerException
-     *     If {@code targetLocation}, {@code metadata}, or {@code observations} is {@code null}; or if
-     *     {@code observations} contains {@code null}.
+     *     If {@code targetLocation}, {@code metadata}, or {@code observations} is {@code null}; if {@code observations}
+     *     contains {@code null}, or if {@code null} is given as a variable to a character variable.
      */
     public static void exportDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
         throws IOException {
