@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -477,6 +478,11 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *             </tr>
      *             <tr>
      *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link LocalTime}</td>
+     *                 <td>A SAS time, the number of seconds between midnight and the value</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
      *                 <td>a {@link LocalDateTime}</td>
      *                 <td>A SAS datetime, the number of seconds between 1960-01-0100:00 and the value</td>
      *             </tr>
@@ -645,6 +651,11 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *                 <td>{@code VariableType.NUMERIC}</td>
      *                 <td>a {@link LocalDate}</td>
      *                 <td>A SAS date, the number of days between 1960-01-01 and the value</td>
+     *             </tr>
+     *             <tr>
+     *                 <td>{@code VariableType.NUMERIC}</td>
+     *                 <td>a {@link LocalTime}</td>
+     *                 <td>A SAS time, the number of seconds between midnight and the value</td>
      *             </tr>
      *             <tr>
      *                 <td>{@code VariableType.NUMERIC}</td>

@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -171,6 +172,9 @@ public class Sas7bdatExporterTest {
                 LocalDate.of(1960, 1, 1),
                 LocalDate.of(1959, 12, 31),
                 LocalDate.of(2020, 1, 1),
+                LocalTime.of(0, 0, 0),
+                LocalTime.of(16, 17, 18),
+                LocalTime.of(23, 59, 59, 999_999_999),
                 LocalDateTime.of(1960, 1, 1, 0, 0, 0, 0),
                 LocalDateTime.of(1959, 12, 31, 23, 59, 59, 999_999_999),
                 LocalDateTime.of(2020, 7, 4, 9, 12, 13))) {
@@ -227,15 +231,28 @@ public class Sas7bdatExporterTest {
                             break;
 
                         case 3:
-                            assertArrayEquals(new Object[] { "1960-01-01T00:00", null, null, null, 0L }, row);
+                            assertArrayEquals(new Object[] { "00:00", null, null, null, 0L }, row);
                             break;
 
                         case 4:
+                            assertArrayEquals(new Object[] { "16:17:18", null, null, null, 58_638L }, row);
+                            break;
+
+                        case 5:
+                            assertArrayEquals(new Object[] { "23:59:59.999999999", null, null, null, 86399.999999999 },
+                                row);
+                            break;
+
+                        case 6:
+                            assertArrayEquals(new Object[] { "1960-01-01T00:00", null, null, null, 0L }, row);
+                            break;
+
+                        case 7:
                             assertArrayEquals(new Object[] { "1959-12-31T23:59:59.999999999", null, null, null, -1E-9 },
                                 row);
                             break;
 
-                        case 5:
+                        case 8:
                             assertArrayEquals(new Object[] { "2020-07-04T09:12:13", null, null, null, 1909473133L },
                                 row);
                             break;
@@ -1084,7 +1101,7 @@ public class Sas7bdatExporterTest {
                     () -> sas7bdatExporter.writeObservation(List.of("ok", "100")));
                 assertEquals(
                     "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                        "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, java.time.LocalDateTime, or java.lang.Number)",
+                        "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, java.time.LocalTime, java.time.LocalDateTime, or java.lang.Number)",
                     exception.getMessage());
 
                 // The exception should not have corrupted the state of the exporter,

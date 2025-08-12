@@ -7,6 +7,7 @@ package org.scharp.sas7bdat;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -148,6 +149,10 @@ class Sas7bdatVariablesLayout {
                     // SAS dates are numeric values given as the number of days since 1960-01-01.
                     valueBits = daysBetween(LocalDate.of(1960, 1, 1), localDate);
 
+                } else if (value instanceof LocalTime localTime) {
+                    // SAS times are numeric values given as the number of seconds since midnight.
+                    valueBits = secondsBetween(LocalTime.of(0, 0, 0), localTime);
+
                 } else if (value instanceof LocalDateTime localDateTime) {
                     // SAS timestamps are numeric values given as the number of seconds since 1960-01-01T00:00:00.
                     valueBits = secondsBetween(LocalDateTime.of(1960, 1, 1, 0, 0), localDateTime);
@@ -159,6 +164,7 @@ class Sas7bdatVariablesLayout {
                             "(NUMERIC values must be null or of type " +
                             MissingValue.class.getCanonicalName() + ", " +
                             LocalDate.class.getCanonicalName() + ", " +
+                            LocalTime.class.getCanonicalName() + ", " +
                             LocalDateTime.class.getCanonicalName() + ", or " +
                             Number.class.getCanonicalName() + ")");
                 }
