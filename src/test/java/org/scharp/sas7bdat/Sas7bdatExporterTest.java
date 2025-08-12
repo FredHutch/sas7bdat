@@ -1127,7 +1127,12 @@ public class Sas7bdatExporterTest {
                     () -> sas7bdatExporter.writeObservation(List.of("ok", "100")));
                 assertEquals(
                     "A java.lang.String was given as a value to the variable named NUMBER, which has a NUMERIC type " +
-                        "(NUMERIC values must be null or of type org.scharp.sas7bdat.MissingValue, java.time.LocalDate, java.time.LocalTime, java.time.LocalDateTime, or java.lang.Number)",
+                        "(NUMERIC values must be null or of type " +
+                        "org.scharp.sas7bdat.MissingValue, " +
+                        "java.time.LocalDate, " +
+                        "java.time.LocalTime, " +
+                        "java.time.LocalDateTime, or " +
+                        "java.lang.Number)",
                     exception.getMessage());
 
                 // The exception should not have corrupted the state of the exporter,
