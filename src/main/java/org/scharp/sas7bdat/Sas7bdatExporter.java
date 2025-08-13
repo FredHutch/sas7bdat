@@ -9,6 +9,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -489,6 +492,12 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *         </tbody>
      *     </table>
      *     <p>
+     *     Note that date/time classes within the JDK that have an implicit time zone, such as {@link Instant},
+     *     {@link Time}, and {@link Timestamp}, are illegal because SAS dates, SAS times and SAS timestamps don't have a time zone.
+     *     If they were supported, then {@code Sas7bdatExporter} would have to pick a time zone for the 1960-01-01/midnight epoch.
+     *     If it picked the wrong time zone, it would silently alter the data.
+     *     </p>
+     *     <p>
      *     The observation and its data are immediately copied, so subsequent modifications to it don't change the
      *     SAS7BDAT that is exported.
      *     </p>
@@ -664,6 +673,12 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *             </tr>
      *         </tbody>
      *     </table>
+     *     <p>
+     *     Note that date/time classes within the JDK that have an implicit time zone, such as {@link Instant},
+     *     {@link Time}, and {@link Timestamp}, are illegal because SAS dates, SAS times and SAS timestamps don't have a time zone.
+     *     If they were supported, then {@code Sas7bdatExporter} would have to pick a time zone for the 1960-01-01/midnight epoch.
+     *     If it picked the wrong time zone, it would silently alter the data.
+     *     </p>
      *
      * @throws IOException
      *     If a file I/O error prevents the dataset from being written.
