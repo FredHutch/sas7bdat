@@ -290,15 +290,22 @@ class TestRandomSas7bdat {
                             } else if (randomNumber < 60) { // 5% chance of a Float
                                 generator.writeNumber(Float.valueOf((float) randomNumberGenerator.nextDouble()))
 
-                            } else if (randomNumber < 90) { // 30% chance of a Double
+                            } else if (randomNumber < 85) { // 25% chance of a Double
                                 generator.writeNumber(randomNumberGenerator.nextDouble())
 
-                            } else if (randomNumber < 92) { // 2% chance of a LocalDate
+                            } else if (randomNumber < 88) { // 3% chance of a LocalDate
                                 def minDate = LocalDate.of(1920, 1, 1)
                                 def maxDate = LocalDate.of(2100, 1, 1)
                                 def daysInSupportedRange = minDate.until(maxDate, ChronoUnit.DAYS)
                                 def randomDate = minDate.plusDays(randomNumberGenerator.nextLong(daysInSupportedRange))
                                 generator.writeString(randomDate.toString())
+
+                            } else if (randomNumber < 92) { // 3% chance of a LocalTime
+                                def minTime = LocalTime.MIDNIGHT
+                                def maxTime = LocalTime.of(23, 59, 59)
+                                def nanosInSupportedRange = minTime.until(maxTime, ChronoUnit.NANOS)
+                                def randomTime = minTime.plusNanos(randomNumberGenerator.nextLong(nanosInSupportedRange))
+                                generator.writeString(randomTime.toString())
 
                             } else if (randomNumber < 95) { // 3% chance of a LocalDateTime
                                 def minDateTime = LocalDateTime.of(1920, 1, 1, 0, 0)
@@ -501,12 +508,19 @@ class TestRandomSas7bdat {
                                 if (value.startsWith("MissingValue.")) {
                                     // Get corresponding MissingValue
                                     value = MissingValue.valueOf(value.replace("MissingValue.", ""))
+
                                 } else if (value ==~ ~/\d{4}-\d{2}-\d{2}/) {
                                     // Get corresponding LocalDate
                                     value = LocalDate.parse(value)
+
+                                } else if (value ==~ ~/\d{2}:\d{2}(:\d{2}(\.\d{0,9})?)?/) {
+                                    // Get corresponding LocalTime
+                                    value = LocalTime.parse(value)
+
                                 } else if (value ==~ ~/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{0,9})?)?/) {
                                     // Get corresponding LocalDateTime
                                     value = LocalDateTime.parse(value)
+
                                 } else {
                                     // This isn't a known non-Number representation.
                                     println "ERROR: JSON is malformed: String value \"$value\" given to NUMERIC variable ${variable.name()}"
@@ -590,6 +604,7 @@ class TestRandomSas7bdat {
                 |import java.nio.file.Path
                 |import java.nio.file.Files
                 |import java.time.LocalDate
+                |import java.time.LocalTime
                 |import java.time.LocalDateTime
                 |import java.lang.reflect.Constructor
                 |
@@ -719,6 +734,9 @@ class TestRandomSas7bdat {
                         }  else if (value instanceof LocalDate) {
                             groovyLiteral = "LocalDate.parse('$value')"
 
+                        }  else if (value instanceof LocalTime) {
+                            groovyLiteral = "LocalTime.parse('$value')"
+
                         }  else if (value instanceof LocalDateTime) {
                             groovyLiteral = "LocalDateTime.parse('$value')"
 
@@ -798,6 +816,14 @@ class TestRandomSas7bdat {
 
                     stringBuilder << formatNumericForDataline(variable, number)
 
+                } else if (value instanceof LocalTime) {
+                    // A LocalTime is formatted a number, seconds since midnight.
+                    def sasEpoch = LocalTime.MIDNIGHT
+                    def sasTime = sasEpoch.until(value, ChronoUnit.NANOS) / 1E9D
+                    def number = BigDecimal.valueOf(sasTime)
+
+                    stringBuilder << formatNumericForDataline(variable, number)
+
                 } else if (value instanceof LocalDateTime) {
                     // A LocalDateTime is formatted a number, seconds since 1960-01-01T00:00.
                     def sasEpoch = LocalDateTime.of(1960, 1, 1, 0, 0)
@@ -806,11 +832,14 @@ class TestRandomSas7bdat {
 
                     stringBuilder << formatNumericForDataline(variable, number)
 
-                } else {
-                    // Other numeric values are formatted according to their variable's input format.
+                } else if (value instanceof Number) {
+                    // Numeric values are formatted according to their variable's input format.
                     def number = new BigDecimal(value.toString())
 
                     stringBuilder << formatNumericForDataline(variable, number)
+
+                } else {
+                    throw new RuntimeException("BUG: Formatting unsupported variable type in for a SAS datasline: $value.class")
                 }
             }
 
@@ -1218,6 +1247,13 @@ class TestRandomSas7bdat {
                             def sasDate = sasEpoch.until(expectedValue, ChronoUnit.DAYS)
 
                             compareCsvValueToNumericValue(BigDecimal.valueOf(sasDate))
+
+                        } else if (expectedValue instanceof LocalTime) {
+                            // The FORMAT for dates is probably to express it numerically.
+                            def sasEpoch = LocalTime.MIDNIGHT
+                            def sasTime = sasEpoch.until(expectedValue, ChronoUnit.NANOS) / 1E9D
+
+                            compareCsvValueToNumericValue(BigDecimal.valueOf(sasTime))
 
                         } else if (expectedValue instanceof LocalDateTime) {
                             // The FORMAT for dates is probably to express it numerically.
