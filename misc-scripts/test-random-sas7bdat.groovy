@@ -293,12 +293,19 @@ class TestRandomSas7bdat {
                             } else if (randomNumber < 90) { // 30% chance of a Double
                                 generator.writeNumber(randomNumberGenerator.nextDouble())
 
-                            } else if (randomNumber < 95) { // 5% chance of a LocalDate
+                            } else if (randomNumber < 92) { // 2% chance of a LocalDate
                                 def minDate = LocalDate.of(1920, 1, 1)
                                 def maxDate = LocalDate.of(2100, 1, 1)
                                 def daysInSupportedRange = minDate.until(maxDate, ChronoUnit.DAYS)
                                 def randomDate = minDate.plusDays(randomNumberGenerator.nextLong(daysInSupportedRange))
                                 generator.writeString(randomDate.toString())
+
+                            } else if (randomNumber < 95) { // 3% chance of a LocalDateTime
+                                def minDateTime = LocalDateTime.of(1920, 1, 1, 0, 0)
+                                def maxDateTime = LocalDateTime.of(2100, 1, 1, 0, 0)
+                                def nanosInSupportedRange = minDateTime.until(maxDateTime, ChronoUnit.NANOS)
+                                def randomDateTime = minDateTime.plusNanos(randomNumberGenerator.nextLong(nanosInSupportedRange))
+                                generator.writeString(randomDateTime.toString())
 
                             } else if (randomNumber < 99) { // 4% chance of a MissingValue
                                 def value = randomElement(MissingValue.values().toList())
@@ -494,9 +501,12 @@ class TestRandomSas7bdat {
                                 if (value.startsWith("MissingValue.")) {
                                     // Get corresponding MissingValue
                                     value = MissingValue.valueOf(value.replace("MissingValue.", ""))
-                                } else if (value =~ ~/\d{4}-\d{2}-\d{2}/) {
+                                } else if (value ==~ ~/\d{4}-\d{2}-\d{2}/) {
                                     // Get corresponding LocalDate
                                     value = LocalDate.parse(value)
+                                } else if (value ==~ ~/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{0,9})?)?/) {
+                                    // Get corresponding LocalDateTime
+                                    value = LocalDateTime.parse(value)
                                 } else {
                                     // This isn't a known non-Number representation.
                                     println "ERROR: JSON is malformed: String value \"$value\" given to NUMERIC variable ${variable.name()}"
@@ -709,6 +719,9 @@ class TestRandomSas7bdat {
                         }  else if (value instanceof LocalDate) {
                             groovyLiteral = "LocalDate.parse('$value')"
 
+                        }  else if (value instanceof LocalDateTime) {
+                            groovyLiteral = "LocalDateTime.parse('$value')"
+
                         } else {
                             // Numeric types format themselves
                             groovyLiteral = value.toString()
@@ -782,6 +795,14 @@ class TestRandomSas7bdat {
                     def sasEpoch = LocalDate.of(1960, 1, 1)
                     def sasDate = sasEpoch.until(value, ChronoUnit.DAYS)
                     def number = BigDecimal.valueOf(sasDate)
+
+                    stringBuilder << formatNumericForDataline(variable, number)
+
+                } else if (value instanceof LocalDateTime) {
+                    // A LocalDateTime is formatted a number, seconds since 1960-01-01T00:00.
+                    def sasEpoch = LocalDateTime.of(1960, 1, 1, 0, 0)
+                    def sasDateTime = sasEpoch.until(value, ChronoUnit.NANOS) / 1E9D
+                    def number = BigDecimal.valueOf(sasDateTime)
 
                     stringBuilder << formatNumericForDataline(variable, number)
 
@@ -1144,14 +1165,6 @@ class TestRandomSas7bdat {
                                 return
                             }
 
-                            // The CSV export usually rounds the values to two decimal places.
-                            // Strangely, it doesn't do this always.  I haven't figured out when it when
-                            // it doesn't round, but it seems to be related to size of the dataset and
-                            // the position of the value within the dataset, but not the value itself.
-                            if (csvNumber.scale() == 2) {
-                                expectedNumber = expectedNumber.setScale(2, RoundingMode.HALF_UP)
-                            }
-
                             // When SAS prints the value, it seems to only print 8 digits of precision.
                             // For example 6815000113499998060 is rendered as 6.815000114E18.
                             // To compare the CSV to the expected value, we round our value to the same precision.
@@ -1159,8 +1172,20 @@ class TestRandomSas7bdat {
                             // To account for this, we accept a range.
                             def expectedNumberRoundedDown = expectedNumber.round(new MathContext(csvNumber.precision(), RoundingMode.DOWN))
                             def expectedNumberRoundedUp   = expectedNumber.round(new MathContext(csvNumber.precision(), RoundingMode.UP))
+
+                            // The CSV export usually rounds the values to two decimal places.
+                            // Strangely, it doesn't do this always.  I haven't figured out when it when
+                            // it doesn't round, but it seems to be related to size of the dataset and
+                            // the position of the value within the dataset, but not the value itself.
+                            if (csvNumber.scale() == 2) {
+                                expectedNumberRoundedDown = expectedNumberRoundedDown.setScale(2, RoundingMode.HALF_UP)
+                                expectedNumberRoundedUp   = expectedNumberRoundedUp.setScale(2, RoundingMode.HALF_UP)
+                            }
+
+                            // Account for when the value is negative (when rounding up _decreases_ the number)
                             def minValue = Math.min(expectedNumberRoundedDown, expectedNumberRoundedUp)
                             def maxValue = Math.max(expectedNumberRoundedDown, expectedNumberRoundedUp)
+
                             if (csvNumber < minValue || maxValue < csvNumber) {
                                 errors << """|ERROR: $dataCsv has incorrect value at row ${rowIndex + 1}, column ${columnIndex + 1} (variable "${variable.name}")
                                              |       Expected = $expectedValue (in range $minValue - $maxValue)
@@ -1193,6 +1218,13 @@ class TestRandomSas7bdat {
                             def sasDate = sasEpoch.until(expectedValue, ChronoUnit.DAYS)
 
                             compareCsvValueToNumericValue(BigDecimal.valueOf(sasDate))
+
+                        } else if (expectedValue instanceof LocalDateTime) {
+                            // The FORMAT for dates is probably to express it numerically.
+                            def sasEpoch = LocalDateTime.of(1960, 1, 1, 0, 0)
+                            def sasDateTime = sasEpoch.until(expectedValue, ChronoUnit.NANOS) / 1E9D
+
+                            compareCsvValueToNumericValue(BigDecimal.valueOf(sasDateTime))
 
                         } else if (expectedValue instanceof Number) {
                             compareCsvValueToNumericValue(new BigDecimal(expectedValue.toString()))
