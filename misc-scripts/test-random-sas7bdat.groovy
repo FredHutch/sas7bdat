@@ -36,7 +36,7 @@ class TestRandomSas7bdat {
 
     // Make sure the library has been compiled.
     // It should be relative to this script's location.
-    private static final Path scriptPath = Paths.get(TestRandomSas7bdat.protectionDomain.codeSource.location.path)
+    private static final Path scriptPath = Path.of(TestRandomSas7bdat.protectionDomain.codeSource.location.path)
     static {
         def jarFile
         def targetDir = scriptPath.parent.parent.resolve("target")
