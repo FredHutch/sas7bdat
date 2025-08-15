@@ -177,7 +177,9 @@ public class Sas7bdatExporterTest {
                 LocalTime.of(23, 59, 59, 999_999_999),
                 LocalDateTime.of(1960, 1, 1, 0, 0, 0, 0),
                 LocalDateTime.of(1959, 12, 31, 23, 59, 59, 999_999_999),
-                LocalDateTime.of(2020, 7, 4, 9, 12, 13))) {
+                LocalDateTime.of(2020, 7, 4, 9, 12, 13),
+                LocalDateTime.MIN,
+                LocalDateTime.MAX)) {
                 observations.add(List.of(date.toString(), "", "", "", date));
             }
 
@@ -248,12 +250,25 @@ public class Sas7bdatExporterTest {
                             break;
 
                         case 7:
-                            assertArrayEquals(new Object[] { "1959-12-31T23:59:59.999999999", null, null, null, -1E-9 },
+                            assertArrayEquals(new Object[] { "1959-12-31T23:59:59.999999999", null, null, null,
+                                    -9.999999717180685E-10 },
                                 row);
                             break;
 
                         case 8:
                             assertArrayEquals(new Object[] { "2020-07-04T09:12:13", null, null, null, 1909473133L },
+                                row);
+                            break;
+
+                        case 9:
+                            assertArrayEquals(
+                                new Object[] { LocalDateTime.MIN.toString(), null, null, null, -31557013819977600L },
+                                row);
+                            break;
+
+                        case 10:
+                            assertArrayEquals(
+                                new Object[] { LocalDateTime.MAX.toString(), null, null, null, 31556890148400000L },
                                 row);
                             break;
 

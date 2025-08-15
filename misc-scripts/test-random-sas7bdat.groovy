@@ -793,6 +793,33 @@ class TestRandomSas7bdat {
         return string
     }
 
+    static BigDecimal secondsInRange(Temporal sasEpoch, Temporal temporal) {
+        def number
+        try {
+            // For the best precision, get the number of nanoseconds in the range,
+            // then divide by 1,000,000,000 to get the number of seconds.
+            number = sasEpoch.until(temporal, ChronoUnit.NANOS) / 1E9D
+        } catch (ArithmeticException ignored) {
+            try {
+                // The range contained too many nanoseconds.
+                // Try again with microseconds (with decreased precision).
+                number = sasEpoch.until(temporal, ChronoUnit.MICROS) / 1E6D
+            } catch (ArithmeticException ignored2) {
+                try {
+                    // The range contained too many microseconds.
+                    // Try again with milliseconds (with decreased precision).
+                    number = sasEpoch.until(temporal, ChronoUnit.MILLIS) / 1E3D
+                } catch (ArithmeticException ignored3) {
+                    // The range contained too many milliseconds.
+                    // Try again with seconds (with decreased precision).
+                    number = sasEpoch.until(temporal, ChronoUnit.SECONDS)
+                }
+            }
+        }
+
+        return BigDecimal.valueOf(number)
+    }
+
     // Format an observation as a dataline
     static String formatDataline(variables, observation) {
         StringBuilder stringBuilder = new StringBuilder()
@@ -818,17 +845,13 @@ class TestRandomSas7bdat {
 
                 } else if (value instanceof LocalTime) {
                     // A LocalTime is formatted a number, seconds since midnight.
-                    def sasEpoch = LocalTime.MIDNIGHT
-                    def sasTime = sasEpoch.until(value, ChronoUnit.NANOS) / 1E9D
-                    def number = BigDecimal.valueOf(sasTime)
+                    def number = secondsInRange(LocalTime.MIDNIGHT, value)
 
                     stringBuilder << formatNumericForDataline(variable, number)
 
                 } else if (value instanceof LocalDateTime) {
                     // A LocalDateTime is formatted a number, seconds since 1960-01-01T00:00.
-                    def sasEpoch = LocalDateTime.of(1960, 1, 1, 0, 0)
-                    def sasDateTime = sasEpoch.until(value, ChronoUnit.NANOS) / 1E9D
-                    def number = BigDecimal.valueOf(sasDateTime)
+                    def number = secondsInRange(LocalDateTime.of(1960, 1, 1, 0, 0), value)
 
                     stringBuilder << formatNumericForDataline(variable, number)
 
@@ -1250,17 +1273,15 @@ class TestRandomSas7bdat {
 
                         } else if (expectedValue instanceof LocalTime) {
                             // The FORMAT for dates is probably to express it numerically.
-                            def sasEpoch = LocalTime.MIDNIGHT
-                            def sasTime = sasEpoch.until(expectedValue, ChronoUnit.NANOS) / 1E9D
+                            def number = secondsInRange(LocalTime.MIDNIGHT, expectedValue)
 
-                            compareCsvValueToNumericValue(BigDecimal.valueOf(sasTime))
+                            compareCsvValueToNumericValue(number)
 
                         } else if (expectedValue instanceof LocalDateTime) {
                             // The FORMAT for dates is probably to express it numerically.
-                            def sasEpoch = LocalDateTime.of(1960, 1, 1, 0, 0)
-                            def sasDateTime = sasEpoch.until(expectedValue, ChronoUnit.NANOS) / 1E9D
+                            def number = secondsInRange(LocalDateTime.of(1960, 1, 1, 0, 0), expectedValue)
 
-                            compareCsvValueToNumericValue(BigDecimal.valueOf(sasDateTime))
+                            compareCsvValueToNumericValue(number)
 
                         } else if (expectedValue instanceof Number) {
                             compareCsvValueToNumericValue(new BigDecimal(expectedValue.toString()))

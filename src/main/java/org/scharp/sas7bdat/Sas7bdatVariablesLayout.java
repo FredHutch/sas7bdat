@@ -5,6 +5,7 @@
 package org.scharp.sas7bdat;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -67,17 +68,16 @@ class Sas7bdatVariablesLayout {
         rowLength = rowOffset;
     }
 
-    private static long daysBetween(Temporal epoch, Temporal dateTime) {
-        final long daysSinceSasEpochLong = epoch.until(dateTime, ChronoUnit.DAYS);
+    private static long daysBetween(Temporal startDay, Temporal endDay) {
+        final long daysSinceSasEpochLong = startDay.until(endDay, ChronoUnit.DAYS);
         final double daysSinceSasEpochDouble = Long.valueOf(daysSinceSasEpochLong).doubleValue();
         return Double.doubleToRawLongBits(daysSinceSasEpochDouble);
     }
 
-    private static long secondsBetween(Temporal epoch, Temporal dateTime) {
-        // SAS timestamps support sub-second granularity.
-        final long nanoSecondsSinceSasEpochLong = epoch.until(dateTime, ChronoUnit.NANOS);
-        final double unitsSinceSasEpochDouble = Long.valueOf(nanoSecondsSinceSasEpochLong).doubleValue();
-        return Double.doubleToRawLongBits(unitsSinceSasEpochDouble / 1_000_000_000);
+    private static long secondsBetween(Temporal startTime, Temporal endTime) {
+        Duration range = Duration.between(startTime, endTime);
+        double rangeInSeconds = range.getSeconds() + range.getNano() * 1E-9;
+        return Double.doubleToRawLongBits(rangeInSeconds);
     }
 
     /**
