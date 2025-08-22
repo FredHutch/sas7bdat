@@ -669,12 +669,39 @@ public class Sas7bdatVariablesLayoutTest {
                 + "(CHARACTER values must be of type java.lang.String)",
             exception.getMessage());
 
-        // MissingValue is not legal for CHARACTER variables.
+        // MissingValue is legal for NUMERIC variables but not CHARACTER variables.
         exception = assertThrows(
             IllegalArgumentException.class,
             () -> variablesLayout.writeObservation(actualData, 0, List.of(MissingValue.STANDARD, 100)));
         assertEquals(
             "A org.scharp.sas7bdat.MissingValue was given as a value to the variable named TEXT, which has a CHARACTER type "
+                + "(CHARACTER values must be of type java.lang.String)",
+            exception.getMessage());
+
+        // LocalDate is legal for NUMERIC variables but not CHARACTER variables.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of(LocalDate.EPOCH, 100)));
+        assertEquals(
+            "A java.time.LocalDate was given as a value to the variable named TEXT, which has a CHARACTER type "
+                + "(CHARACTER values must be of type java.lang.String)",
+            exception.getMessage());
+
+        // LocalTime is legal for NUMERIC variables but not CHARACTER variables.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of(LocalTime.MIDNIGHT, 100)));
+        assertEquals(
+            "A java.time.LocalTime was given as a value to the variable named TEXT, which has a CHARACTER type "
+                + "(CHARACTER values must be of type java.lang.String)",
+            exception.getMessage());
+
+        // LocalDateTime is legal for NUMERIC variables but not CHARACTER variables.
+        exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> variablesLayout.writeObservation(actualData, 0, List.of(LocalDateTime.MAX, 100)));
+        assertEquals(
+            "A java.time.LocalDateTime was given as a value to the variable named TEXT, which has a CHARACTER type "
                 + "(CHARACTER values must be of type java.lang.String)",
             exception.getMessage());
 
