@@ -66,3 +66,9 @@ Limitations
 * Requires Java 17 or later.
 * Compression is not supported.
 * Reading SAS7BDAT files is not supported (use the parso library instead).
+
+Downloading
+-----------
+This library is published on Maven Central at https://central.sonatype.com/artifact/org.scharp/sas7bdat
+
+There, you will find instructions for downloading the library and referencing it your Maven application's `pom.xml`.
