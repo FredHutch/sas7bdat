@@ -611,19 +611,19 @@ public class Sas7bdatVariablesLayoutTest {
         Exception exception = assertThrows(
             IllegalArgumentException.class,
             () -> variablesLayout.writeObservation(actualData, 0, List.of()));
-        assertEquals("observation has too many values, expected 2 but got 0", exception.getMessage());
+        assertEquals("observation has too few values, expected 2 but got 0", exception.getMessage());
 
         // Write an observation with too few values
         exception = assertThrows(
             IllegalArgumentException.class,
             () -> variablesLayout.writeObservation(actualData, 0, List.of("bad list")));
-        assertEquals("observation has too many values, expected 2 but got 1", exception.getMessage());
+        assertEquals("observation has too few values, expected 2 but got 1", exception.getMessage());
 
         // Write an observation with too many values, even if the excess variable is null.
         exception = assertThrows(
             IllegalArgumentException.class,
             () -> variablesLayout.writeObservation(actualData, 0, Arrays.asList("bad list", 100, null)));
-        assertEquals("observation has too few values, expected 2 but got 3", exception.getMessage());
+        assertEquals("observation has too many values, expected 2 but got 3", exception.getMessage());
 
         // The exception should not have corrupted the state of the variables layout,
         // so it should be possible to continue.

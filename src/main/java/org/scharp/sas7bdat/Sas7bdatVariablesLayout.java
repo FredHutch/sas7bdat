@@ -103,7 +103,7 @@ class Sas7bdatVariablesLayout {
         if (totalVariables() != observation.size()) {
             throw new IllegalArgumentException(
                 "observation has too " +
-                    (totalVariables() < observation.size() ? "few" : "many") +
+                    (totalVariables() < observation.size() ? "many" : "few") +
                     " values, expected " + totalVariables() + " but got " + observation.size());
         }
 

@@ -1060,19 +1060,19 @@ public class Sas7bdatExporterTest {
                 Exception exception = assertThrows(
                     IllegalArgumentException.class,
                     () -> sas7bdatExporter.writeObservation(List.of()));
-                assertEquals("observation has too many values, expected 2 but got 0", exception.getMessage());
+                assertEquals("observation has too few values, expected 2 but got 0", exception.getMessage());
 
                 // Write an observation with too few values
                 exception = assertThrows(
                     IllegalArgumentException.class,
                     () -> sas7bdatExporter.writeObservation(List.of("bad list")));
-                assertEquals("observation has too many values, expected 2 but got 1", exception.getMessage());
+                assertEquals("observation has too few values, expected 2 but got 1", exception.getMessage());
 
                 // Write an observation with too many values, even if the excess variable is null.
                 exception = assertThrows(
                     IllegalArgumentException.class,
                     () -> sas7bdatExporter.writeObservation(Arrays.asList("bad list", 100, null)));
-                assertEquals("observation has too few values, expected 2 but got 3", exception.getMessage());
+                assertEquals("observation has too many values, expected 2 but got 3", exception.getMessage());
 
                 // The exceptions should not have corrupted the state of the exporter,
                 // so it should be possible to continue exporting the file.
