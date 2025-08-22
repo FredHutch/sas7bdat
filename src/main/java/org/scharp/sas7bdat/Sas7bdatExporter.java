@@ -493,7 +493,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     </table>
      *     <p>
      *     Note that date/time classes within the JDK that have an implicit time zone, such as {@link Instant},
-     *     {@link Time}, and {@link Timestamp}, are illegal because SAS dates, SAS times and SAS timestamps don't have a time zone.
+     *     {@link Time}, and {@link Timestamp}, are illegal because SAS dates, SAS times, and SAS timestamps don't have a time zone.
      *     If they were supported, then {@code Sas7bdatExporter} would have to pick a time zone for the 1960-01-01/midnight epoch.
      *     If it picked the wrong time zone, it would silently alter the data.
      *     </p>
@@ -509,8 +509,8 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     If writing this observation would exceed the {@code totalObservationsInDataset} argument given in the
      *     constructor or if this exporter has already been closed.
      * @throws IllegalArgumentException
-     *     if {@code observation} doesn't contain values that conform to the {@code Sas7bdatMetadata} that was given to
-     *     this exporter's constructor.
+     *     if {@code observation} contains a value that doesn't conform to the {@code Sas7bdatMetadata} that was given
+     *     to this exporter's constructor.
      * @throws IOException
      *     If an I/O error prevented the observation from being written.
      */
@@ -675,7 +675,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     </table>
      *     <p>
      *     Note that date/time classes within the JDK that have an implicit time zone, such as {@link Instant},
-     *     {@link Time}, and {@link Timestamp}, are illegal because SAS dates, SAS times and SAS timestamps don't have a time zone.
+     *     {@link Time}, and {@link Timestamp}, are illegal because SAS dates, SAS times, and SAS timestamps don't have a time zone.
      *     If they were supported, then {@code Sas7bdatExporter} would have to pick a time zone for the 1960-01-01/midnight epoch.
      *     If it picked the wrong time zone, it would silently alter the data.
      *     </p>
@@ -684,7 +684,9 @@ public final class Sas7bdatExporter implements AutoCloseable {
      *     If a file I/O error prevents the dataset from being written.
      * @throws NullPointerException
      *     If {@code targetLocation}, {@code metadata}, or {@code observations} is {@code null}; if {@code observations}
-     *     contains {@code null}, or if {@code null} is given as a variable to a character variable.
+     *     contains {@code null}, or if a {@code null} value is given to a character variable.
+     * @throws IllegalArgumentException
+     *     if {@code observations} contains a value that doesn't conform to {@code metadata}.
      */
     public static void exportDataset(Path targetLocation, Sas7bdatMetadata metadata, List<List<Object>> observations)
         throws IOException {

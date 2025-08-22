@@ -91,10 +91,10 @@ class Sas7bdatVariablesLayout {
      *     A list of values which correspond to the variables that were given in the constructor.
      *
      * @throws NullPointerException
-     *     If {@code observation} has a {@code null} value is given to a variable whose type is
+     *     If {@code observation} has a {@code null} value that is given to a variable whose type is
      *     {@code VariableType.CHARACTER}.
      * @throws IllegalArgumentException
-     *     if {@code observation} doesn't contain values that conforms to the {@code variables} that was given to this
+     *     if {@code observation} contains a value that doesn't conform to the {@code variables} that was given to this
      *     object's constructor.
      */
     void writeObservation(byte[] buffer, int offsetOfObservation, List<Object> observation) {
