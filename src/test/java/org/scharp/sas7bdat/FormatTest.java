@@ -35,6 +35,7 @@ public class FormatTest {
         assertFormat(new Format("FORMAT", 1, 2), "FORMAT", 1, 2, "FORMAT1.2");
         assertFormat(new Format("", 5, 2), "", 5, 2, "5.2");
         assertFormat(new Format("$ASCII", 5, 0), "$ASCII", 5, 0, "$ASCII5.");
+        assertFormat(new Format("$ASCII", 0, 0), "$ASCII", 0, 0, "$ASCII.");
         assertFormat(new Format("PERCENTN", 32, 31), "PERCENTN", 32, 31, "PERCENTN32.31");
         assertFormat(new Format("dollar", 15, 2), "dollar", 15, 2, "dollar15.2");
         assertFormat(new Format(longName, Short.MAX_VALUE, Short.MAX_VALUE), longName, Short.MAX_VALUE, Short.MAX_VALUE,
