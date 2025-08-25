@@ -168,7 +168,7 @@ public enum MissingValue {
     }
 
     /**
-     * Gets the string representation of this missing value, formatted as SAS format it.
+     * Gets the string representation of this missing value, formatted as SAS formats it.
      *
      * @return The string representation of this missing value.
      */
