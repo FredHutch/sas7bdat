@@ -443,11 +443,13 @@ static String getDisplayText(ColumnText columnText, int bitSize, int textSubhead
 void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState) {
     def pageReader = new PageReader(bitSize, fileOffset, page)
     try {
+        long sequenceNumber = pageReader.readInt(0, 0)
         long unknownField = pageReader.readLong(12, 24)
         short pageType = pageReader.readShort(16, 32)
         int totalBlocks = pageReader.readUnsignedShort(18, 34) // treat as "unsigned short"
         short totalSubheaders = pageReader.readShort(20, 36)
 
+        println "  ${pageReader.formatOffset( 0,  0)} Sequence Number  = ${"0x%08X".formatted((int)sequenceNumber)}"
         println "  ${pageReader.formatOffset(12, 24)} Offset 24        = $unknownField"
         println "  ${pageReader.formatOffset(16, 32)} Type             = ${PageType.toString(pageType)}"
         println "  ${pageReader.formatOffset(18, 34)} Total Blocks     = $totalBlocks"
@@ -488,7 +490,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                                 pageReader.printSubheaderField8(subheaderOffset,  48, 96,  "Aggregate Variable Name Size")
                                 pageReader.printSubheaderField8(subheaderOffset,  52, 104, "Page Size")
                                 pageReader.printSubheaderField8(subheaderOffset,  60, 120, "Max Row Count On Mixed Page")
-                                pageReader.printSubheaderField4(subheaderOffset, 220, 440, "Page Sequence Number")
+                                pageReader.printSubheaderField4(subheaderOffset, 220, 440, "Initial Sequence Number")
 
                                 pageReader.printSubheaderField8(subheaderOffset, 252, 488, "Total Repairs")
                                 pageReader.printSubheaderTimestampField(subheaderOffset, 260, 496, "Timestamp of Repair (UTC)")
