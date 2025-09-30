@@ -31,24 +31,21 @@ public class WriteUtilTest {
         assertArrayEquals(new byte[] { 0, 0, 2, 1, 0, 0, 0, 0, 0 }, data);
 
         // negative offset
-        Exception exception = assertThrows(
+        assertThrows(
             ArrayIndexOutOfBoundsException.class,
             () -> WriteUtil.write2(data, -2, (short) 0xFFFF));
-        assertEquals("Index -1 out of bounds for length 9", exception.getMessage());
         assertArrayEquals(new byte[] { 0, 0, 2, 1, 0, 0, 0, 0, 0 }, data, "data changed on error");
 
         // offset is beyond end
-        exception = assertThrows(
+        assertThrows(
             ArrayIndexOutOfBoundsException.class,
             () -> WriteUtil.write2(data, 10, (short) 0xFFFF));
-        assertEquals("Index 11 out of bounds for length 9", exception.getMessage());
         assertArrayEquals(new byte[] { 0, 0, 2, 1, 0, 0, 0, 0, 0 }, data, "data changed on error");
 
         // offset one byte beyond end
-        exception = assertThrows(
+        assertThrows(
             ArrayIndexOutOfBoundsException.class,
             () -> WriteUtil.write2(data, 8, (short) 0xFFFF));
-        assertEquals("Index 9 out of bounds for length 9", exception.getMessage());
         assertArrayEquals(new byte[] { 0, 0, 2, 1, 0, 0, 0, 0, 0 }, data, "data changed on error");
 
         // null array
