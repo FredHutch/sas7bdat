@@ -12,11 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /** Unit tests for {@link PageSequenceGenerator}. */
 public class PageSequenceGeneratorTest {
 
+    /** Tests a known sequence (the one documented in V1.0 of the SAS7BDAT specification) */
     @Test
     void testSequence() {
-
-        // The Page Sequence Generator is hard-coded to always generate the same sequence.
-        // Therefore, the entire sequence can be tested.
         final long[] expectedSequence = {
             0xF4A4_FFF_6L,
             0xF4A4_FFF_7L,
@@ -81,7 +79,32 @@ public class PageSequenceGeneratorTest {
 
         // The initial page sequence shouldn't have changed.
         assertEquals(expectedSequence[0], pageSequenceGenerator.initialPageSequence());
+    }
 
+    @Test
+    void testSequence0() {
+        // Tests the sequence beginning at 0.
+        // This should increment as a "normal" number.
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator(0);
+        for (int i = 0; i < 0x7FFF; i++) {
+            assertEquals(i, pageSequenceGenerator.currentPageSequence(), "page number " + i);
+            pageSequenceGenerator.incrementPageSequence();
+        }
+
+        assertEquals(0, pageSequenceGenerator.initialPageSequence());
+    }
+
+    @Test
+    void testSequenceMinus1() {
+        // Tests the sequence beginning at 0xFFFFFFFF.
+        // This should decrement with each increment.
+        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator(0xFFFFFFFFL);
+        for (int i = 0; i < 0x7FFF; i++) {
+            assertEquals(0xFFFFFFFFL - i, pageSequenceGenerator.currentPageSequence(), "page number " + i);
+            pageSequenceGenerator.incrementPageSequence();
+        }
+
+        assertEquals(0xFFFFFFFFL, pageSequenceGenerator.initialPageSequence());
     }
 
     @Test
