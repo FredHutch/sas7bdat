@@ -87,15 +87,14 @@ class PageSequenceGenerator {
      * @return the current number in this page sequence.
      */
     long currentPageSequence() {
-        return 0xFFFFFFFFL & (
-            (0xF0_00_00_00L & getNibbleInSequence(7) << 28) | // bits 28-32
-                (0x0F_00_00_00L & getNibbleInSequence(6) << 24) | // bits 24-27
-                (0x00_F0_00_00L & getNibbleInSequence(5) << 20) | // bits 20-23
-                (0x00_0F_00_00L & getNibbleInSequence(4) << 16) | // bits 16-19
-                (0x00_00_F0_00L & getNibbleInSequence(3) << 12) | // bits 12-15
-                (0x00_00_0F_00L & getNibbleInSequence(2) << 8) | // bits 8-11
-                (0x00_00_00_F0L & getNibbleInSequence(1) << 4) | // bits 4-7
-                (0x00_00_00_0FL & getNibbleInSequence(0))); // bits 0-3
+        return (getNibbleInSequence(7) << 28) | // bits 28-32
+            (getNibbleInSequence(6) << 24) | // bits 24-27
+            (getNibbleInSequence(5) << 20) | // bits 20-23
+            (getNibbleInSequence(4) << 16) | // bits 16-19
+            (getNibbleInSequence(3) << 12) | // bits 12-15
+            (getNibbleInSequence(2) << 8) | // bits 8-11
+            (getNibbleInSequence(1) << 4) | // bits 4-7
+            (getNibbleInSequence(0)); // bits 0-3
     }
 
     /**
