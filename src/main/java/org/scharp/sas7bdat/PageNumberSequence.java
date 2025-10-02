@@ -16,8 +16,7 @@ class PageNumberSequence {
      * Create a new page number sequence that starts at a given value.
      *
      * @param initialValue
-     *     the XOR mask to apply to each value in the sequence.  Since a sequence starts at 0, this is also the initial
-     *     value.
+     *     This is also the initial value in the page number sequence.
      */
     PageNumberSequence(long initialValue) {
         this.initialValue = initialValue;
