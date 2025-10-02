@@ -137,7 +137,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
 
         // The page size should not have changed.
         assertEquals(pageSize, page.pageSize());
@@ -204,7 +204,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
 
         // The page size should not have changed.
         assertEquals(pageSize, page.pageSize());
@@ -252,7 +252,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
 
         // The page size should not have changed.
         assertEquals(pageSize, page.pageSize());
@@ -312,7 +312,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.initialPageSequence(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
     }
 
     @Test

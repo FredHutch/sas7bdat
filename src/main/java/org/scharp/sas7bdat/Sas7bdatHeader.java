@@ -79,7 +79,7 @@ class Sas7bdatHeader {
         String datasetName, LocalDateTime creationDate, int totalPages) {
         this.headerSize = headerSize;
         this.pageSize = pageSize;
-        this.initialPageSequenceNumber = pageSequenceGenerator.initialPageSequence();
+        this.initialPageSequenceNumber = pageSequenceGenerator.mask();
         this.datasetName = datasetName;
         this.creationDate = creationDate;
         this.totalPages = totalPages;

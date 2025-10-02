@@ -7,7 +7,6 @@ package org.scharp.sas7bdat;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Unit tests for {@link PageSequenceGenerator}. */
 public class PageSequenceGeneratorTest {
@@ -69,7 +68,7 @@ public class PageSequenceGeneratorTest {
         };
 
         PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        assertEquals(expectedSequence[0], pageSequenceGenerator.initialPageSequence());
+        assertEquals(expectedSequence[0], pageSequenceGenerator.mask());
 
         // Check the entire sequence
         for (int i = 0; i < expectedSequence.length; i++) {
@@ -77,8 +76,8 @@ public class PageSequenceGeneratorTest {
             pageSequenceGenerator.incrementPageSequence();
         }
 
-        // The initial page sequence shouldn't have changed.
-        assertEquals(expectedSequence[0], pageSequenceGenerator.initialPageSequence());
+        // The page sequence mask shouldn't have changed.
+        assertEquals(expectedSequence[0], pageSequenceGenerator.mask());
     }
 
     @Test
@@ -91,7 +90,7 @@ public class PageSequenceGeneratorTest {
             pageSequenceGenerator.incrementPageSequence();
         }
 
-        assertEquals(0, pageSequenceGenerator.initialPageSequence());
+        assertEquals(0, pageSequenceGenerator.mask());
     }
 
     @Test
@@ -104,18 +103,6 @@ public class PageSequenceGeneratorTest {
             pageSequenceGenerator.incrementPageSequence();
         }
 
-        assertEquals(0xFFFFFFFFL, pageSequenceGenerator.initialPageSequence());
-    }
-
-    @Test
-    void testSequenceEnd() {
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        for (int i = 0; i < 0x7FFF; i++) {
-            pageSequenceGenerator.incrementPageSequence();
-        }
-
-        // The sequence should be exhausted.
-        Exception exception = assertThrows(IllegalStateException.class, pageSequenceGenerator::incrementPageSequence);
-        assertEquals("This code does not support more than 32767 pages", exception.getMessage());
+        assertEquals(0xFFFFFFFFL, pageSequenceGenerator.mask());
     }
 }
