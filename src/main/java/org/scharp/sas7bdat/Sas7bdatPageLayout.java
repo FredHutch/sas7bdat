@@ -21,7 +21,7 @@ import java.util.List;
  * </ol>
  */
 class Sas7bdatPageLayout {
-    private final PageSequenceGenerator pageSequenceGenerator;
+    private final PageNumberSequence pageNumberSequence;
     final int pageSize;
     private final Sas7bdatVariablesLayout variablesLayout;
     final ColumnText columnText;
@@ -29,14 +29,14 @@ class Sas7bdatPageLayout {
 
     Sas7bdatPage currentMetadataPage;
 
-    Sas7bdatPageLayout(PageSequenceGenerator pageSequenceGenerator, Sas7bdatVariablesLayout variablesLayout) {
-        this.pageSequenceGenerator = pageSequenceGenerator;
+    Sas7bdatPageLayout(PageNumberSequence pageNumberSequence, Sas7bdatVariablesLayout variablesLayout) {
+        this.pageNumberSequence = pageNumberSequence;
         this.pageSize = Sas7bdatPage.calculatePageSize(variablesLayout);
         this.variablesLayout = variablesLayout;
         this.columnText = new ColumnText(this);
 
         completeMetadataPages = new ArrayList<>();
-        currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+        currentMetadataPage = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
     }
 
     private void finalizeSubheadersOnCurrentMetadataPage() {
@@ -53,7 +53,7 @@ class Sas7bdatPageLayout {
             finalizeSubheadersOnCurrentMetadataPage();
 
             // Create a new page.
-            currentMetadataPage = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+            currentMetadataPage = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
             // Add the subheader to the new page.
             boolean success = currentMetadataPage.addSubheader(subheader);

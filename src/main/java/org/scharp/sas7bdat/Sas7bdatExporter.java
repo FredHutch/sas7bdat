@@ -153,7 +153,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
     private final OutputStream outputStream;
     private final Sas7bdatVariablesLayout variablesLayout;
     private final int totalObservationsInDataset;
-    private final PageSequenceGenerator pageSequenceGenerator;
+    private final PageNumberSequence pageNumberSequence;
     private final byte[] pageBuffer;
 
     private int totalObservationsWritten;
@@ -178,7 +178,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         // Add the subheaders in the order in which they should be listed in the subheaders index.
         // Note that this is the reverse order in which they appear on a metadata page.
         RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(
-            pageSequenceGenerator,
+            pageNumberSequence,
             paddedDatasetType,
             metadata.datasetLabel(),
             variablesLayout,
@@ -307,7 +307,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         // Write the file header.
         {
             Sas7bdatHeader header = new Sas7bdatHeader(
-                pageSequenceGenerator,
+                pageNumberSequence,
                 pageLayout.pageSize, // SAS uses the same value for page size and header size
                 pageLayout.pageSize,
                 metadata.datasetName(),
@@ -366,10 +366,10 @@ public final class Sas7bdatExporter implements AutoCloseable {
         this.outputStream = outputStream;
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;
-        pageSequenceGenerator = new PageSequenceGenerator();
+        pageNumberSequence = new PageNumberSequence();
 
         // Create the metadata for this dataset.
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         pageBuffer = new byte[pageLayout.pageSize];
 
         // Write the header and metadata pages.
@@ -413,10 +413,10 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;
-        pageSequenceGenerator = new PageSequenceGenerator();
+        pageNumberSequence = new PageNumberSequence();
 
         // Create the metadata for this dataset.
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         pageBuffer = new byte[pageLayout.pageSize];
 
         outputStream = Files.newOutputStream(targetLocation);
@@ -535,7 +535,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
             writePage(currentPage);
 
             // Start a new data page.
-            currentPage = new Sas7bdatPage(pageSequenceGenerator, currentPage.pageSize(), variablesLayout);
+            currentPage = new Sas7bdatPage(pageNumberSequence, currentPage.pageSize(), variablesLayout);
             currentPage.finalizeSubheaders(); // a data page has no subheaders
 
             // Write the observation to the new page.

@@ -50,8 +50,8 @@ public class Sas7bdatPageTest {
 
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
         assertEquals(pageSize - 40, page.totalBytesRemaining());
@@ -137,7 +137,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageNumberSequence.initialValue(), pageNumberSequence.currentPageNumber());
 
         // The page size should not have changed.
         assertEquals(pageSize, page.pageSize());
@@ -146,10 +146,10 @@ public class Sas7bdatPageTest {
     @Test
     void testMixedPage() {
         // Create a sas7bdat page
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(4);
         final int pageSize = 0x10000;
-        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
         assertEquals(pageSize - 40, page.totalBytesRemaining());
@@ -204,7 +204,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageNumberSequence.initialValue(), pageNumberSequence.currentPageNumber());
 
         // The page size should not have changed.
         assertEquals(pageSize, page.pageSize());
@@ -213,10 +213,10 @@ public class Sas7bdatPageTest {
     @Test
     void testDataPage() {
         // Create a sas7bdat page
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(11);
         final int pageSize = 0x10000;
-        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
         assertEquals(pageSize - 40, page.totalBytesRemaining());
@@ -252,7 +252,7 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageNumberSequence.initialValue(), pageNumberSequence.currentPageNumber());
 
         // The page size should not have changed.
         assertEquals(pageSize, page.pageSize());
@@ -265,9 +265,9 @@ public class Sas7bdatPageTest {
     void testSetIsFinalMetadataPage() {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
-        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
         assertEquals(pageSize - 40 - 24 * 2, page.totalBytesRemainingForNewSubheader());
 
@@ -312,16 +312,16 @@ public class Sas7bdatPageTest {
         assertArrayEquals(expectedData, actualData, "Sas7bdatPage.write() wrote incorrect data");
 
         // The page sequence should have been incremented.
-        assertNotEquals(pageSequenceGenerator.mask(), pageSequenceGenerator.currentPageSequence());
+        assertNotEquals(pageNumberSequence.initialValue(), pageNumberSequence.currentPageNumber());
     }
 
     @Test
     void testSubheaders() {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
-        Sas7bdatPage page = new Sas7bdatPage(pageSequenceGenerator, pageSize, variablesLayout);
+        Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
         // The subheaders should be empty.
         List<Subheader> subheaders = page.subheaders();

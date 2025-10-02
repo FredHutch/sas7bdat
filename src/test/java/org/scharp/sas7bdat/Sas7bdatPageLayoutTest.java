@@ -18,10 +18,10 @@ public class Sas7bdatPageLayoutTest {
     @Test
     void smokeTest() {
         // Create a Sas7bdatPageLayout
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
 
         assertEquals(0x10000, pageLayout.pageSize);
 

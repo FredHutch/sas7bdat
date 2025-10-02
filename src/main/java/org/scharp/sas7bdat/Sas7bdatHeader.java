@@ -70,16 +70,16 @@ class Sas7bdatHeader {
 
     private final int headerSize;
     private final int pageSize;
-    private final long initialPageSequenceNumber;
+    private final long initialPageNumber;
     private final String datasetName;
     private final LocalDateTime creationDate;
     private final int totalPages;
 
-    Sas7bdatHeader(PageSequenceGenerator pageSequenceGenerator, int headerSize, int pageSize,
+    Sas7bdatHeader(PageNumberSequence pageNumberSequence, int headerSize, int pageSize,
         String datasetName, LocalDateTime creationDate, int totalPages) {
         this.headerSize = headerSize;
         this.pageSize = pageSize;
-        this.initialPageSequenceNumber = pageSequenceGenerator.mask();
+        this.initialPageNumber = pageNumberSequence.initialValue();
         this.datasetName = datasetName;
         this.creationDate = creationDate;
         this.totalPages = totalPages;
@@ -228,8 +228,8 @@ class Sas7bdatHeader {
         write8(data, 304 + doubleAlignmentOffset + intAlignmentOffset, 0);
         write8(data, 312 + doubleAlignmentOffset + intAlignmentOffset, 0);
 
-        // This seems to be a kind of sequence number.
-        write8(data, 320 + doubleAlignmentOffset + intAlignmentOffset, initialPageSequenceNumber);
+        // The number assigned to the first page.
+        write8(data, 320 + doubleAlignmentOffset + intAlignmentOffset, initialPageNumber);
 
         // A third timestamp.
         write8(data, 328 + doubleAlignmentOffset + intAlignmentOffset, ieee754SasDate);

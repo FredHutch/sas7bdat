@@ -18,7 +18,7 @@ class RowSizeSubheader extends FixedSizeSubheader {
     private final String datasetLabel;
     private final int totalObservationsInDataset;
     private final Sas7bdatPageLayout pageLayout;
-    private final long pageSequenceMask;
+    private final long initialPageNumber;
 
     private final int rowSizeInBytes;
     private final int totalVariableNameLength;
@@ -30,8 +30,8 @@ class RowSizeSubheader extends FixedSizeSubheader {
     /**
      * Creates a Row Size Subheader
      *
-     * @param pageSequenceGenerator
-     *     The page sequence generator.  This is not incremented; it is used for the initial page sequence.
+     * @param pageNumberSequence
+     *     The page number sequence.  This is not incremented; it is used for the initial page sequence.
      * @param datasetType
      *     The dataset type.  This string must be added to {@code pageLayout}'s ColumnText before this subheader is
      *     written.
@@ -46,13 +46,13 @@ class RowSizeSubheader extends FixedSizeSubheader {
      * @param totalObservationsInDataset
      *     The total number of observations in the dataset.
      */
-    RowSizeSubheader(PageSequenceGenerator pageSequenceGenerator, String datasetType, String datasetLabel,
+    RowSizeSubheader(PageNumberSequence pageNumberSequence, String datasetType, String datasetLabel,
         Sas7bdatVariablesLayout variablesLayout, Sas7bdatPageLayout pageLayout, int totalObservationsInDataset) {
         this.datasetType = datasetType;
         this.datasetLabel = datasetLabel;
         this.totalObservationsInDataset = totalObservationsInDataset;
         this.pageLayout = pageLayout; // this is filled in later by the caller
-        this.pageSequenceMask = pageSequenceGenerator.mask();
+        this.initialPageNumber = pageNumberSequence.initialValue();
 
         // Calculate some properties from the variables layout.
         int totalVariableNameLength = 0;
@@ -227,7 +227,7 @@ class RowSizeSubheader extends FixedSizeSubheader {
         write8(page, subheaderOffset + 424, 0x00); // zero
         write8(page, subheaderOffset + 432, 0x00); // zero
 
-        write8(page, subheaderOffset + 440, pageSequenceMask); // page sequence mask, also first number in sequence
+        write8(page, subheaderOffset + 440, initialPageNumber); // the first number in the page number sequence
 
         write8(page, subheaderOffset + 448, 0x00);
         write8(page, subheaderOffset + 456, 0x00);

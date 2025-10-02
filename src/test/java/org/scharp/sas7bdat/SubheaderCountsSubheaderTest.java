@@ -21,9 +21,9 @@ public class SubheaderCountsSubheaderTest {
     @Test
     void testSignature() {
         // Create a SubheaderCountsSubheader
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         assertEquals(SIGNATURE_SUBHEADER_COUNTS, subheaderCountsSubheader.signature());
@@ -32,9 +32,9 @@ public class SubheaderCountsSubheaderTest {
     @Test
     void testTypeCode() {
         // Create a SubheaderCountsSubheader
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         assertEquals(SUBHEADER_TYPE_A, subheaderCountsSubheader.typeCode());
@@ -43,9 +43,9 @@ public class SubheaderCountsSubheaderTest {
     @Test
     void testCompressionCode() {
         // Create a SubheaderCountsSubheader
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, subheaderCountsSubheader.compressionCode());
@@ -85,9 +85,9 @@ public class SubheaderCountsSubheaderTest {
                 label("label").
                 build());
 
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         // Add the subheaders that get counted to the metadata.
@@ -259,9 +259,9 @@ public class SubheaderCountsSubheaderTest {
                 outputFormat(new Format("OUTPUT", 8, 2)).
                 inputFormat(new Format("INPUT", 9, 6)).
                 build());
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
 
         final byte[] expectedSubheaderData = new byte[] {

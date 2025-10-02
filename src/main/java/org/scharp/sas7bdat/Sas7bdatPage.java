@@ -33,7 +33,7 @@ class Sas7bdatPage {
     private static final int SUBHEADER_OFFSET_SIZE_64BIT = 24;
 
     private final int pageSize;
-    private final long pageSequenceNumber;
+    private final long pageNumber;
     private final List<Subheader> subheaders;
     private final List<byte[]> observations;
     private final Sas7bdatVariablesLayout variablesLayout;
@@ -43,12 +43,12 @@ class Sas7bdatPage {
     private int endOfDataSection;
     private int maxObservations; // also a flag to indicate if subheaders are finalized
 
-    Sas7bdatPage(PageSequenceGenerator pageSequenceGenerator, int pageSize,
+    Sas7bdatPage(PageNumberSequence pageNumberSequence, int pageSize,
         Sas7bdatVariablesLayout variablesLayout) {
         this.pageSize = pageSize;
 
-        pageSequenceGenerator.incrementPageSequence();
-        this.pageSequenceNumber = pageSequenceGenerator.currentPageSequence();
+        pageNumberSequence.incrementPageNumber();
+        this.pageNumber = pageNumberSequence.currentPageNumber();
         this.variablesLayout = variablesLayout;
 
         subheaders = new ArrayList<>();
@@ -185,7 +185,7 @@ class Sas7bdatPage {
 
     void write(byte[] data) {
         assert data.length == pageSize : "data is not sized correctly: " + data.length;
-        write8(data, 0, pageSequenceNumber);
+        write8(data, 0, pageNumber);
 
         write8(data, 8, 0); // unknown purpose
         write8(data, 16, 0); // unknown purpose

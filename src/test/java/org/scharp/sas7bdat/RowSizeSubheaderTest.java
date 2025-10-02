@@ -21,11 +21,11 @@ public class RowSizeSubheaderTest {
     @Test
     void testSignature() {
         // Create a RowSizeSubheader
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
 
         assertEquals(SIGNATURE_ROW_SIZE, rowSizeSubheader.signature());
@@ -34,11 +34,11 @@ public class RowSizeSubheaderTest {
     @Test
     void testTypeCode() {
         // Create a RowSizeSubheader
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
 
         assertEquals(SUBHEADER_TYPE_A, rowSizeSubheader.typeCode());
@@ -47,11 +47,11 @@ public class RowSizeSubheaderTest {
     @Test
     void testCompressionCode() {
         // Create a RowSizeSubheader
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("VAR").type(VariableType.CHARACTER).length(1).build()));
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE", "dataset label",
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "TYPE", "dataset label",
             variablesLayout, pageLayout, 0);
 
         assertEquals(COMPRESSION_UNCOMPRESSED, rowSizeSubheader.compressionCode());
@@ -90,10 +90,10 @@ public class RowSizeSubheaderTest {
                 length(8).
                 label("label").
                 build());
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TYPE    ", "dataset label",
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "TYPE    ", "dataset label",
             variablesLayout, pageLayout, 0x12456);
 
         pageLayout.addSubheader(rowSizeSubheader);
@@ -297,10 +297,10 @@ public class RowSizeSubheaderTest {
         // Create a RowSizeSubheader
         List<Variable> variableList = List.of(
             Variable.builder().name("V").type(VariableType.NUMERIC).length(8).build());
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "", "", variablesLayout,
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "", "", variablesLayout,
             pageLayout, 0);
 
         pageLayout.addSubheader(rowSizeSubheader);
@@ -477,10 +477,10 @@ public class RowSizeSubheaderTest {
         List<Variable> variableList = List.of(
             Variable.builder().name("VAR1").type(VariableType.CHARACTER).length(Short.MAX_VALUE).build(),
             Variable.builder().name("VAR2").type(VariableType.CHARACTER).length(1).build());
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TESTDATA", "no mixed page",
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "TESTDATA", "no mixed page",
             variablesLayout, pageLayout, 1);
 
         pageLayout.addSubheader(rowSizeSubheader);
@@ -662,10 +662,10 @@ public class RowSizeSubheaderTest {
         // Create a RowSizeSubheader with variables that are 1 byte.
         List<Variable> variableList = List.of(
             Variable.builder().name("variable").type(VariableType.CHARACTER).length(1).build());
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
-        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageSequenceGenerator, "TESTDATA", "no data page",
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        RowSizeSubheader rowSizeSubheader = new RowSizeSubheader(pageNumberSequence, "TESTDATA", "no data page",
             variablesLayout, pageLayout, 256);
 
         pageLayout.addSubheader(rowSizeSubheader);

@@ -21,9 +21,9 @@ public class ColumnTextTest {
     @Test
     void smokeTest() {
         // Create a ColumnText
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // Add a long string to the ColumnTextSubheader
@@ -132,9 +132,9 @@ public class ColumnTextTest {
      */
     static int totalNumberUuidsToFillFirstColumnTextSubheader() {
         // Create a ColumnText
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);
 
         // We want to determine how many strings must be added before the first ColumnTextSubheader is full.
@@ -158,9 +158,9 @@ public class ColumnTextTest {
         // Therefore, we want a ColumnTextSubheader to be filled before adding the string.
 
         // Create a ColumnText
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageSequenceGenerator, variablesLayout);
+        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
 
         // Add a subheader to the page such that, when ColumnText adds the first subheader
         // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next

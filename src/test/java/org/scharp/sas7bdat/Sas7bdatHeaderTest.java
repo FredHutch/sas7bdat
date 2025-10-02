@@ -16,11 +16,11 @@ public class Sas7bdatHeaderTest {
 
     @Test
     public void smokeTest() {
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        long currentPageSequence = pageSequenceGenerator.currentPageSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        long currentPageSequence = pageNumberSequence.currentPageNumber();
         int headerSize = 512;
         Sas7bdatHeader header = new Sas7bdatHeader(
-            pageSequenceGenerator,
+            pageNumberSequence,
             headerSize, // header size
             0x10000, // page size
             "dataset_name", // dataset name
@@ -104,20 +104,20 @@ public class Sas7bdatHeaderTest {
             data);
 
         // The page sequence number should not have been incremented.
-        assertEquals(currentPageSequence, pageSequenceGenerator.currentPageSequence());
+        assertEquals(currentPageSequence, pageNumberSequence.currentPageNumber());
     }
 
     @Test
     public void testMaxSizedFields() {
-        PageSequenceGenerator pageSequenceGenerator = new PageSequenceGenerator();
-        long currentPageSequence = pageSequenceGenerator.currentPageSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        long currentPageSequence = pageNumberSequence.currentPageNumber();
         int headerSize = 512;
 
         final String sigma = "\u03C3"; // GREEK SMALL LETTER SIGMA (two bytes in UTF-8)
         String longDatasetName = sigma + "x".repeat(61) + "!";
 
         Sas7bdatHeader header = new Sas7bdatHeader(
-            pageSequenceGenerator,
+            pageNumberSequence,
             headerSize, // header size
             0x20000, // page size
             longDatasetName, // dataset name
@@ -201,6 +201,6 @@ public class Sas7bdatHeaderTest {
             data);
 
         // The page sequence number should not have been incremented.
-        assertEquals(currentPageSequence, pageSequenceGenerator.currentPageSequence());
+        assertEquals(currentPageSequence, pageNumberSequence.currentPageNumber());
     }
 }

@@ -7,49 +7,46 @@ package org.scharp.sas7bdat;
 /**
  * A class for generating the page numbers that appear on each page of a SAS7BDAT file.
  */
-class PageSequenceGenerator {
+class PageNumberSequence {
 
-    private final long mask;
+    private final long initialValue;
     private int pageSequenceIndex;
 
     /**
-     * Create a new page number sequence generator that starts at a given value.
+     * Create a new page number sequence that starts at a given value.
      *
-     * @param mask
+     * @param initialValue
      *     the XOR mask to apply to each value in the sequence.  Since a sequence starts at 0, this is also the initial
      *     value.
      */
-    PageSequenceGenerator(long mask) {
-        this.mask = mask;
+    PageNumberSequence(long initialValue) {
+        this.initialValue = initialValue;
         pageSequenceIndex = 0;
     }
 
     /** Create a new page number sequence generator that can be used to create legal page sequence */
-    PageSequenceGenerator() {
+    PageNumberSequence() {
         this(0xF4_A4_FF_F6L); // for compatibility with v0.9 of this library
     }
 
     /**
-     * @return the XOR mask used by this sequence.
+     * @return the initial value in this sequence.
      */
-    long mask() {
-        return mask;
+    long initialValue() {
+        return initialValue;
     }
 
     /**
-     * @return the current number in this page sequence.
+     * @return the current page number in this sequence.
      */
-    long currentPageSequence() {
-        return mask ^ pageSequenceIndex;
+    long currentPageNumber() {
+        return initialValue ^ pageSequenceIndex;
     }
 
     /**
-     * Increments this the current number of this sequence to the next number in the sequence.
-     *
-     * @throws IllegalStateException
-     *     if the page sequence has been exhausted.
+     * Increments the current number in this sequence to the next number in the sequence.
      */
-    void incrementPageSequence() {
+    void incrementPageNumber() {
         pageSequenceIndex++;
     }
 }
