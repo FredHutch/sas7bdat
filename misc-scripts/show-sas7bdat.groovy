@@ -15,12 +15,14 @@ class Header {
     final int headerSize
     final int pageSize
     final int totalPages
+    final int pageNumberMask
 
-    Header(int bitSize, int headerSize, int pageSize, int totalPages) {
-        this.bitSize    = bitSize
-        this.headerSize = headerSize
-        this.pageSize   = pageSize
-        this.totalPages = totalPages
+    Header(int bitSize, int headerSize, int pageSize, int totalPages, int pageNumberMask) {
+        this.bitSize        = bitSize
+        this.headerSize     = headerSize
+        this.pageSize       = pageSize
+        this.totalPages     = totalPages
+        this.pageNumberMask = pageNumberMask
     }
 
     private static int toggleEndian(int i) {
@@ -61,11 +63,16 @@ class Header {
             int pageSize = toggleEndian(inputStream.readInt())
             int totalPages = toggleEndian(inputStream.readInt())
 
-            // Jump to the end of the header, which should be the first metadata page.
+            // Advance to the offset of the page number mask and read it.
             int currentOffset = headerSizeOffset + 4 + 4 + 4
-            inputStream.skipNBytes(headerSize - currentOffset)
+            int pageNumberMaskOffset = 320 + (bitSize == 32 ? 0 : 8)
+            inputStream.skipNBytes(pageNumberMaskOffset - currentOffset)
+            int pageNumberMask = toggleEndian(inputStream.readInt())
 
-            return new Header(bitSize, headerSize, pageSize, totalPages)
+            // Advance the input stream to the end of the header.
+            inputStream.readNBytes(headerSize - pageNumberMaskOffset - 4)
+
+            return new Header(bitSize, headerSize, pageSize, totalPages, pageNumberMask)
 
         } catch (EOFException exception) {
             println "ERROR: $sas7bdatFile is too small to have a legal header"
@@ -443,17 +450,17 @@ static String getDisplayText(ColumnText columnText, int bitSize, int textSubhead
 void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState) {
     def pageReader = new PageReader(bitSize, fileOffset, page)
     try {
-        long sequenceNumber = pageReader.readInt(0, 0)
+        int maskedPageNumber = pageReader.readInt(0, 0)
         long unknownField = pageReader.readLong(12, 24)
         short pageType = pageReader.readShort(16, 32)
         int totalBlocks = pageReader.readUnsignedShort(18, 34) // treat as "unsigned short"
         short totalSubheaders = pageReader.readShort(20, 36)
 
-        println "  ${pageReader.formatOffset( 0,  0)} Sequence Number  = ${"0x%08X".formatted((int)sequenceNumber)}"
-        println "  ${pageReader.formatOffset(12, 24)} Offset 24        = $unknownField"
-        println "  ${pageReader.formatOffset(16, 32)} Type             = ${PageType.toString(pageType)}"
-        println "  ${pageReader.formatOffset(18, 34)} Total Blocks     = $totalBlocks"
-        println "  ${pageReader.formatOffset(20, 36)} Total Subheaders = ${totalSubheaders < 0 ? "$totalSubheaders <--- malformed" : totalSubheaders}"
+        println "  ${pageReader.formatOffset( 0,  0)} Masked Page Number = ${"0x%08X".formatted(maskedPageNumber)}"
+        println "  ${pageReader.formatOffset(12, 24)} Offset 24          = $unknownField"
+        println "  ${pageReader.formatOffset(16, 32)} Type               = ${PageType.toString(pageType)}"
+        println "  ${pageReader.formatOffset(18, 34)} Total Blocks       = $totalBlocks"
+        println "  ${pageReader.formatOffset(20, 36)} Total Subheaders   = ${totalSubheaders < 0 ? "$totalSubheaders <--- malformed" : totalSubheaders}"
 
         // Read each subheader
         int indexOffset = bitSize == 32 ? 24 : 40
@@ -490,7 +497,7 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                                 pageReader.printSubheaderField8(subheaderOffset,  48, 96,  "Aggregate Variable Name Size")
                                 pageReader.printSubheaderField8(subheaderOffset,  52, 104, "Page Size")
                                 pageReader.printSubheaderField8(subheaderOffset,  60, 120, "Max Row Count On Mixed Page")
-                                pageReader.printSubheaderField4(subheaderOffset, 220, 440, "Initial Sequence Number")
+                                pageReader.printSubheaderField4(subheaderOffset, 220, 440, "First Masked Page Number")
 
                                 pageReader.printSubheaderField8(subheaderOffset, 252, 488, "Total Repairs")
                                 pageReader.printSubheaderTimestampField(subheaderOffset, 260, 496, "Timestamp of Repair (UTC)")
@@ -795,9 +802,10 @@ sas7BdatFile.withDataInputStream { inputStream ->
     // The file starts at the header.
     Header header = Header.parse(sas7BdatFile, inputStream)
     println "${formatOffset(0)} Header"
-    println "  ${formatOffset(200)} Header Size = $header.headerSize (${'%#X'.formatted(header.headerSize)})"
-    println "  ${formatOffset(204)} Page Size   = $header.pageSize (${'%#X'.formatted(header.pageSize)})"
-    println "  ${formatOffset(208)} Total Pages = $header.totalPages"
+    println "  ${formatOffset(200)} Header Size      = $header.headerSize (${'%#X'.formatted(header.headerSize)})"
+    println "  ${formatOffset(204)} Page Size        = $header.pageSize (${'%#X'.formatted(header.pageSize)})"
+    println "  ${formatOffset(208)} Total Pages      = $header.totalPages"
+    println "  ${formatOffset(208)} Page Number Mask = ${'%#X'.formatted(header.pageNumberMask)}"
 
     int fileOffset = header.headerSize
 

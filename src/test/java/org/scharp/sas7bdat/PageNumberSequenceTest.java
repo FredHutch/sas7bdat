@@ -11,11 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /** Unit tests for {@link PageNumberSequence}. */
 public class PageNumberSequenceTest {
 
-    /** Tests a known sequence (the one documented in V1.0 of the SAS7BDAT specification) */
+    /** Tests a known sequence */
     @Test
     void testSequence() {
         final long[] expectedSequence = {
-            0xF4A4_FFF_6L,
             0xF4A4_FFF_7L,
             0xF4A4_FFF_4L,
             0xF4A4_FFF_5L,
@@ -67,42 +66,46 @@ public class PageNumberSequenceTest {
             0xF4A4_FFD_9L,
         };
 
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xF4A4_FFF_6L);
+        assertEquals(0xF4A4_FFF_6L, pageNumberSequence.mask());
         assertEquals(expectedSequence[0], pageNumberSequence.initialValue());
 
-        // Check the entire sequence
+        // Check the known portion of the sequence
         for (int i = 0; i < expectedSequence.length; i++) {
             assertEquals(expectedSequence[i], pageNumberSequence.currentPageNumber(), "page number " + i);
             pageNumberSequence.incrementPageNumber();
         }
 
-        // The initial value in the page number sequence shouldn't have changed.
+        // The mask and the initial value in the page number sequence shouldn't have changed.
+        assertEquals(0xF4A4_FFF_6L, pageNumberSequence.mask());
         assertEquals(expectedSequence[0], pageNumberSequence.initialValue());
     }
 
     @Test
     void testSequence0() {
-        // Tests the sequence beginning at 0.
+        // Tests the sequence beginning at 1.
         // This should increment as a "normal" number.
         PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
-        for (int i = 0; i < 0x7FFF; i++) {
+        for (int i = 1; i < 0x10001; i++) {
             assertEquals(i, pageNumberSequence.currentPageNumber(), "page number " + i);
             pageNumberSequence.incrementPageNumber();
         }
 
-        assertEquals(0, pageNumberSequence.initialValue());
+        assertEquals(0, pageNumberSequence.mask());
+        assertEquals(1, pageNumberSequence.initialValue());
     }
 
     @Test
     void testSequenceMinus1() {
-        // Tests the sequence beginning at 0xFFFFFFFF.
-        // This should decrement with each increment.
-        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFFL);
-        for (int i = 0; i < 0x7FFF; i++) {
-            assertEquals(0xFFFFFFFFL - i, pageNumberSequence.currentPageNumber(), "page number " + i);
+        // Tests the sequence whose mask is all 1 (0xFFFFFFFFFFFFFFFF).
+        // This should start at -2 and decrement by 1.
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFFFFFFFFFFL);
+        for (long i = 1; i < 0x10001; i++) {
+            assertEquals(-i - 1, pageNumberSequence.currentPageNumber(), "page number " + i);
             pageNumberSequence.incrementPageNumber();
         }
 
-        assertEquals(0xFFFFFFFFL, pageNumberSequence.initialValue());
+        assertEquals(-1, pageNumberSequence.mask());
+        assertEquals(-2, pageNumberSequence.initialValue());
     }
 }

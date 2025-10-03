@@ -366,7 +366,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         this.outputStream = outputStream;
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;
-        pageNumberSequence = new PageNumberSequence();
+        pageNumberSequence = new PageNumberSequence(0xFE_DC_BA_98L);
 
         // Create the metadata for this dataset.
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
@@ -413,7 +413,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
 
         variablesLayout = new Sas7bdatVariablesLayout(metadata.variables());
         this.totalObservationsInDataset = totalObservationsInDataset;
-        pageNumberSequence = new PageNumberSequence();
+        pageNumberSequence = new PageNumberSequence(0xFE_DC_BA_98L);
 
         // Create the metadata for this dataset.
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);

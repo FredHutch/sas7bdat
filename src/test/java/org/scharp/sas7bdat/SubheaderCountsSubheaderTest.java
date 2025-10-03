@@ -21,7 +21,7 @@ public class SubheaderCountsSubheaderTest {
     @Test
     void testSignature() {
         // Create a SubheaderCountsSubheader
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
@@ -32,7 +32,7 @@ public class SubheaderCountsSubheaderTest {
     @Test
     void testTypeCode() {
         // Create a SubheaderCountsSubheader
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
@@ -43,7 +43,7 @@ public class SubheaderCountsSubheaderTest {
     @Test
     void testCompressionCode() {
         // Create a SubheaderCountsSubheader
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of());
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
@@ -85,7 +85,7 @@ public class SubheaderCountsSubheaderTest {
                 label("label").
                 build());
 
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);
@@ -259,7 +259,7 @@ public class SubheaderCountsSubheaderTest {
                 outputFormat(new Format("OUTPUT", 8, 2)).
                 inputFormat(new Format("INPUT", 9, 6)).
                 build());
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(variableList);
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         SubheaderCountsSubheader subheaderCountsSubheader = new SubheaderCountsSubheader(pageLayout);

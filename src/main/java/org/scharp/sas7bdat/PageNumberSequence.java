@@ -9,37 +9,39 @@ package org.scharp.sas7bdat;
  */
 class PageNumberSequence {
 
-    private final long initialValue;
-    private int pageSequenceIndex;
+    private final long mask;
+    private long pageSequenceIndex;
 
     /**
-     * Create a new page number sequence that starts at a given value.
+     * Create a new page number sequence.
      *
-     * @param initialValue
-     *     This is also the initial value in the page number sequence.
+     * @param mask
+     *     The bitmask with which to XOR each page number in the sequence.
      */
-    PageNumberSequence(long initialValue) {
-        this.initialValue = initialValue;
-        pageSequenceIndex = 0;
+    PageNumberSequence(long mask) {
+        this.mask = mask;
+        pageSequenceIndex = 1;
     }
 
-    /** Create a new page number sequence generator that can be used to create legal page sequence */
-    PageNumberSequence() {
-        this(0xF4_A4_FF_F6L); // for compatibility with v0.9 of this library
+    /**
+     * @return the page number mask
+     */
+    long mask() {
+        return mask;
     }
 
     /**
      * @return the initial value in this sequence.
      */
     long initialValue() {
-        return initialValue;
+        return mask ^ 1;
     }
 
     /**
      * @return the current page number in this sequence.
      */
     long currentPageNumber() {
-        return initialValue ^ pageSequenceIndex;
+        return mask ^ pageSequenceIndex;
     }
 
     /**

@@ -47,8 +47,9 @@ class Sas7bdatPage {
         Sas7bdatVariablesLayout variablesLayout) {
         this.pageSize = pageSize;
 
-        pageNumberSequence.incrementPageNumber();
         this.pageNumber = pageNumberSequence.currentPageNumber();
+        pageNumberSequence.incrementPageNumber();
+
         this.variablesLayout = variablesLayout;
 
         subheaders = new ArrayList<>();
