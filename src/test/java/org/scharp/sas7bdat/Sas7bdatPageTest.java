@@ -265,7 +265,7 @@ public class Sas7bdatPageTest {
     void testSetIsFinalMetadataPage() {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFFL);
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFF);
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
         Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 

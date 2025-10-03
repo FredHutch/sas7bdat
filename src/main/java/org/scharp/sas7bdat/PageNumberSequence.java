@@ -9,8 +9,8 @@ package org.scharp.sas7bdat;
  */
 class PageNumberSequence {
 
-    private final long mask;
-    private long pageSequenceIndex;
+    private final int mask;
+    private int pageSequenceIndex;
 
     /**
      * Create a new page number sequence.
@@ -18,7 +18,7 @@ class PageNumberSequence {
      * @param mask
      *     The bitmask with which to XOR each page number in the sequence.
      */
-    PageNumberSequence(long mask) {
+    PageNumberSequence(int mask) {
         this.mask = mask;
         pageSequenceIndex = 1;
     }
@@ -26,21 +26,21 @@ class PageNumberSequence {
     /**
      * @return the page number mask
      */
-    long mask() {
+    int mask() {
         return mask;
     }
 
     /**
      * @return the initial value in this sequence.
      */
-    long initialValue() {
+    int initialValue() {
         return mask ^ 1;
     }
 
     /**
      * @return the current page number in this sequence.
      */
-    long currentPageNumber() {
+    int currentPageNumber() {
         return mask ^ pageSequenceIndex;
     }
 

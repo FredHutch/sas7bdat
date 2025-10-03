@@ -14,60 +14,60 @@ public class PageNumberSequenceTest {
     /** Tests a known sequence */
     @Test
     void testSequence() {
-        final long[] expectedSequence = {
-            0xF4A4_FFF_7L,
-            0xF4A4_FFF_4L,
-            0xF4A4_FFF_5L,
-            0xF4A4_FFF_2L,
-            0xF4A4_FFF_3L,
-            0xF4A4_FFF_0L,
-            0xF4A4_FFF_1L,
-            0xF4A4_FFF_EL,
-            0xF4A4_FFF_FL,
-            0xF4A4_FFF_CL,
-            0xF4A4_FFF_DL,
-            0xF4A4_FFF_AL,
-            0xF4A4_FFF_BL,
-            0xF4A4_FFF_8L,
-            0xF4A4_FFF_9L,
+        final int[] expectedSequence = {
+            0xF4A4_FFF_7,
+            0xF4A4_FFF_4,
+            0xF4A4_FFF_5,
+            0xF4A4_FFF_2,
+            0xF4A4_FFF_3,
+            0xF4A4_FFF_0,
+            0xF4A4_FFF_1,
+            0xF4A4_FFF_E,
+            0xF4A4_FFF_F,
+            0xF4A4_FFF_C,
+            0xF4A4_FFF_D,
+            0xF4A4_FFF_A,
+            0xF4A4_FFF_B,
+            0xF4A4_FFF_8,
+            0xF4A4_FFF_9,
 
-            0xF4A4_FFE_6L,
-            0xF4A4_FFE_7L,
-            0xF4A4_FFE_4L,
-            0xF4A4_FFE_5L,
-            0xF4A4_FFE_2L,
-            0xF4A4_FFE_3L,
-            0xF4A4_FFE_0L,
-            0xF4A4_FFE_1L,
-            0xF4A4_FFE_EL,
-            0xF4A4_FFE_FL,
-            0xF4A4_FFE_CL,
-            0xF4A4_FFE_DL,
-            0xF4A4_FFE_AL,
-            0xF4A4_FFE_BL,
-            0xF4A4_FFE_8L,
-            0xF4A4_FFE_9L,
+            0xF4A4_FFE_6,
+            0xF4A4_FFE_7,
+            0xF4A4_FFE_4,
+            0xF4A4_FFE_5,
+            0xF4A4_FFE_2,
+            0xF4A4_FFE_3,
+            0xF4A4_FFE_0,
+            0xF4A4_FFE_1,
+            0xF4A4_FFE_E,
+            0xF4A4_FFE_F,
+            0xF4A4_FFE_C,
+            0xF4A4_FFE_D,
+            0xF4A4_FFE_A,
+            0xF4A4_FFE_B,
+            0xF4A4_FFE_8,
+            0xF4A4_FFE_9,
 
-            0xF4A4_FFD_6L,
-            0xF4A4_FFD_7L,
-            0xF4A4_FFD_4L,
-            0xF4A4_FFD_5L,
-            0xF4A4_FFD_2L,
-            0xF4A4_FFD_3L,
-            0xF4A4_FFD_0L,
-            0xF4A4_FFD_1L,
-            0xF4A4_FFD_EL,
-            0xF4A4_FFD_FL,
-            0xF4A4_FFD_CL,
-            0xF4A4_FFD_DL,
-            0xF4A4_FFD_AL,
-            0xF4A4_FFD_BL,
-            0xF4A4_FFD_8L,
-            0xF4A4_FFD_9L,
+            0xF4A4_FFD_6,
+            0xF4A4_FFD_7,
+            0xF4A4_FFD_4,
+            0xF4A4_FFD_5,
+            0xF4A4_FFD_2,
+            0xF4A4_FFD_3,
+            0xF4A4_FFD_0,
+            0xF4A4_FFD_1,
+            0xF4A4_FFD_E,
+            0xF4A4_FFD_F,
+            0xF4A4_FFD_C,
+            0xF4A4_FFD_D,
+            0xF4A4_FFD_A,
+            0xF4A4_FFD_B,
+            0xF4A4_FFD_8,
+            0xF4A4_FFD_9,
         };
 
-        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xF4A4_FFF_6L);
-        assertEquals(0xF4A4_FFF_6L, pageNumberSequence.mask());
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xF4A4_FFF_6);
+        assertEquals(0xF4A4_FFF_6, pageNumberSequence.mask());
         assertEquals(expectedSequence[0], pageNumberSequence.initialValue());
 
         // Check the known portion of the sequence
@@ -77,7 +77,7 @@ public class PageNumberSequenceTest {
         }
 
         // The mask and the initial value in the page number sequence shouldn't have changed.
-        assertEquals(0xF4A4_FFF_6L, pageNumberSequence.mask());
+        assertEquals(0xF4A4_FFF_6, pageNumberSequence.mask());
         assertEquals(expectedSequence[0], pageNumberSequence.initialValue());
     }
 
@@ -97,9 +97,9 @@ public class PageNumberSequenceTest {
 
     @Test
     void testSequenceMinus1() {
-        // Tests the sequence whose mask is all 1 (0xFFFFFFFFFFFFFFFF).
+        // Tests the sequence whose mask is 0xFFFFFFFF.
         // This should start at -2 and decrement by 1.
-        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFFFFFFFFFFL);
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(-1);
         for (long i = 1; i < 0x10001; i++) {
             assertEquals(-i - 1, pageNumberSequence.currentPageNumber(), "page number " + i);
             pageNumberSequence.incrementPageNumber();

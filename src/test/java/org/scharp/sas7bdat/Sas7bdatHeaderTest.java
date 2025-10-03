@@ -109,7 +109,7 @@ public class Sas7bdatHeaderTest {
 
     @Test
     public void testMaxSizedFields() {
-        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFFL);
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFF);
         long currentPageSequence = pageNumberSequence.currentPageNumber();
         int headerSize = 512;
 

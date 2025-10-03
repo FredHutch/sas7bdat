@@ -18,7 +18,7 @@ class RowSizeSubheader extends FixedSizeSubheader {
     private final String datasetLabel;
     private final int totalObservationsInDataset;
     private final Sas7bdatPageLayout pageLayout;
-    private final long initialPageNumber;
+    private final int initialPageNumber;
 
     private final int rowSizeInBytes;
     private final int totalVariableNameLength;
@@ -227,7 +227,8 @@ class RowSizeSubheader extends FixedSizeSubheader {
         write8(page, subheaderOffset + 424, 0x00); // zero
         write8(page, subheaderOffset + 432, 0x00); // zero
 
-        write8(page, subheaderOffset + 440, initialPageNumber); // the first number in the page number sequence
+        // the first number in the page number sequence
+        write8(page, subheaderOffset + 440, Integer.toUnsignedLong(initialPageNumber));
 
         write8(page, subheaderOffset + 448, 0x00);
         write8(page, subheaderOffset + 456, 0x00);
