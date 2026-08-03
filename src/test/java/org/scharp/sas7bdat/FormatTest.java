@@ -116,6 +116,7 @@ public class FormatTest {
         assertEquals("format numberOfDigits must not be greater than 32767", exception.getMessage());
     }
 
+    @SuppressWarnings("StringOperationCanBeSimplified")
     static private String copy(String string) {
         return new String(string);
     }
@@ -152,7 +153,8 @@ public class FormatTest {
     /**
      * Tests {@link Format#equals(Object)}.
      */
-    @SuppressWarnings({ "unlikely-arg-type", "EqualsBetweenInconvertibleTypes" })
+    @SuppressWarnings({ "unlikely-arg-type", "EqualsBetweenInconvertibleTypes", "SimplifiableAssertion",
+        "EqualsWithItself", "ConstantValue" })
     @Test
     public void testEquals() {
         // Create a format.
