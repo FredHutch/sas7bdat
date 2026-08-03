@@ -50,7 +50,7 @@ public class Sas7bdatPageTest {
 
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0x12345678);
         Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
         assertEquals(pageSize, page.pageSize());
@@ -110,7 +110,7 @@ public class Sas7bdatPageTest {
 
         // Confirm that the expected data was written.
         byte[] expectedData = new byte[pageSize];
-        WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
+        WriteUtil.write4(expectedData, 0, 0x12_34_56_79); // masked page number
         WriteUtil.write4(expectedData, 24, (pageSize - 40 - 24 * 3 - 60000 - 300)); // total bytes free
         WriteUtil.write2(expectedData, 32, (short) 0); // type=META
         WriteUtil.write2(expectedData, 34, (short) 3); // total blocks
@@ -146,7 +146,7 @@ public class Sas7bdatPageTest {
     @Test
     void testMixedPage() {
         // Create a sas7bdat page
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(4);
         final int pageSize = 0x10000;
         Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
@@ -180,7 +180,7 @@ public class Sas7bdatPageTest {
 
         // Confirm that the expected data was written.
         byte[] expectedData = new byte[pageSize];
-        WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
+        WriteUtil.write4(expectedData, 0, 1); // masked page number
         WriteUtil.write4(expectedData, 24, (pageSize - 40 - 24 * 2 - 1000 - 4 - 4 - 1)); // total bytes free
         WriteUtil.write2(expectedData, 32, (short) 0x200); // type=MIXED
         WriteUtil.write2(expectedData, 34, (short) 4); // total blocks (2 subheaders + 2 observations)
@@ -213,7 +213,7 @@ public class Sas7bdatPageTest {
     @Test
     void testDataPage() {
         // Create a sas7bdat page
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(11);
         final int pageSize = 0x10000;
         Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
@@ -241,7 +241,7 @@ public class Sas7bdatPageTest {
 
         // Confirm that the expected data was written.
         byte[] expectedData = new byte[pageSize];
-        WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
+        WriteUtil.write4(expectedData, 0, 1); // masked page number
         WriteUtil.write4(expectedData, 24, (pageSize - 40 - 11 - 1)); // total bytes free
         WriteUtil.write2(expectedData, 32, (short) 0x100); // type=DATA
         WriteUtil.write2(expectedData, 34, (short) 1); // total blocks (0 subheaders + 1 observation)
@@ -265,7 +265,7 @@ public class Sas7bdatPageTest {
     void testSetIsFinalMetadataPage() {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFF);
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
         Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 
@@ -291,7 +291,7 @@ public class Sas7bdatPageTest {
 
         // Confirm that the expected data was written.
         byte[] expectedData = new byte[pageSize];
-        WriteUtil.write4(expectedData, 0, 0xF4_A4_FF_F7); // page sequence number
+        WriteUtil.write4(expectedData, 0, 0xFFFFFFFE); // masked page number
         WriteUtil.write4(expectedData, 24, (pageSize - 40 - 24 * 2 - subheader.size())); // total bytes free
         WriteUtil.write2(expectedData, 32, (short) 0x200); // type=MIXED
         WriteUtil.write2(expectedData, 34, (short) 2); // total blocks (2 subheaders + 0 observations)
@@ -319,7 +319,7 @@ public class Sas7bdatPageTest {
     void testSubheaders() {
         // Create a sas7bdat page
         final int pageSize = 0x10000;
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = createVariableLayoutForRowSize(10);
         Sas7bdatPage page = new Sas7bdatPage(pageNumberSequence, pageSize, variablesLayout);
 

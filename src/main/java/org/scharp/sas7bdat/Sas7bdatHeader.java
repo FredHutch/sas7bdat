@@ -70,7 +70,7 @@ class Sas7bdatHeader {
 
     private final int headerSize;
     private final int pageSize;
-    private final long initialPageNumber;
+    private final int pageNumberMask;
     private final String datasetName;
     private final LocalDateTime creationDate;
     private final int totalPages;
@@ -79,7 +79,7 @@ class Sas7bdatHeader {
         String datasetName, LocalDateTime creationDate, int totalPages) {
         this.headerSize = headerSize;
         this.pageSize = pageSize;
-        this.initialPageNumber = pageNumberSequence.initialValue();
+        this.pageNumberMask = pageNumberSequence.mask();
         this.datasetName = datasetName;
         this.creationDate = creationDate;
         this.totalPages = totalPages;
@@ -228,8 +228,8 @@ class Sas7bdatHeader {
         write8(data, 304 + doubleAlignmentOffset + intAlignmentOffset, 0);
         write8(data, 312 + doubleAlignmentOffset + intAlignmentOffset, 0);
 
-        // The number assigned to the first page.
-        write8(data, 320 + doubleAlignmentOffset + intAlignmentOffset, initialPageNumber);
+        // The XOR mask that's used to disguise the page numbers.
+        write8(data, 320 + doubleAlignmentOffset + intAlignmentOffset, Integer.toUnsignedLong(pageNumberMask));
 
         // A third timestamp.
         write8(data, 328 + doubleAlignmentOffset + intAlignmentOffset, ieee754SasDate);

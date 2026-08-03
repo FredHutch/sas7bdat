@@ -18,7 +18,7 @@ import static org.scharp.sas7bdat.Subheader.SUBHEADER_TYPE_A;
 public class ColumnFormatSubheaderTest {
 
     private static ColumnText newColumnText(Variable variable) {
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(variable));
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
         ColumnText columnText = new ColumnText(pageLayout);

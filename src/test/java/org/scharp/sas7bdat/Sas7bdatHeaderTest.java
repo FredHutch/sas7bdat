@@ -16,7 +16,7 @@ public class Sas7bdatHeaderTest {
 
     @Test
     public void smokeTest() {
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0x12345678);
         long currentPageSequence = pageNumberSequence.currentPageNumber();
         int headerSize = 512;
         Sas7bdatHeader header = new Sas7bdatHeader(
@@ -84,7 +84,7 @@ public class Sas7bdatHeaderTest {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
 
-                -10, -1, -92, -12, 0, 0, 0, 0, // initial page sequence
+                120, 86, 52, 18, 0, 0, 0, 0, // page number mask
 
                 0, 0, 64, -55, 47, -26, -46, 65, // creation time again
 
@@ -109,7 +109,7 @@ public class Sas7bdatHeaderTest {
 
     @Test
     public void testMaxSizedFields() {
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0xFFFFFFFF);
         long currentPageSequence = pageNumberSequence.currentPageNumber();
         int headerSize = 512;
 
@@ -181,7 +181,7 @@ public class Sas7bdatHeaderTest {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
 
-                -10, -1, -92, -12, 0, 0, 0, 0, // initial page sequence
+                -1, -1, -1, -1, 0, 0, 0, 0, // page number mask
 
                 0, -32, -1, -52, 62, 122, 96, 66, // creation time again
 

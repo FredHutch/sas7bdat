@@ -18,7 +18,7 @@ public class Sas7bdatPageLayoutTest {
     @Test
     void smokeTest() {
         // Create a Sas7bdatPageLayout
-        PageNumberSequence pageNumberSequence = new PageNumberSequence();
+        PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
