@@ -354,8 +354,6 @@ public class Sas7bdatExporterTest {
      *   <li>Writing CHARACTER values exactly as long as the variable</li>
      *   <li>Writing both CHARACTER and NUMERIC values</li>
      * </ul>
-     *
-     * @throws IOException
      */
     @Test
     public void testStreamingInterface() throws IOException {
@@ -476,8 +474,6 @@ public class Sas7bdatExporterTest {
      *   <li>Writing CHARACTER values exactly as long as the variable</li>
      *   <li>Writing both CHARACTER and NUMERIC values</li>
      * </ul>
-     *
-     * @throws IOException
      */
     @Test
     public void testStreamingToOutputStream() throws IOException {
