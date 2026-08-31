@@ -862,7 +862,7 @@ class TestRandomSas7bdat {
                     stringBuilder << formatNumericForDataline(variable, number)
 
                 } else {
-                    throw new RuntimeException("BUG: Formatting unsupported variable type in for a SAS datasline: $value.class")
+                    throw new RuntimeException("BUG: Formatting unsupported variable type in for a SAS dataline: $value.class")
                 }
             }
 
