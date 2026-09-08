@@ -643,6 +643,9 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                                 int totalColumns = pageReader.printSubheaderFieldU2(subheaderOffset, 18, 26, "Total Columns")
                                 pageReader.printSubheaderFieldU2(subheaderOffset, 20, 28, "Unknown Field at offset 20|28")
                                 pageReader.printSubheaderFieldU2(subheaderOffset, 22, 30, "Unknown Field at offset 22|30")
+                                pageReader.printSubheaderFieldU2(subheaderOffset, 24, 32, "Unknown Field at offset 24|32")
+                                pageReader.printSubheaderFieldU2(subheaderOffset, 26, 34, "Unknown Field at offset 26|34")
+                                pageReader.printSubheaderFieldU2(subheaderOffset, 28, 36, "Unknown Field at offset 28|36")
 
                                 for (int columnIndex = 0; columnIndex < totalColumns; columnIndex++) {
                                     int vectorOffset32 = 30 + columnIndex * 2
