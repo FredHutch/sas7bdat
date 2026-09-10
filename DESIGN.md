@@ -37,12 +37,12 @@ The source code has many assert statements.
 These assert statements should not fail for any input given by the public API; invalid input should cause an exception to be thrown.
 If an assert fails, it implies there's a defect in the library.
 
-The Junit tests for the Subheader classes can only test that the output writes what it assumed to be correct.
+The JUnit tests for the Subheader classes can only test that the output writes what it assumed to be correct.
 The tests don't know if it really is correct.
 Fixing a bug in a Subheader class will probably cause its test to fail.
 On the other hand, refactoring shouldn't cause the tests to fail, so these tests do have some value.
 
-The Junit for `Sas7bdatExporter` is the closest thing to end-to-end testing.
+The JUnit for `Sas7bdatExporter` is the closest thing to end-to-end testing.
 It uses the Parso library to read what `Sas7bdatExporter` wrote.
 The Parso library is forgiving and can read data from corrupt SAS7BDAT files that causes SAS to crash.
 These tests aren't perfect, but they're better than nothing.
