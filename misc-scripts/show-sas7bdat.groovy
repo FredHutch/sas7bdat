@@ -90,7 +90,7 @@ class SubheaderSignature {
     static final long COLUMN_MASK = 0xFFFFFFFFFFFFFFF8L
     static final long COLUMN_ATTRS = 0xFFFFFFFFFFFFFFFCL
     static final long COLUMN_TEXT = 0xFFFFFFFFFFFFFFFDL
-    static final long COLUMN_LIST = 0xFFFFFFFFFFFFFFFEL
+    static final long COLUMN_HASH_TABLE = 0xFFFFFFFFFFFFFFFEL
     static final long COLUMN_NAME = 0xFFFFFFFFFFFFFFFFL
     static final long UNKNOWN_A = 0xFFFFFFFFFFFFFFFBL
     static final long UNKNOWN_B = 0xFFFFFFFFFFFFFFFAL
@@ -112,8 +112,8 @@ class SubheaderSignature {
                 return 'Column Attributes'
             case SubheaderSignature.COLUMN_TEXT:
                 return 'Column Text'
-            case SubheaderSignature.COLUMN_LIST:
-                return 'Column List'
+            case SubheaderSignature.COLUMN_HASH_TABLE:
+                return 'Column Hash Table'
             case SubheaderSignature.COLUMN_NAME:
                 return 'Column Name'
             case SubheaderSignature.UNKNOWN_A:
@@ -424,6 +424,9 @@ class ParsedState {
     int lastColumnFormat = 0
     int lastRecordNumber = 0
 
+    // State for showing data in Column Hash Table Subheader
+    int lastHashTableBucket = 0
+
     // Fields from Row Size subheader which are parsed before Column Text has been.
     int unknownStringIndex
     int unknownStringOffset
@@ -622,39 +625,49 @@ void printPage(int fileOffset, int bitSize, byte[] page, ParsedState parsedState
                                 parsedState.columnText.add(page, subheaderOffset, subheaderLength)
                                 break
 
-                            case SubheaderSignature.COLUMN_LIST:
-                                pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Subheader Payload Size")
+                            case SubheaderSignature.COLUMN_HASH_TABLE:
+                                int payloadSize = pageReader.printSubheaderField2(subheaderOffset, 4, 8, "Subheader Payload Size")
 
-                                // The field at offset 4|8 should probably be two byte fields that takes up 4|8 bytes,
-                                // but SAS puts some non-zero bytes after it.  I suspect this is uninitialized memory,
-                                // but it could be extra information stored where padding was used.
-                                pageReader.printSubheaderField2(subheaderOffset, 6, 10, "Unknown Field at offset 6|10")
+                                int hashTableOffset
+                                if (parsedState.lastHashTableBucket == 0) {
+                                    // The hash table has a header that's only shown in the first subheader.
 
-                                // The field at offset 12|16 is similar.  It only needs to be two bytes but there are
-                                // non-zero bytes after it that may have signification.
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 12, 16, "Unknown Field at offset 12|16")
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 14, 18, "Unknown Field at offset 14|18")
-                                if (bitSize == 64) {
-                                    pageReader.printSubheaderFieldU2(subheaderOffset, 0, 20, "Unknown Field at offset 20")
-                                    pageReader.printSubheaderFieldU2(subheaderOffset, 0, 22, "Unknown Field at offset 22")
+                                    // The field at offset 4|8 should probably be two byte fields that takes up 4|8 bytes,
+                                    // but SAS puts some non-zero bytes after it.  I suspect this is uninitialized memory,
+                                    // but it could be extra information stored where padding was used.
+                                    pageReader.printSubheaderField2(subheaderOffset, 6, 10, "Unknown Field at offset 6|10")
+
+                                    // The field at offset 12|16 is similar.  It only needs to be two bytes but there are
+                                    // non-zero bytes after it that may have signification.
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 12, 16, "Unknown Field at offset 12|16")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 14, 18, "Unknown Field at offset 14|18")
+                                    if (bitSize == 64) {
+                                        pageReader.printSubheaderFieldU2(subheaderOffset, 0, 20, "Unknown Field at offset 20")
+                                        pageReader.printSubheaderFieldU2(subheaderOffset, 0, 22, "Unknown Field at offset 22")
+                                    }
+
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 16, 24, "Total Variables in Subheader")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 18, 26, "Total Columns in Subheader")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 20, 28, "Unknown Field at offset 20|28")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 22, 30, "Unknown Field at offset 22|30")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 24, 32, "Unknown Field at offset 24|32")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 26, 34, "Unknown Field at offset 26|34")
+                                    pageReader.printSubheaderFieldU2(subheaderOffset, 28, 36, "Unknown Field at offset 28|36")
+                                    hashTableOffset = (bitSize == 32 ? 30 : 38)
+                                } else {
+                                    hashTableOffset = (bitSize == 32 ? 12 : 16)
                                 }
 
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 16, 24, "Total Variables")
-                                int totalColumns = pageReader.printSubheaderFieldU2(subheaderOffset, 18, 26, "Total Columns")
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 20, 28, "Unknown Field at offset 20|28")
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 22, 30, "Unknown Field at offset 22|30")
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 24, 32, "Unknown Field at offset 24|32")
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 26, 34, "Unknown Field at offset 26|34")
-                                pageReader.printSubheaderFieldU2(subheaderOffset, 28, 36, "Unknown Field at offset 28|36")
-
-                                for (int columnIndex = 0; columnIndex < totalColumns; columnIndex++) {
-                                    int vectorOffset32 = 30 + columnIndex * 2
-                                    int vectorOffset64 = 38 + columnIndex * 2
-                                    if (subheaderLength < vectorOffset64 + 2) {
+                                int hashTableLimit = payloadSize + (bitSize == 32 ? 4 : 8) // re-add the signature size
+                                while (hashTableOffset < hashTableLimit) {
+                                    if (subheaderLength < hashTableOffset) {
                                         println "     <subheader ends unexpectedly>"
                                         break
                                     }
-                                    pageReader.printSubheaderField2(subheaderOffset, vectorOffset32, vectorOffset64, "Column #${columnIndex + 1} Value")
+
+                                    parsedState.lastHashTableBucket++
+                                    pageReader.printSubheaderField2(subheaderOffset, hashTableOffset, hashTableOffset, "Hash Table Bucket #${parsedState.lastHashTableBucket}")
+                                    hashTableOffset += 2
                                 }
                                 break
 

@@ -98,9 +98,9 @@ class RowSizeSubheader extends FixedSizeSubheader {
             // The next value at offset 88 is unknown, but setting it incorrectly can cause SAS to crash.
             //
             // This seems to be
-            // 1) the size of the "payload" of all ColumnListSubheaders (subheader size - 28)
-            // 2) the value at offset 16 of the first ColumnListSubheader when there is only one
-            // 3) 22 + 2 * the total columns (offset 26) the first ColumnListSubheader
+            // 1) the size of the "payload" of all ColumnHashTableSubheaders (subheader size - 28)
+            // 2) the value at offset 16 of the first ColumnHashTableSubheader when there is only one
+            // 3) 22 + 2 * the total columns (offset 26) the first ColumnHashTableSubheader
             //
             // Calculate it with method 1.
             int offset88 = 0;
@@ -148,7 +148,7 @@ class RowSizeSubheader extends FixedSizeSubheader {
                         totalColumnFormatSubheadersOnSecondPage++;
                     }
 
-                } else if (subheader instanceof ColumnListSubheader) {
+                } else if (subheader instanceof ColumnHashTableSubheader) {
                     // Add to the size of the "payload" of all ColumnListSubheaders (subheader size - 28)
                     offset88 += subheader.size() - 28;
 

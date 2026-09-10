@@ -110,16 +110,17 @@ public class SubheaderCountsSubheaderTest {
         pageLayout.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
         pageLayout.addSubheader(new ColumnNameSubheader(variableList, 0, columnText));
 
-        // Add four column list subheaders
-        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
+        // Add four column hash table subheaders
+        ColumnHashTable columnHashTable = new ColumnHashTable(variableList);
+        pageLayout.addSubheader(new ColumnHashTableSubheader(columnHashTable, 100, 0));
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
-        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
-        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
+        pageLayout.addSubheader(new ColumnHashTableSubheader(columnHashTable, 100, 1));
+        pageLayout.addSubheader(new ColumnHashTableSubheader(columnHashTable, 100, 2));
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));
-        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
+        pageLayout.addSubheader(new ColumnHashTableSubheader(columnHashTable, 100, 3));
 
         // Add the subheader counts subheader to the end so that there's subheaders types that aren't counted.
-        // This also ensures that the unit-under-test doesn't assume that the ColumnListSubheader is last.
+        // This also ensures that the unit-under-test doesn't assume that the ColumnHashTableSubheader is last.
         pageLayout.addSubheader(subheaderCountsSubheader);
 
         pageLayout.finalizeMetadata();
@@ -165,7 +166,7 @@ public class SubheaderCountsSubheaderTest {
             3, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
             4, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
 
-            // ColumnListSubheader information (offset 240)
+            // ColumnHashTableSubheader information (offset 240)
             -2, -1, -1, -1, -1, -1, -1, -1, // signature
             3, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
             5, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
@@ -305,7 +306,7 @@ public class SubheaderCountsSubheaderTest {
             0, 0, 0, 0, 0, 0, 0, 0, // page of last appearance
             0, 0, 0, 0, 0, 0, 0, 0, // position of last appearance
 
-            // ColumnListSubheader information (offset 240)
+            // ColumnHashTableSubheader information (offset 240)
             -2, -1, -1, -1, -1, -1, -1, -1, // signature
             0, 0, 0, 0, 0, 0, 0, 0, // page of first appearance
             0, 0, 0, 0, 0, 0, 0, 0, // position of first appearance
