@@ -874,13 +874,13 @@ class TestRandomSas7bdat {
         return stringBuilder.toString()
     }
 
-    static def writeSasProgramToGenerateDataset(File sasProgramFile, Path testCaseFile) {
+    static def sasNameLiteral(String variableName) {
+        // Variable names with blanks or special characters must be quoted as a "name literal".
+        // See https://documentation.sas.com/doc/en/pgmsascdc/9.4_3.5/lepg/p0ibybzsojk9u8n17a3k3vgflzzf.htm#p12sdrho3c5oc7n139b594w53n4y
+        variableName ==~ ~/[A-Za-z]\w*/ ? variableName : "'$variableName'n"
+    }
 
-        def quotedVariableName = { String name ->
-            // Variable names with blanks or special characters must be quoted as a "name literal".
-            // See https://documentation.sas.com/doc/en/pgmsascdc/9.4_3.5/lepg/p0ibybzsojk9u8n17a3k3vgflzzf.htm#p12sdrho3c5oc7n139b594w53n4y
-            name ==~ ~/[A-Za-z]\w*/ ? name : "'$name'n"
-        }
+    static def writeSasProgramToGenerateDataset(File sasProgramFile, Path testCaseFile) {
 
         def formatSasFormat = { format ->
             // "NAMEw.d", where ".d" is optional
@@ -931,7 +931,7 @@ class TestRandomSas7bdat {
 
                     metadata.variables.each { variable ->
                         String type = variable.type() == VariableType.NUMERIC ? '' : ': $' + variable.length() + "." // $ for CHARACTER
-                        writer.writeLine("        ${quotedVariableName(variable.name())} $type")
+                        writer.writeLine("        ${sasNameLiteral(variable.name())} $type")
                     }
 
                     def atLeastOneOutputFormatIsSpecified = metadata.variables.
@@ -947,7 +947,7 @@ class TestRandomSas7bdat {
 
                         for (def variable in metadata.variables) {
                             if (!formatIsUnspecified(variable.outputFormat())) {
-                                writer.writeLine("        ${quotedVariableName(variable.name())} ${formatSasFormat(variable.outputFormat())}")
+                                writer.writeLine("        ${sasNameLiteral(variable.name())} ${formatSasFormat(variable.outputFormat())}")
                             }
                         }
                     }
@@ -965,7 +965,7 @@ class TestRandomSas7bdat {
 
                         for (def variable in metadata.variables) {
                             if (!formatIsUnspecified(variable.inputFormat())) {
-                                writer.writeLine("        ${quotedVariableName(variable.name())} ${formatSasFormat(variable.inputFormat())}")
+                                writer.writeLine("        ${sasNameLiteral(variable.name())} ${formatSasFormat(variable.inputFormat())}")
                             }
                         }
                     }
@@ -978,7 +978,7 @@ class TestRandomSas7bdat {
 
                     for (def variable in metadata.variables) {
                         if (!variable.label().empty) {
-                            writer.writeLine("        ${quotedVariableName(variable.name())} = '${variable.label()}'")
+                            writer.writeLine("        ${sasNameLiteral(variable.name())} = '${variable.label()}'")
                         }
                     }
 
@@ -1305,6 +1305,37 @@ class TestRandomSas7bdat {
             println "The following discrepancies were found in $dataCsv${isFromRandomSas ? ' created by random.sas' : ''}:"
             errors.each { error -> println error }
             System.exit(1)
+        }
+
+        //
+        // One final test is to try sorting the dataset within SAS.
+        // This finds problems with the "Column Hash Table Subheader" that reading all data in the dataset doesn't find.
+        // The important thing is that SORT happens by variable name, so causes SAS to look up a
+        // variable number by its name.
+        //
+        def sortableNames = expectedMetadata.variables.collect{ it.name }.grep{ !it.endsWith(' ') }
+        if (sortableNames) {
+            Path sortProgram = Path.of("sort.sas")
+            sortProgram.withWriter { writer ->
+                writer.write """
+                |/********************************************************************
+                |* A SAS Program that can be used to sorts the data in random.sas7bdat.
+                |*
+                |* This program was generated from $testCaseFile
+                |********************************************************************/
+                |
+                |OPTIONS VALIDVARNAME=ANY;
+                |
+                |libname mylib '.';
+                |
+                |/* Sort the dataset by all of its variables */ 
+                |proc sort data = mylib.random;
+                |    by ${sortableNames.collect { sasNameLiteral(it) + "\n       "}.join()}
+                |;
+                |run;
+                |""".stripMargin()
+            }
+            runSasProgram(sortProgram, [])
         }
     }
 

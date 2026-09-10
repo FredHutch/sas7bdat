@@ -113,9 +113,10 @@ public class RowSizeSubheaderTest {
         pageLayout.addSubheader(FillerSubheader.fillRestOfPage(pageLayout.currentMetadataPage));   // new page
         pageLayout.addSubheader(new ColumnFormatSubheader(variableList.get(0), pageLayout.columnText));
 
-        // Add some ColumnListSubheader, since their size is included in the RowSizeSubheader.
-        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 0));
-        pageLayout.addSubheader(new ColumnListSubheader(variablesLayout, 1));
+        // Add some ColumnHashTableSubheader, since their size is included in the RowSizeSubheader.
+        ColumnHashTable columnHashTable = new ColumnHashTable(variableList);
+        pageLayout.addSubheader(new ColumnHashTableSubheader(columnHashTable, 100, 0));
+        pageLayout.addSubheader(new ColumnHashTableSubheader(columnHashTable, 100, 1));
 
         pageLayout.finalizeMetadata();
 
@@ -135,7 +136,7 @@ public class RowSizeSubheaderTest {
             2, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the first page.
             3, 0, 0, 0, 0, 0, 0, 0, // total ColumnFormatSubheaders on the second page.
 
-            58, 0, 0, 0, 0, 0, 0, 0, // unknown (aggregate size of ColumnListSubheader payload)
+            40, 0, 0, 0, 0, 0, 0, 0, // unknown (aggregate size of ColumnHashTableSubheader payload)
             26, 0, 0, 0, 0, 0, 0, 0, // aggregate variable name length
             50, 3, 0, 0, 0, 0, 0, 0, // page size
             0, 0, 0, 0, 0, 0, 0, 0, // unknown
