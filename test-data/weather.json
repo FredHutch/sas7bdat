@@ -1,0 +1,52 @@
+{
+    "testDescription" : "The WEATHER sample from the README.md",
+
+    "name":  "WEATHER",
+    "label": "Daily temperatures in cities across the U.S.A.",
+    "type": "DATA",
+    "creationDate": "2020-01-03T20:12:31",
+    "variables": [
+        {
+            "name": "CITY",
+            "type": "CHARACTER",
+            "label": "Name of city",
+            "length": 20,
+            "outputFormat": { "name": "$CHAR", "width": 18, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "",      "width": 0,  "numberOfDigits": 0 }
+        },
+        {
+            "name": "STATE",
+            "type": "CHARACTER",
+            "label": "Postal abbreviation of state",
+            "length": 2,
+            "outputFormat": { "name": "$CHAR", "width": 2, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "",      "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "HIGH",
+            "type": "NUMERIC",
+            "label": "Average daily high in F",
+            "length": 8,
+            "outputFormat": { "name": "", "width": 5, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        },
+        {
+            "name": "LOW",
+            "type": "NUMERIC",
+            "label": "Average daily low in F",
+            "length": 8,
+            "outputFormat": { "name": "", "width": 5, "numberOfDigits": 0 },
+            "inputFormat":  { "name": "", "width": 0, "numberOfDigits": 0 }
+        }
+    ],
+    "observations": [
+        ["Atlanta",        "GA", 72, 53],
+        ["Austin",         "TX", 80,  5],
+        ["Baltimore",      "MD", 65, 45],
+        ["Birmingham",     "AL", 74, 53],
+        ["Boston",         "MA", 59, "MissingValue.STANDARD"],
+        ["Buffalo",        "NY", 56, 40],
+        ["Virginia Beach", "VA", 68, 52],
+        ["Washington",     "DC", 68, 52]
+    ]
+}
