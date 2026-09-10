@@ -16,7 +16,7 @@ import java.util.List;
  * <ol>
  * <li>the page size</li>
  * <li>how many observations fit on the mixed page</li>
- * <li>how many metadata/mixed pages are needed</li>
+ * <li>how many metadata or mixed pages are needed</li>
  * <li>the location of each subheader</li>
  * </ol>
  */
