@@ -59,6 +59,8 @@ The following code shows how to use the library to create a SAS7BDAT file for a 
     Path targetLocation = Path.of(...)
     Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
 
+API documentation can be found at https://javadoc.io/doc/org.scharp/sas7bdat/latest/org/scharp/sas7bdat/package-summary.html
+
 Limitations
 -----------
 * The SAS7BDAT is a 64-bit, UNIX, little-endian.
