@@ -89,7 +89,7 @@ public final class Variable {
          * @throws NullPointerException
          *     if {@code name} is {@code null}.
          * @throws IllegalArgumentException
-         *     if {@code name} is empty, contains the NULL character, or exceeds 32 bytes in UTF-8.
+         *     if {@code name} is empty, contains the NULL character, ends in a space, or exceeds 32 bytes in UTF-8.
          */
         public Builder name(String name) {
             ArgumentUtil.checkNotNull(name, "name");
@@ -106,6 +106,12 @@ public final class Variable {
             ArgumentUtil.checkMaximumLength(name, StandardCharsets.UTF_8, 32, "variable names");
             if (0 <= name.indexOf('\0')) {
                 throw new IllegalArgumentException("variable names cannot contain NULL characters");
+            }
+            if (name.endsWith(" ")) {
+                // Although SAS says it supports names that end in blanks, it doesn't do so consistently.
+                // For example, you can't SORT BY a variable whose name ends in a space, regardless of whether
+                // you provide the trailing space.
+                throw new IllegalArgumentException("variable names cannot end in a space character");
             }
 
             this.name = name;

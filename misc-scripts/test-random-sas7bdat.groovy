@@ -99,8 +99,7 @@ class TestRandomSas7bdat {
 
             def normalizeVariableName = { String name ->
                 // In SAS, variable names are case-insensitive.
-                // Also, SAS seems to ignore when a variable name ends in spaces.
-                return name.toUpperCase().replaceAll(~/ +$/, '')
+                return name.toUpperCase()
             }
 
             def randomVariable = { Set<String> usedNames ->
@@ -108,9 +107,10 @@ class TestRandomSas7bdat {
                 // Because all variable names within a dataset must be unique, we keep
                 // retrying until we generate a name that is not in use.
                 int maxVariableNameLength = 32
-                String name = randomStringGenerator.nextRandomString(maxVariableNameLength, ~/\w.*/)
+                Pattern validNamePattern = ~/\w|\w.*[^ ]/
+                String name = randomStringGenerator.nextRandomString(maxVariableNameLength, validNamePattern)
                 while (usedNames.contains(normalizeVariableName(name))) {
-                    name = randomStringGenerator.nextRandomString(maxVariableNameLength, ~/\w.*/)
+                    name = randomStringGenerator.nextRandomString(maxVariableNameLength, validNamePattern)
                 }
 
                 def type = randomNumberGenerator.nextBoolean() ? VariableType.NUMERIC : VariableType.CHARACTER
@@ -1313,7 +1313,7 @@ class TestRandomSas7bdat {
         // The important thing is that SORT happens by variable name, so causes SAS to look up a
         // variable number by its name.
         //
-        def sortableNames = expectedMetadata.variables.collect{ it.name }.grep{ !it.endsWith(' ') }
+        def sortableNames = expectedMetadata.variables.collect{ it.name }
         if (sortableNames) {
             Path sortProgram = Path.of("sort.sas")
             sortProgram.withWriter { writer ->

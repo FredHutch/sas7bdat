@@ -78,6 +78,27 @@ public class VariableTest {
     }
 
     @Test
+    void setNameWithTrailingBlank() {
+        // Create a builder with all required fields set.
+        Variable.Builder builder = Variable.builder().type(VariableType.NUMERIC).length(8).name("ORIGINAL NAME");
+
+        // Setting the name to a string with a NUL character should throw an exception.
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.name(" "));
+        assertEquals("variable names cannot end in a space character", exception.getMessage());
+
+        exception = assertThrows(IllegalArgumentException.class, () -> builder.name("ABC "));
+        assertEquals("variable names cannot end in a space character", exception.getMessage());
+
+        exception = assertThrows(IllegalArgumentException.class, () -> builder.name("A B "));
+        assertEquals("variable names cannot end in a space character", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Variable variable = builder.build();
+        assertVariable(variable, "ORIGINAL NAME", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+    }
+
+    @Test
     void setLongName() {
         // Create a builder with all required fields set.
         Variable.Builder builder = Variable.builder().type(VariableType.NUMERIC).length(8).name("ORIGINAL");
