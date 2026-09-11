@@ -185,8 +185,8 @@ class ColumnTextSubheader extends VariableSizeSubheader {
         // sas puts more padding between the last string (aligned to four bytes) and the
         // 12 byte footer of NUL bytes.  This seems to be a variable length block.  If it's at
         // least 8 bytes long, then first four bytes are the number 1 and the second four bytes
-        // are a multiple of 4 in the range 12-252 and seem to be the length of this padding block,
-        // including the two numbers but not including the standard 12 bytes at the end.
+        // are a multiple of 4 in the range 12-252.  The second number seems to be the length of
+        // this padding block, including the two numbers but not including the standard 12-byte footer.
         // The rest of the space is usually 0 bytes, but sometimes other values are present.
         // Sometimes, the other values exactly match what was at the same offset on a previous
         // page, which makes me think that this it's uninitialized memory and the 8-byte header
