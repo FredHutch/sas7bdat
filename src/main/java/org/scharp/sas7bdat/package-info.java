@@ -28,7 +28,7 @@
  * <p>
  * SAS is loosely typed. It has only two types: "numeric" and "character". Numeric data is always persisted as double
  * precision floating point values. Character data is persisted as an array of bytes using a character coding that must
- * be managed by the programmer.  All of the size limits on strings are in bytes, not characters.  SAS datasets
+ * be managed by the programmer.  All size limits on strings are in bytes, not characters.  SAS datasets
  * typically use ASCII or WINDOWS-1252, so this distinction not usually significant.  This library is hard-coded to use
  * UTF-8.
  * </p>
