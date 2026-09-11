@@ -15,13 +15,17 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /** Unit tests for {@link Sas7bdatPageLayout}. */
 public class Sas7bdatPageLayoutTest {
 
-    @Test
-    void smokeTest() {
+    private static Sas7bdatPageLayout newSas7bdatPageLayout() {
         // Create a Sas7bdatPageLayout
         PageNumberSequence pageNumberSequence = new PageNumberSequence(0);
         Sas7bdatVariablesLayout variablesLayout = new Sas7bdatVariablesLayout(List.of(
             Variable.builder().name("VAR").type(VariableType.CHARACTER).length(10).build()));
-        Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+        return new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
+    }
+
+    @Test
+    void smokeTest() {
+        Sas7bdatPageLayout pageLayout = newSas7bdatPageLayout();
 
         assertEquals(0x10000, pageLayout.pageSize);
 
@@ -101,5 +105,29 @@ public class Sas7bdatPageLayoutTest {
             finalInvocationIndex[0]++;
         });
         assertEquals(7, finalInvocationIndex[0], "forEachSubheader callback invoked incorrect number of times");
+    }
+
+    @Test
+    void testGetMaxSizeOfNextSubheader() {
+        Sas7bdatPageLayout pageLayout = newSas7bdatPageLayout();
+
+        // When the page layout doesn't have any subheaders, it acts as if the subheader
+        // isn't the first subheader on the page.  This may be a bug, but it doesn't show up
+        // in the product because the first subheader in the dataset has a fixed size.
+        assertEquals(32740, pageLayout.getMaxSizeOfNextSubheader(0));
+        assertEquals(32740, pageLayout.getMaxSizeOfNextSubheader(32741));
+
+        // Add a subheader so that non-first subheader on a page has a smaller size.
+        pageLayout.addSubheader(new FillerSubheader(10));
+        assertEquals(32740, pageLayout.getMaxSizeOfNextSubheader(0));
+        assertEquals(32740, pageLayout.getMaxSizeOfNextSubheader(32741));
+
+        // When a subheader won't fit on the current page, it is sized to fix the next page.
+        pageLayout.addSubheader(new FillerSubheader(Short.MAX_VALUE));
+        pageLayout.addSubheader(new FillerSubheader(30_000));
+        assertEquals(2599, pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader()); // just as an FYI
+        assertEquals(2599, pageLayout.getMaxSizeOfNextSubheader(0));  // current page
+        assertEquals(32676, pageLayout.getMaxSizeOfNextSubheader(2600)); // next page
+        assertEquals(32741, pageLayout.getMaxSizeOfNextSubheader(32741)); // next page
     }
 }

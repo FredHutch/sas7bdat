@@ -269,23 +269,10 @@ public final class Sas7bdatExporter implements AutoCloseable {
             ColumnHashTable columnHashTable = new ColumnHashTable(variablesLayout.variables());
             int nextBucketIndex = 0;
             while (nextBucketIndex < columnHashTable.totalBuckets()) {
-                // TODO: this logic is also in ColumnText.  It should be centralized in PageLayout.
                 // If we're near the end of the page, we create a subheader that will fill the remaining space.
-                final int bytesOnPageForSubheader = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
                 final int minSizeOfColumnHashTableSubheader = ColumnHashTableSubheader.minSizeForFirstBucketIndex(
                     nextBucketIndex);
-                final short maxSize;
-                if (bytesOnPageForSubheader <= minSizeOfColumnHashTableSubheader) {
-                    // There's not enough space for the new subheader on this page, so assume that it
-                    // will be moved to the next page.
-                    //
-                    // Ideally, this would use a maxSize of ColumnTextSubheader.MAX_SIZE.  However, SAS selects a
-                    // smaller maxSize of 32676 for a subheader that is the first subheader on a page.
-                    // We follow what SAS does except in the rare case where the minimum size is larger than 32676.
-                    maxSize = (short) Math.max(32676, minSizeOfColumnHashTableSubheader);
-                } else {
-                    maxSize = (short) Math.min(ColumnTextSubheader.MAX_SIZE, bytesOnPageForSubheader);
-                }
+                final short maxSize = pageLayout.getMaxSizeOfNextSubheader(minSizeOfColumnHashTableSubheader);
 
                 ColumnHashTableSubheader nextSubheader = new ColumnHashTableSubheader(columnHashTable, maxSize,
                     nextBucketIndex);

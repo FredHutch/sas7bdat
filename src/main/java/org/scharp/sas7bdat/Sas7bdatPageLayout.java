@@ -21,6 +21,16 @@ import java.util.List;
  * </ol>
  */
 class Sas7bdatPageLayout {
+
+    /**
+     * The maximum size of a subheader in bytes.
+     * <p>
+     * SAS limits each subheader to 32740 byte long, although the theoretical maximum is 32764 (Short.MAX_VALUE
+     * rounded down to the nearest 4 bytes).  It could be that SAS is conservatively accounting for 24 bytes
+     * needed to add to the subheader index.
+     */
+    static final short MAX_SUBHEADER_SIZE = 32740;
+
     private final PageNumberSequence pageNumberSequence;
     final int pageSize;
     private final Sas7bdatVariablesLayout variablesLayout;
@@ -115,5 +125,28 @@ class Sas7bdatPageLayout {
                 nextSubheader.nextSubheader(currentSubheader, (short) (pageIndex + 1), (short) (subheaderIndex + 1));
             }
         }
+    }
+
+    short getMaxSizeOfNextSubheader(int minSubheaderSize) {
+        // Determine how much space is left on the current page.
+        final int bytesOnPageForSubheader = currentMetadataPage.totalBytesRemainingForNewSubheader();
+
+        final short maxSize;
+        if (bytesOnPageForSubheader < minSubheaderSize) {
+            // There's not enough space for a new subheader on this page, so assume that it
+            // will be moved to the next page.
+            //
+            // Ideally, this would use a maxSize of Short.MAX_VALUE.
+            // However, SAS selects a smaller maxSize of 32676 for the first subheader on a page.
+            // We follow what SAS does except in the rare case where the minimum size is larger than 32676.
+            maxSize = (short) Math.max(32676, minSubheaderSize);
+        } else {
+            // SAS limits each subheader to 32740 byte long, although the theoretical maximum is 32764 (Short.MAX_VALUE
+            // rounded down to the nearest 4 bytes).  It could be that SAS is conservatively accounting for 24 bytes
+            // needed to add to the subheader index.
+            maxSize = (short) Math.min(MAX_SUBHEADER_SIZE, bytesOnPageForSubheader);
+        }
+
+        return maxSize;
     }
 }

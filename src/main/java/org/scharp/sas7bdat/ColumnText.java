@@ -23,7 +23,7 @@ class ColumnText {
         this.pageLayout = pageLayout;
         subheaderIndex = 0;
 
-        currentSubheader = new ColumnTextSubheader(subheaderIndex, ColumnTextSubheader.MAX_SIZE);
+        currentSubheader = new ColumnTextSubheader(subheaderIndex, Sas7bdatPageLayout.MAX_SUBHEADER_SIZE);
     }
 
     void add(String text) {
@@ -48,21 +48,8 @@ class ColumnText {
             pageLayout.addSubheader(currentSubheader);
 
             // If we're near the end of the page, we create a subheader that will fill the remaining space.
-            final int bytesOnPageForSubheader = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
             final int minSizeOfColumnTextSubheaderWithText = ColumnTextSubheader.sizeOfSubheaderWithString(text);
-            final short maxSize;
-            if (bytesOnPageForSubheader <= minSizeOfColumnTextSubheaderWithText) {
-                // There's not enough space for the new ColumnTextSubheader on this page, so assume that it
-                // will be moved to the next page.
-                //
-                // Ideally, this would use a maxSize of ColumnTextSubheader.MAX_SIZE.  However, SAS selects a
-                // smaller maxSize of 32676 for a ColumnTextSubheader that is the first subheader on a
-                // page.  We follow what SAS does except in the rare case where "text" is so long that
-                // such a ColumnTextSubheader couldn't hold it.
-                maxSize = (short) Math.max(32676, minSizeOfColumnTextSubheaderWithText);
-            } else {
-                maxSize = (short) Math.min(ColumnTextSubheader.MAX_SIZE, bytesOnPageForSubheader);
-            }
+            final short maxSize = pageLayout.getMaxSizeOfNextSubheader(minSizeOfColumnTextSubheaderWithText);
 
             // Allocate the new subheader.
             subheaderIndex++;

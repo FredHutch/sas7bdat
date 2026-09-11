@@ -163,10 +163,10 @@ public class ColumnTextTest {
         Sas7bdatPageLayout pageLayout = new Sas7bdatPageLayout(pageNumberSequence, variablesLayout);
 
         // Add a subheader to the page such that, when ColumnText adds the first subheader
-        // (of size ColumnTextSubheader.MAX_SIZE) there will only be a little bit of space remaining for the next
-        // subheader.  This is enough space for a ColumnTextSubheader but not one that contains a long string.
+        // (of size Sas7bdatPageLayout.MAX_SUBHEADER_SIZE) there will only be a little bit of space remaining for the
+        // next subheader.  This is enough space for a ColumnTextSubheader but not one that contains a long string.
         int totalBytesRemaining = pageLayout.currentMetadataPage.totalBytesRemainingForNewSubheader();
-        pageLayout.addSubheader(new FillerSubheader(totalBytesRemaining - ColumnTextSubheader.MAX_SIZE - 100));
+        pageLayout.addSubheader(new FillerSubheader(totalBytesRemaining - Sas7bdatPageLayout.MAX_SUBHEADER_SIZE - 100));
 
         ColumnText columnText = new ColumnText(pageLayout);
 

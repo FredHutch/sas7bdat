@@ -31,15 +31,6 @@ class ColumnTextSubheader extends VariableSizeSubheader {
     static final short MIN_SIZE = VARIABLE_SUBHEADER_OVERHEAD;
 
     /**
-     * The maximum size of a ColumnTextSubheader.
-     * <p>
-     * SAS limits each subheader to 32740 byte long, although the theoretical maximum is {@code Short.MAX_VALUE} rounded
-     * down to the nearest 4 bytes.  It could be that it's conservatively accounting for 24 bytes needed to add to the
-     * subheader index.
-     */
-    static final short MAX_SIZE = 32740;
-
-    /**
      * A map of string within this ColumnTextSubheader to the offset of that string from the beginning of the subheader
      * (the start of the signature).
      */
