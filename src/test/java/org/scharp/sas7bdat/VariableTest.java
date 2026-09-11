@@ -60,6 +60,24 @@ public class VariableTest {
     }
 
     @Test
+    void setNameWithNullCharacter() {
+        // Create a builder with all required fields set.
+        Variable.Builder builder = Variable.builder().type(VariableType.NUMERIC).length(8).name("ORIGINAL");
+
+        // Setting the name to a string with a NUL character should throw an exception.
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> builder.name("\0"));
+        assertEquals("variable names cannot contain NULL characters", exception.getMessage());
+
+        exception = assertThrows(IllegalArgumentException.class, () -> builder.name("NULL\0CHARACTER"));
+        assertEquals("variable names cannot contain NULL characters", exception.getMessage());
+
+        // The exception shouldn't corrupt the state of the builder.
+        // I don't expect that anyone would do this, but it should be legal to ignore the error and continue building.
+        Variable variable = builder.build();
+        assertVariable(variable, "ORIGINAL", VariableType.NUMERIC, 8, "", Format.UNSPECIFIED, Format.UNSPECIFIED);
+    }
+
+    @Test
     void setLongName() {
         // Create a builder with all required fields set.
         Variable.Builder builder = Variable.builder().type(VariableType.NUMERIC).length(8).name("ORIGINAL");

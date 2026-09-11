@@ -89,14 +89,24 @@ public final class Variable {
          * @throws NullPointerException
          *     if {@code name} is {@code null}.
          * @throws IllegalArgumentException
-         *     if {@code name} is empty or exceeds 32 bytes in UTF-8.
+         *     if {@code name} is empty, contains the NULL character, or exceeds 32 bytes in UTF-8.
          */
         public Builder name(String name) {
             ArgumentUtil.checkNotNull(name, "name");
+
+            // There are some constraints that SAS has for all variables names, even VALIDVARNAME=ANY.
+            // https://support.sas.com/documentation/cdl/en/lrdict/64316/HTML/default/viewer.htm#a000279245.htm
+            // - no more than 32 "characters" in length, although they may mean bytes.
+            // - cannot contain any null bytes
+            // - name must contain at least one character. An all blank name is not permitted.
+            // - leading blanks are preserved, but trailing blanks are ignored
             if (name.isEmpty()) {
                 throw new IllegalArgumentException("variable names cannot be blank");
             }
             ArgumentUtil.checkMaximumLength(name, StandardCharsets.UTF_8, 32, "variable names");
+            if (0 <= name.indexOf('\0')) {
+                throw new IllegalArgumentException("variable names cannot contain NULL characters");
+            }
 
             this.name = name;
             return this;
