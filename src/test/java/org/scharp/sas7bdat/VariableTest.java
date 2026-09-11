@@ -469,6 +469,7 @@ public class VariableTest {
         assertVariable(variable, "VAR2", VariableType.CHARACTER, 1, "label 2", Format.UNSPECIFIED, outputFormat);
     }
 
+    @SuppressWarnings("StringOperationCanBeSimplified")
     static private String copy(String string) {
         return new String(string);
     }
@@ -512,7 +513,8 @@ public class VariableTest {
     /**
      * Tests {@link Variable#equals(Object)}.
      */
-    @SuppressWarnings({ "unlikely-arg-type", "EqualsBetweenInconvertibleTypes" })
+    @SuppressWarnings({ "unlikely-arg-type", "EqualsBetweenInconvertibleTypes", "SimplifiableAssertion",
+        "EqualsWithItself", "ConstantValue" })
     @Test
     public void testEquals() {
         // Create a variable with all fields set to distinct values.
