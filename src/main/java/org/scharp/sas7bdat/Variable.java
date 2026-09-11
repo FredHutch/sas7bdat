@@ -14,15 +14,14 @@ import java.util.Objects;
  * Instances of this class are immutable.  They are created with a {@link Variable.Builder}:
  * </p>
  *
- * <pre>
+ * {@snippet lang = java:
  * Variable cityVariable = Variable.builder().
  *     name("CITY").
  *     type(VariableType.CHARACTER).
  *     length(20).
  *     label("Name of city").
  *     outputFormat(new Format("$CHAR", 18)).
- *     build();
- * </pre>
+ *     build();}
  *
  * <p>
  * This class supports {@code equals()} and {@code hashCode()} so that its instances suitable for use in a

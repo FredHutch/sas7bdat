@@ -17,7 +17,7 @@ import java.util.Set;
  * <p>
  * Instances of this class are immutable.  They are created with a {@link Sas7bdatMetadata.Builder}:
  * </p>
- * <pre>
+ * {@snippet lang = java:
  * Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
  *     datasetName("WEATHER").
  *     datasetLabel("Daily temperatures in cities across the U.S.A.").
@@ -54,8 +54,7 @@ import java.util.Set;
  *                 label("Average daily low in F").
  *                 outputFormat(new Format("", 5)).
  *                 build()
- *     )).build();
- * </pre>
+ *     )).build();}
  */
 public final class Sas7bdatMetadata {
     private final LocalDateTime creationTime;

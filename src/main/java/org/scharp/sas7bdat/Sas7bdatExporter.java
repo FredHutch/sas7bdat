@@ -31,7 +31,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  * The following code sample demonstrates how to generate a SAS7BDAT using hard-coded data that can fit into memory.
  * </p>
  *
- * <pre>
+ * {@snippet lang = java:
  * private static void exportDataset(Path targetLocation) throws IOException {
  *
  *     Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
@@ -72,7 +72,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  *                     build()
  *         )).build();
  *
- *     List&lt;List&lt;Object>> observations = List.of(
+ *     List<List<Object>> observations = List.of(
  *         List.of("Atlanta", "GA", 72, 53),
  *         List.of("Austin", "TX", 80, 5),
  *         List.of("Baltimore", "MD", 65, 45),
@@ -85,8 +85,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  *
  *     // Export the dataset to a SAS7BDAT file.
  *     Sas7bdatExporter.exportDataset(targetLocation, metadata, observations);
- * }
- * </pre>
+ * }}
  *
  * <p>
  * To export a SAS7BDAT without holding all rows in memory, you can construct as {@code Sas7bdatExporter} and write each
@@ -94,7 +93,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  * like:
  * </p>
  *
- * <pre>
+ * {@snippet lang = java:
  * private static void exportDataset(Path targetLocation) throws IOException {
  *
  *     Sas7bdatMetadata metadata = Sas7bdatMetadata.builder().
@@ -135,7 +134,7 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  *                     build()
  *         )).build();
  *
- *     <b>int totalObservations = 8;
+ *     int totalObservations = 8; // @highlight region
  *     try (Sas7bdatExporter exporter = new Sas7bdatExporter(targetLocation, metadata, totalObservations)) {
  *         exporter.writeObservation(List.of("Atlanta", "GA", 72, 53));
  *         exporter.writeObservation(List.of("Baltimore", "MD", 65, 45));
@@ -144,8 +143,8 @@ import static org.scharp.sas7bdat.MathUtil.divideAndRoundUp;
  *         exporter.writeObservation(List.of("Buffalo", "NY", 56, 40));
  *         exporter.writeObservation(List.of("Virginia Beach", "VA", 68, 52));
  *         exporter.writeObservation(List.of("Washington", "DC", 68, 52));
- *     }</b>
- * </pre>
+ *     } // @end
+ * }}
  */
 // Note: This is called "Exporter" instead of "Writer" because it doesn't extend the Writer class as so is not a Writer.
 public final class Sas7bdatExporter implements AutoCloseable {
