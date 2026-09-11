@@ -1370,10 +1370,10 @@ class TestRandomSas7bdat {
         def sas7BdatPath = Path.of("random.sas7bdat")
 
         // To help with troubleshooting, generate a SAS program that would generate this dataset.
-        // Note that there is a bug in the generated random.sas that it fail if a value in the dataset
-        // has an observation which exceeds 32KiB as a dataline.  In this case, it's better not to create
-        // random.sas than to create one that does something wrong.  The logic for determining the length
-        // approximates the logic for creating the dataline in writeSasProgramToGenerateDataset().
+        // Note that random.sas fails to export any observations which exceeds 32KiB as a dataline.
+        // In this case, it's better not to create random.sas than to create one that does something wrong.
+        // The logic for determining the length approximates the logic for creating the dataline in
+        // writeSasProgramToGenerateDataset().
         // TODO: fix random.sas so that it can handle this, perhaps with PROC IMPORT
         if (maxObservationLength < 32767) {
             writeSasProgramToGenerateDataset(new File("random.sas"), testCaseFile)
