@@ -49,7 +49,7 @@
  * on Windows will generate a different file than one on a 64-bit UNIX host.  (This was more important in the 1960s and
  * 1970s, when computers had more varied architectures, different endianness, different word sizes, and different
  * floating point representations.  During those decades, transferring files between different machines was rare but
- * marshalling data into a standard format was computationally prohibitive).  Modern SAS installations can read a
+ * marshaling data into a standard format was computationally prohibitive).  Modern SAS installations can read a
  * SAS7BDAT file generated on a different platform with some degraded functionality.  This library is hard-coded to
  * write for a 64-bit, little-endian CPU with IEEE 754 floating point representation.
  * </p>
