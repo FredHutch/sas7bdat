@@ -437,7 +437,7 @@ public class VariableTest {
     void buildWithMaximumValues() {
         final String longName = "V".repeat(32);
         final String longLabel = "L".repeat(256);
-        final Format longFormat = new Format("$LONGFMT", Short.MAX_VALUE);
+        final Format longFormat = new Format('$' + "F".repeat(31), Short.MAX_VALUE);
 
         Variable variable = Variable.builder()
             .name(longName)
