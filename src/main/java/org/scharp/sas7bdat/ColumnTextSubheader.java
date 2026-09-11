@@ -182,7 +182,7 @@ class ColumnTextSubheader extends VariableSizeSubheader {
 
         //
         // When there's another Text Column subheader which follows this one,
-        // sas puts adds more padding between the last string (aligned to four bytes) and the
+        // sas puts more padding between the last string (aligned to four bytes) and the
         // 12 byte footer of NUL bytes.  This seems to be a variable length block.  If it's at
         // least 8 bytes long, then first four bytes are the number 1 and the second four bytes
         // is a multiple of 4 in the range 12-252 and seems to be the length of this padding block,
