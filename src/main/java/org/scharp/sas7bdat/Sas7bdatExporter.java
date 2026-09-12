@@ -558,10 +558,7 @@ public final class Sas7bdatExporter implements AutoCloseable {
         //
         // That said, SAS echos part of the second-to-final page on the conceptually
         // blank parts of the final data page, so using a dirty buffer may better
-        // match what SAS does.  On the other hand, re-using a dirty buffer has
-        // put some information on the first data page that caused SAS to skip
-        // data on the second data page, so there must be some part of the
-        // data footer that is significant.
+        // match what SAS does.
         Arrays.fill(pageBuffer, (byte) 0x00);
 
         page.write(pageBuffer);
