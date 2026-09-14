@@ -39,10 +39,9 @@ class Header {
     static Header parse(sas7bdatFile, InputStream inputStream) {
         try {
             // Read the "alignment" field, which indicates if the file is 32-bits or 64-bits.
-            // This script only processes 64-bit SAS files.
             inputStream.skipNBytes(32)
             byte alignment = inputStream.readByte()
-            int bitSize
+            int bitSize = 0
             switch (alignment) {
                 case 0x22:
                     bitSize = 32
@@ -818,6 +817,7 @@ sas7BdatFile.withDataInputStream { inputStream ->
     // The file starts at the header.
     Header header = Header.parse(sas7BdatFile, inputStream)
     println "${formatOffset(0)} Header"
+    println "  ${formatOffset(32) } Word Size        = $header.bitSize"
     println "  ${formatOffset(200)} Header Size      = $header.headerSize (${'%#X'.formatted(header.headerSize)})"
     println "  ${formatOffset(204)} Page Size        = $header.pageSize (${'%#X'.formatted(header.pageSize)})"
     println "  ${formatOffset(208)} Total Pages      = $header.totalPages"
